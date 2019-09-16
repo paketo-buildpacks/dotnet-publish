@@ -1,0 +1,14 @@
+[buildpack]
+id = "org.cloudfoundry.dotnet-core-build"
+name = ".Net Build Buildpack"
+version = "{{ .Version }}"
+
+[metadata]
+include_files = ["bin/build","bin/detect","buildpack.toml","go.mod","go.sum"]
+pre_package = "./scripts/build.sh"
+
+[[stacks]]
+id = "org.cloudfoundry.stacks.cflinuxfs3"
+
+[[stacks]]
+id = "io.buildpacks.stacks.bionic"
