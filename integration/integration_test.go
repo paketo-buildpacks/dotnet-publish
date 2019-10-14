@@ -68,7 +68,7 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		app, err := dagger.PackBuild(filepath.Join("testdata", "source-2.2-aspnet"), runtimeURI, aspnetURI, sdkURI, buildURI)
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(app.StartWithCommand("./source-2.2-aspnet --server.urls http://0.0.0.0:${PORT}")).To(Succeed())
+		Expect(app.StartWithCommand("./source-2.2-aspnet --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
 		Eventually(func() string {
 			body, _, _ := app.HTTPGet("/")
@@ -80,7 +80,7 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		app, err := dagger.PackBuild(filepath.Join("testdata", "source-2.1-aspnet"), runtimeURI, aspnetURI, sdkURI, buildURI)
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(app.StartWithCommand("dotnet source-2.1-aspnet.dll --server.urls http://0.0.0.0:${PORT}")).To(Succeed())
+		Expect(app.StartWithCommand("dotnet source-2.1-aspnet.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
 		Eventually(func() string {
 			body, _, _ := app.HTTPGet("/")
@@ -88,12 +88,11 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}).Should(ContainSubstring("source_2._1_aspnet"))
 	})
 
-
 	it("should build a working OCI image for a simple 2.2 webapi with swagger dependency", func() {
 		app, err := dagger.PackBuild(filepath.Join("testdata", "source-2.2-aspnet-with-public-nuget"), runtimeURI, aspnetURI, sdkURI, buildURI)
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(app.StartWithCommand("dotnet source-2.2-aspnet-with-public-nuget.dll --server.urls http://0.0.0.0:${PORT}")).To(Succeed())
+		Expect(app.StartWithCommand("dotnet source-2.2-aspnet-with-public-nuget.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
 		Eventually(func() string {
 			body, _, _ := app.HTTPGet("/swagger/index.html")
