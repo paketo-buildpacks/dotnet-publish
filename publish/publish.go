@@ -2,12 +2,13 @@ package publish
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/helper"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
-	"os"
-	"path/filepath"
 )
 
 const Publish = "build"
@@ -70,14 +71,9 @@ func (c Contributor) Contribute() error {
 func (c Contributor) contributeBuildLayer(layer layers.Layer) error {
 	layer.Logger.Body("Symlinking runtime libraries")
 	pathToRuntime := os.Getenv("DOTNET_ROOT")
-	runtimeFiles, err := filepath.Glob(filepath.Join(pathToRuntime, "shared", "*"))
-	if err != nil {
+
+	if err := utils.SymlinkSharedFolder(pathToRuntime, layer.Root); err != nil {
 		return err
-	}
-	for _, file := range runtimeFiles {
-		if err := helper.CopySymlink(file, filepath.Join(layer.Root, "shared", filepath.Base(file))); err != nil {
-			return err
-		}
 	}
 
 	hostDir := filepath.Join(pathToRuntime, "host")

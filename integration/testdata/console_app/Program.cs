@@ -7,6 +7,7 @@ namespace console_app
         public static void Main(string[] args)
         {
 		Console.WriteLine("Hello World!");
+                while(true){}
         }
     }
 }

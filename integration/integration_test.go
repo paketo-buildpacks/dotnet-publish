@@ -130,8 +130,24 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}).Should(ContainSubstring("Hello, world from Dotnet Core 2.1"))
 	})
 
+	it("should build a working OCI image for an app that specifies it should be self contained", func() {
+		app, err = dagger.NewPack(
+			filepath.Join("testdata", "self_contained_msbuild"),
+			dagger.RandomImage(),
+			dagger.SetBuildpacks(runtimeURI, sdkURI, buildURI),
+		).Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		Expect(app.StartWithCommand("dotnet msbuild_self_contained.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
+
+		Eventually(func() string {
+			body, _, _ := app.HTTPGet("/")
+			return body
+		}).Should(ContainSubstring("Hello World!"))
+	})
+
 	// TODO - Requires change to SDK symlinking
-	it.Pend("should build a working OCI image for a console app", func() {
+	it("should build a working OCI image for a console app", func() {
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "console_app"),
 			dagger.RandomImage(),
@@ -139,7 +155,8 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		).Build()
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(app.StartWithCommand("dotnet console_app.dll")).To(Succeed())
+		app.SetHealthCheck("stat /workspace/console.dll", "2s", "15s")
+		Expect(app.StartWithCommand("dotnet console.dll")).To(Succeed())
 
 		Eventually(func() string {
 			body, _ := app.Logs()
@@ -190,14 +207,16 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 	})
 
 	// TODO: Make the app take command line arguments or set environ
-	it.Pend("should build a working OCI image for a nancy kestrel msbuild application", func() {
+	it("should build a working OCI image for a nancy kestrel msbuild application", func() {
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "nancy_kestrel_msbuild_dotnet2"),
 			dagger.RandomImage(),
-			dagger.SetBuildpacks(runtimeURI, aspnetURI, sdkURI, buildURI),
+			dagger.SetBuildpacks(runtimeURI, sdkURI, buildURI),
 		).Build()
 		Expect(err).ToNot(HaveOccurred())
 
+		app.Env["PORT"] = "8080"
+		app.Env["ASPNETCORE_URLS"] = "http://0.0.0.0:8080"
 		Expect(app.StartWithCommand("dotnet nancy_kestrel_msbuild_dotnet2.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
 		Eventually(func() string {
