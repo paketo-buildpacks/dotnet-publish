@@ -146,7 +146,6 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}).Should(ContainSubstring("Hello World!"))
 	})
 
-	// TODO - Requires change to SDK symlinking
 	it("should build a working OCI image for a console app", func() {
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "console_app"),
@@ -206,7 +205,6 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}).Should(ContainSubstring("Hello, I'm a string!"))
 	})
 
-	// TODO: Make the app take command line arguments or set environ
 	it("should build a working OCI image for a nancy kestrel msbuild application", func() {
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "nancy_kestrel_msbuild_dotnet2"),
@@ -255,11 +253,10 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		Eventually(func() string {
 			body, _, _ := app.HTTPGet("/")
 			return body
-		}).Should(ContainSubstring("Hello World!"))
+		}).Should(ContainSubstring("netcoreapp2"))
 	})
 
-	// TODO: This test comes for free when logic is added to use RuntimeFrameworkVersion
-	it.Pend("should build a working OCI image for a source_2.1_float_runtime application", func() {
+	it("should build a working OCI image for a source_2.1_float_runtime application", func() {
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "source_2.1_float_runtime"),
 			dagger.RandomImage(),

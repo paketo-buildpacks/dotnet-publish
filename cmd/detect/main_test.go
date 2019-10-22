@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
 
@@ -60,12 +61,50 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
 						Name:     "dotnet-runtime",
-						Version:  "2.2.0",
+						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},
 				}))
 			})
 		})
+
+		when("the app only has a runtime dependency and a specified runtime framework version", func() {
+			it("it passes", func() {
+				Expect(ioutil.WriteFile(filepath.Join(factory.Detect.Application.Root, "appName.csproj"), []byte(`
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+		<RuntimeFrameworkVersion>2.2.7</RuntimeFrameworkVersion>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+  </ItemGroup>
+
+</Project>`), os.ModePerm)).To(Succeed())
+				defer os.RemoveAll(filepath.Join(factory.Detect.Application.Root, "appName.csproj"))
+				code, err := runDetect(factory.Detect)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(code).To(Equal(detect.PassStatusCode))
+				Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
+					Provides: []buildplan.Provided{{Name: publish.Publish}},
+					Requires: []buildplan.Required{{
+						Name:     publish.Publish,
+						Metadata: buildplan.Metadata{"build": true},
+					}, {
+						Name:     "dotnet-sdk",
+						Version:  "2.2.0",
+						Metadata: buildplan.Metadata{"build": true, "launch": true},
+					}, {
+						Name:     "dotnet-runtime",
+						Version:  "2.2.7",
+						Metadata: buildplan.Metadata{"build": true, "launch": true},
+					}},
+				}))
+			})
+		})
+
 		when("the app only has runtime and aspnet dependencies", func() {
 			it("it passes", func() {
 				Expect(ioutil.WriteFile(filepath.Join(factory.Detect.Application.Root, "appName.csproj"), []byte(`
@@ -97,11 +136,11 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
 						Name:     "dotnet-runtime",
-						Version:  "2.2.0",
+						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
 						Name:     "dotnet-aspnet",
-						Version:  "2.2.0",
+						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},
 				}))
@@ -131,7 +170,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 		})
 	})
 
-	when("app has multiple proj files", func(){
+	when("app has multiple proj files", func() {
 		var projBody []byte
 		projBody = []byte(`
 <Project Sdk="Microsoft.NET.Sdk.Web">

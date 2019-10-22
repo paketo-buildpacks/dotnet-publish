@@ -3,11 +3,13 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
+
+	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
@@ -47,54 +49,45 @@ func runDetect(context detect.Detect) (int, error) {
 		Provides: []buildplan.Provided{{Name: publish.Publish}}}
 
 	projFile, err := getProjFile(context.Application.Root)
-	if err != nil{
+	if err != nil {
 		return context.Fail(), err
 	}
 
 	projObj, err := parseProj(projFile)
-	if err != nil{
+	if err != nil {
 		return context.Fail(), err
 	}
 
 	version := resolveVersion(projObj)
+	splitVersion := strings.Split(version, ".")
+	sdkVersion := fmt.Sprintf("%s.%s.0", splitVersion[0], splitVersion[1])
 
-	if detectASPNet(projObj){
-		plan.Requires = []buildplan.Required{{
-			Name:	  publish.Publish,
-			Metadata: buildplan.Metadata{"build": true},
-		},{
-			Name:     "dotnet-sdk",
-			Version:  version,
-			Metadata: buildplan.Metadata{"build": true, "launch":true },
-		},{
-			Name:     "dotnet-runtime",
-			Version:  version,
-			Metadata: buildplan.Metadata{"build": true, "launch": true},
-		},{
+	plan.Requires = []buildplan.Required{{
+		Name:     publish.Publish,
+		Metadata: buildplan.Metadata{"build": true},
+	}, {
+		Name:     "dotnet-sdk",
+		Version:  sdkVersion,
+		Metadata: buildplan.Metadata{"build": true, "launch": true},
+	}, {
+		Name:     "dotnet-runtime",
+		Version:  version,
+		Metadata: buildplan.Metadata{"build": true, "launch": true},
+	}}
+
+	if detectASPNet(projObj) {
+		plan.Requires = append(plan.Requires, buildplan.Required{
 			Name:     "dotnet-aspnet",
 			Version:  version,
 			Metadata: buildplan.Metadata{"build": true, "launch": true},
-		}}
-	} else {
-		plan.Requires = []buildplan.Required{{
-			Name:     publish.Publish,
-			Metadata: buildplan.Metadata{"build": true},
-		}, {
-			Name:     "dotnet-sdk",
-			Version:  version,
-			Metadata: buildplan.Metadata{"build": true, "launch": true},
-		}, {
-			Name:     "dotnet-runtime",
-			Version:  version,
-			Metadata: buildplan.Metadata{"build": true, "launch": true},
-		}}
+		})
 	}
 
 	return context.Pass(plan)
 }
 
-func getProjFile(appRoot string) (string, error){
-	fileName, err := filepath.Glob(filepath.Join(appRoot,"*.?sproj"))
+func getProjFile(appRoot string) (string, error) {
+	fileName, err := filepath.Glob(filepath.Join(appRoot, "*.?sproj"))
 	if err != nil {
 		return "", err
 	}
@@ -123,9 +116,12 @@ func parseProj(projPath string) (Proj, error) {
 }
 
 func resolveVersion(projObj Proj) string {
-	matches := regexp.MustCompile(`netcoreapp(.*)`).FindStringSubmatch(projObj.PropertyGroup.TargetFramework)
+	if projObj.PropertyGroup.RuntimeFrameworkVersion == "" {
+		matches := regexp.MustCompile(`netcoreapp(.*)`).FindStringSubmatch(projObj.PropertyGroup.TargetFramework)
+		return fmt.Sprintf("%s.*", matches[1])
+	}
 
-	return fmt.Sprintf("%s.0", matches[1])
+	return projObj.PropertyGroup.RuntimeFrameworkVersion
 }
 
 func detectASPNet(projObj Proj) bool {
@@ -138,4 +134,3 @@ func detectASPNet(projObj Proj) bool {
 	}
 	return false
 }
-
