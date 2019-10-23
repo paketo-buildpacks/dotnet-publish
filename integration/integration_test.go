@@ -12,52 +12,58 @@ import (
 )
 
 var (
-	bpDir, aspnetURI, runtimeURI, sdkURI, buildURI string
+	bpDir      string
+	aspnetURI  string
+	runtimeURI string
+	sdkURI     string
+	buildURI   string
+	confURI    string
 )
 
-var suite = spec.New("Integration", spec.Report(report.Terminal{}))
-
-func init() {
-	suite("Integration", testIntegration)
-}
-
-func TestIntegration(t *testing.T) {
+func BeforeSuite() {
 	var err error
-	Expect := NewWithT(t).Expect
 	bpDir, err = dagger.FindBPRoot()
 	Expect(err).NotTo(HaveOccurred())
 
 	buildURI, err = dagger.PackageBuildpack(bpDir)
 	Expect(err).ToNot(HaveOccurred())
-	defer dagger.DeleteBuildpack(buildURI)
 
 	sdkURI, err = dagger.GetLatestBuildpack("dotnet-core-sdk-cnb")
 	Expect(err).ToNot(HaveOccurred())
-	defer dagger.DeleteBuildpack(sdkURI)
 
 	aspnetURI, err = dagger.GetLatestBuildpack("dotnet-core-aspnet-cnb")
 	Expect(err).ToNot(HaveOccurred())
-	defer dagger.DeleteBuildpack(aspnetURI)
 
 	runtimeURI, err = dagger.GetLatestBuildpack("dotnet-core-runtime-cnb")
 	Expect(err).ToNot(HaveOccurred())
-	defer dagger.DeleteBuildpack(runtimeURI)
 
+	confURI, err = dagger.GetLatestBuildpack("dotnet-core-conf-cnb")
+	Expect(err).ToNot(HaveOccurred())
+}
+
+func AfterSuite() {
+	Expect(dagger.DeleteBuildpack(buildURI)).To(Succeed())
+	Expect(dagger.DeleteBuildpack(sdkURI)).To(Succeed())
+	Expect(dagger.DeleteBuildpack(aspnetURI)).To(Succeed())
+	Expect(dagger.DeleteBuildpack(runtimeURI)).To(Succeed())
+	Expect(dagger.DeleteBuildpack(confURI)).To(Succeed())
+}
+
+func TestIntegration(t *testing.T) {
+	var suite = spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
+	suite("Integration", testIntegration)
+
+	RegisterTestingT(t)
+	BeforeSuite()
 	suite.Run(t)
+	AfterSuite()
 }
 
 func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 	var (
-		Expect     func(interface{}, ...interface{}) Assertion
-		Eventually func(interface{}, ...interface{}) AsyncAssertion
-		app        *dagger.App
-		err        error
+		app *dagger.App
+		err error
 	)
-
-	it.Before(func() {
-		Expect = NewWithT(t).Expect
-		Eventually = NewWithT(t).Eventually
-	})
 
 	it.After(func() {
 		if app != nil {
@@ -72,7 +78,6 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 			dagger.SetBuildpacks(runtimeURI, aspnetURI, sdkURI, buildURI),
 		).Build()
 		Expect(err).ToNot(HaveOccurred())
-
 		Expect(app.StartWithCommand("./source-2.2-aspnet --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
 		Eventually(func() string {
@@ -134,11 +139,11 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "self_contained_msbuild"),
 			dagger.RandomImage(),
-			dagger.SetBuildpacks(runtimeURI, sdkURI, buildURI),
+			dagger.SetBuildpacks(runtimeURI, sdkURI, buildURI, confURI),
 		).Build()
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(app.StartWithCommand("dotnet msbuild_self_contained.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
+		Expect(app.Start()).To(Succeed())
 
 		Eventually(func() string {
 			body, _, _ := app.HTTPGet("/")
@@ -150,12 +155,12 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "console_app"),
 			dagger.RandomImage(),
-			dagger.SetBuildpacks(runtimeURI, sdkURI, buildURI),
+			dagger.SetBuildpacks(runtimeURI, sdkURI, buildURI, confURI),
 		).Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		app.SetHealthCheck("stat /workspace/console.dll", "2s", "15s")
-		Expect(app.StartWithCommand("dotnet console.dll")).To(Succeed())
+		Expect(app.Start()).To(Succeed())
 
 		Eventually(func() string {
 			body, _ := app.Logs()
