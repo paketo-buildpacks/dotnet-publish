@@ -3,6 +3,8 @@ module github.com/cloudfoundry/dotnet-core-build-cnb
 go 1.12
 
 require (
+	github.com/BurntSushi/toml v0.3.1
+	github.com/Masterminds/semver v1.5.0
 	github.com/buildpack/libbuildpack v1.25.3
 	github.com/cloudfoundry/dagger v0.0.0-20191025181811-15ebd2408e87
 	github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.47

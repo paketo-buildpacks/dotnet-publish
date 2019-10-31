@@ -1,9 +1,13 @@
 package integration_test
 
 import (
+	"fmt"
+	"io/ioutil"
 	"path/filepath"
 	"testing"
 
+	"github.com/BurntSushi/toml"
+	"github.com/Masterminds/semver"
 	"github.com/cloudfoundry/dagger"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
@@ -244,8 +248,31 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}).Should(ContainSubstring("Hello World!"))
 	})
 
-	// TODO: Templating needs to be added and logic to use RuntimeFrameworkVersion also needs to be added
-	it.Pend("should build a working OCI image for a source_2.1_explicit_runtime_templated application", func() {
+	it("should build a working OCI image for a source_2.1_explicit_runtime_templated application", func() {
+		majorMinor := "2.1"
+		version, err := getLowestRuntimeVersionInMajorMinor(majorMinor, filepath.Join(runtimeURI, "buildpack.toml"))
+		Expect(err).ToNot(HaveOccurred())
+		bpYml := fmt.Sprintf(`<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp%s</TargetFramework>
+    <RuntimeFrameworkVersion>%s</RuntimeFrameworkVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
+  </ItemGroup>
+
+</Project>
+`, majorMinor, version)
+
+		bpYmlPath := filepath.Join("testdata", "source_2.1_explicit_runtime_templated", "netcoreapp2.csproj")
+		Expect(ioutil.WriteFile(bpYmlPath, []byte(bpYml), 0644)).To(Succeed())
+
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "source_2.1_explicit_runtime_templated"),
 			dagger.RandomImage(),
@@ -378,4 +405,49 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 			return body
 		}).Should(ContainSubstring("with_dot_in_name"))
 	})
+}
+
+func getLowestRuntimeVersionInMajorMinor(majorMinor, bpTomlPath string) (string, error) {
+	type buildpackTomlVersion struct {
+		Metadata struct {
+			Dependencies []struct {
+				Version string `toml:"version"`
+			} `toml:"dependencies"`
+		} `toml:"metadata"`
+	}
+
+	bpToml := buildpackTomlVersion{}
+	output, err := ioutil.ReadFile(filepath.Join(bpTomlPath))
+	if err != nil {
+		return "", err
+	}
+
+	majorMinorConstraint, err := semver.NewConstraint(fmt.Sprintf("%s.*", majorMinor))
+	if err != nil {
+		return "", err
+	}
+
+	lowestVersion, err := semver.NewVersion(fmt.Sprintf("%s.99", majorMinor))
+	if err != nil {
+		return "", err
+	}
+
+	_, err = toml.Decode(string(output), &bpToml)
+	if err != nil {
+		return "", err
+	}
+
+	for _, dep := range bpToml.Metadata.Dependencies {
+		depVersion, err := semver.NewVersion(dep.Version)
+		if err != nil {
+			return "", err
+		}
+		if majorMinorConstraint.Check(depVersion) {
+			if depVersion.LessThan(lowestVersion) {
+				lowestVersion = depVersion
+			}
+		}
+	}
+
+	return lowestVersion.String(), nil
 }
