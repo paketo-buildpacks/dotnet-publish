@@ -5,10 +5,12 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/cloudfoundry/dagger"
 	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils/dotnettesting"
 	. "github.com/onsi/gomega"
+	"github.com/sclevine/agouti"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -20,6 +22,7 @@ var (
 	sdkURI     string
 	buildURI   string
 	confURI    string
+	nodeURI    string
 )
 
 func BeforeSuite() {
@@ -41,10 +44,14 @@ func BeforeSuite() {
 
 	confURI, err = dagger.GetLatestBuildpack("dotnet-core-conf-cnb")
 	Expect(err).ToNot(HaveOccurred())
+
+	nodeURI, err = dagger.GetLatestBuildpack("node-engine-cnb")
+	Expect(err).ToNot(HaveOccurred())
 }
 
 func AfterSuite() {
 	Expect(dagger.DeleteBuildpack(buildURI)).To(Succeed())
+	Expect(dagger.DeleteBuildpack(nodeURI)).To(Succeed())
 	Expect(dagger.DeleteBuildpack(sdkURI)).To(Succeed())
 	Expect(dagger.DeleteBuildpack(aspnetURI)).To(Succeed())
 	Expect(dagger.DeleteBuildpack(runtimeURI)).To(Succeed())
@@ -68,9 +75,7 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 	)
 
 	it.After(func() {
-		if app != nil {
-			_ = app.Destroy()
-		}
+		app.Destroy()
 	})
 
 	it("should build a working OCI image for a simple 2.2 app with aspnet dependencies", func() {
@@ -121,20 +126,27 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 	})
 
 	// TODO - Needs NPM, maybe move to end to end intergrations
-	it.Pend("should build a working OCI image for a angular dotnet 2.1 application", func() {
+	it("should build a working OCI image for a angular dotnet 2.1 application", func() {
+		browser := agouti.ChromeDriver(agouti.ChromeOptions("args", []string{"--headless", "--disable-gpu", "--no-sandbox"}))
+		err = browser.Start()
+		Expect(err).NotTo(HaveOccurred())
+
+		page, err := browser.NewPage()
+		Expect(err).NotTo(HaveOccurred())
+
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "angular_msbuild_dotnet_2.1"),
 			dagger.RandomImage(),
-			dagger.SetBuildpacks(runtimeURI, aspnetURI, sdkURI, buildURI),
+			dagger.SetBuildpacks(runtimeURI, aspnetURI, sdkURI, nodeURI, buildURI),
+			dagger.SetVerbose(),
 		).Build()
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(app.StartWithCommand("dotnet angular_msbuild_dotnet_2.1.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
+		Expect(app.StartWithCommand("dotnet angular_msbuild.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
-		Eventually(func() string {
-			body, _, _ := app.HTTPGet("/")
-			return body
-		}).Should(ContainSubstring("Hello, world from Dotnet Core 2.1"))
+		url := app.GetBaseURL()
+		Expect(page.Navigate(url)).To(Succeed())
+		Eventually(page.HTML, 30*time.Second).Should(ContainSubstring("Hello, world!"))
 	})
 
 	it("should build a working OCI image for an app that specifies it should be self contained", func() {

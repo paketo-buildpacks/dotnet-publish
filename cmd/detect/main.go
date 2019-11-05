@@ -27,6 +27,14 @@ type Proj struct {
 			Version string `xml:"Version,attr"`
 		} `xml:"PackageReference"`
 	} `xml:"ItemGroup"`
+	Targets []struct {
+		Name          string `xml:"Name,attr"`
+		BeforeTargets string `xml:"BeforeTargets,attr"`
+		AfterTargets  string `xml:"AfterTargets,attr"`
+		Exec          []struct {
+			Command string `xml:"Command,attr"`
+		} `xml:"Exec"`
+	} `xml:"Target"`
 }
 
 func main() {
@@ -74,6 +82,14 @@ func runDetect(context detect.Detect) (int, error) {
 		Version:  version,
 		Metadata: buildplan.Metadata{"build": true, "launch": true},
 	}}
+
+	//Parse csproj to find "npm"
+	if detectNPM(projObj) {
+		plan.Requires = append(plan.Requires, buildplan.Required{
+			Name:     "node",
+			Metadata: buildplan.Metadata{"build": true, "launch": true},
+		})
+	}
 
 	if detectASPNet(projObj) {
 		plan.Requires = append(plan.Requires, buildplan.Required{
@@ -128,6 +144,19 @@ func detectASPNet(projObj Proj) bool {
 	for _, ig := range projObj.ItemGroups {
 		for _, pr := range ig.PackageReferences {
 			if pr.Include == "Microsoft.AspNetCore.App" || pr.Include == "Microsoft.AspNetCore.All" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func detectNPM(projObj Proj) bool {
+
+	for _, target := range projObj.Targets {
+		for _, ex := range target.Exec {
+			command := ex.Command
+			if strings.Contains(command, "npm") {
 				return true
 			}
 		}
