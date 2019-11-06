@@ -99,6 +99,13 @@ func runDetect(context detect.Detect) (int, error) {
 		})
 	}
 
+	if context.Stack == "io.buildpacks.stacks.bionic" {
+		plan.Requires = append(plan.Requires, buildplan.Required{
+			Name:     "icu",
+			Metadata: buildplan.Metadata{"build": true},
+		})
+	}
+
 	return context.Pass(plan)
 }
 

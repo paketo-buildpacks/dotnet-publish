@@ -92,12 +92,6 @@ func (c Contributor) contributeBuildLayer(layer layers.Layer) error {
 		return err
 	}
 
-	if c.context.Build.Stack == "io.buildpacks.stacks.bionic" {
-		if err := os.Setenv("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "true"); err != nil {
-			return err
-		}
-	}
-
 	if err := os.Setenv("PATH", fmt.Sprintf("%s:%s", layer.Root, os.Getenv("PATH"))); err != nil {
 		return err
 	}
