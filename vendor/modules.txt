@@ -11,10 +11,10 @@ github.com/buildpack/libbuildpack/buildplan
 github.com/buildpack/libbuildpack/build
 github.com/buildpack/libbuildpack/layers
 github.com/buildpack/libbuildpack/internal
+github.com/buildpack/libbuildpack/buildpackplan
 github.com/buildpack/libbuildpack/detect
 github.com/buildpack/libbuildpack/application
 github.com/buildpack/libbuildpack/buildpack
-github.com/buildpack/libbuildpack/buildpackplan
 github.com/buildpack/libbuildpack/logger
 github.com/buildpack/libbuildpack/platform
 github.com/buildpack/libbuildpack/services
@@ -22,9 +22,17 @@ github.com/buildpack/libbuildpack/stack
 # github.com/cloudfoundry/dagger v0.0.0-20191105211753-5d1b464d63f1
 github.com/cloudfoundry/dagger
 github.com/cloudfoundry/dagger/utils
+# github.com/cloudfoundry/dotnet-core-aspnet-cnb v0.0.66
+github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet
 # github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.73
 github.com/cloudfoundry/dotnet-core-conf-cnb/utils
 github.com/cloudfoundry/dotnet-core-conf-cnb/utils/dotnettesting
+# github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.78
+github.com/cloudfoundry/dotnet-core-runtime-cnb/runtime
+# github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.67
+github.com/cloudfoundry/dotnet-core-sdk-cnb/sdk
+# github.com/cloudfoundry/icu-cnb v0.0.2
+github.com/cloudfoundry/icu-cnb/icu
 # github.com/cloudfoundry/libcfbuildpack v1.91.4
 github.com/cloudfoundry/libcfbuildpack/build
 github.com/cloudfoundry/libcfbuildpack/detect
@@ -37,6 +45,8 @@ github.com/cloudfoundry/libcfbuildpack/runner
 github.com/cloudfoundry/libcfbuildpack/services
 github.com/cloudfoundry/libcfbuildpack/test
 github.com/cloudfoundry/libcfbuildpack/internal
+# github.com/cloudfoundry/node-engine-cnb v0.0.95
+github.com/cloudfoundry/node-engine-cnb/node
 # github.com/cloudfoundry/packit v0.0.0-20191015134313-760041110f18
 github.com/cloudfoundry/packit
 # github.com/fatih/color v1.7.0

@@ -4,7 +4,12 @@ import (
 	"fmt"
 
 	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
 	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
+	"github.com/cloudfoundry/dotnet-core-runtime-cnb/runtime"
+	"github.com/cloudfoundry/dotnet-core-sdk-cnb/sdk"
+	"github.com/cloudfoundry/icu-cnb/icu"
+	"github.com/cloudfoundry/node-engine-cnb/node"
 
 	"io/ioutil"
 	"os"
@@ -56,11 +61,11 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Name:     publish.Publish,
 						Metadata: buildplan.Metadata{"build": true},
 					}, {
-						Name:     "dotnet-sdk",
+						Name:     sdk.DotnetSDK,
 						Version:  "2.2.0",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     "dotnet-runtime",
+						Name:     runtime.DotnetRuntime,
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},
@@ -93,11 +98,11 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Name:     publish.Publish,
 						Metadata: buildplan.Metadata{"build": true},
 					}, {
-						Name:     "dotnet-sdk",
+						Name:     sdk.DotnetSDK,
 						Version:  "2.2.0",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     "dotnet-runtime",
+						Name:     runtime.DotnetRuntime,
 						Version:  "2.2.7",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},
@@ -154,7 +159,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 
 				Expect(factory.Plans.Plan.Requires).To(ContainElement(
 					buildplan.Required{
-						Name:     "node",
+						Name:     node.Dependency,
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					},
 				))
@@ -188,15 +193,15 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Name:     publish.Publish,
 						Metadata: buildplan.Metadata{"build": true},
 					}, {
-						Name:     "dotnet-sdk",
+						Name:     sdk.DotnetSDK,
 						Version:  "2.2.0",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     "dotnet-runtime",
+						Name:     runtime.DotnetRuntime,
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     "dotnet-aspnet",
+						Name:     aspnet.DotnetAspNet,
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},
@@ -232,19 +237,19 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Name:     publish.Publish,
 						Metadata: buildplan.Metadata{"build": true},
 					}, {
-						Name:     "dotnet-sdk",
+						Name:     sdk.DotnetSDK,
 						Version:  "2.2.0",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     "dotnet-runtime",
+						Name:     runtime.DotnetRuntime,
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     "dotnet-aspnet",
+						Name:     aspnet.DotnetAspNet,
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     "icu",
+						Name:     icu.Dependency,
 						Metadata: buildplan.Metadata{"build": true},
 					}},
 				}))
@@ -286,15 +291,15 @@ dotnet-build:
 						Name:     publish.Publish,
 						Metadata: buildplan.Metadata{"build": true},
 					}, {
-						Name:     "dotnet-sdk",
+						Name:     sdk.DotnetSDK,
 						Version:  "2.2.0",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     "dotnet-runtime",
+						Name:     runtime.DotnetRuntime,
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     "dotnet-aspnet",
+						Name:     aspnet.DotnetAspNet,
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},

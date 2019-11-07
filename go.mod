@@ -6,8 +6,13 @@ require (
 	cloud.google.com/go/storage v1.2.1 // indirect
 	github.com/buildpack/libbuildpack v1.25.4
 	github.com/cloudfoundry/dagger v0.0.0-20191105211753-5d1b464d63f1
+	github.com/cloudfoundry/dotnet-core-aspnet-cnb v0.0.66
 	github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.73
+	github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.78
+	github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.67
+	github.com/cloudfoundry/icu-cnb v0.0.2
 	github.com/cloudfoundry/libcfbuildpack v1.91.4
+	github.com/cloudfoundry/node-engine-cnb v0.0.95
 	github.com/elazarl/goproxy v0.0.0-20191011121108-aa519ddbe484 // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20191011121108-aa519ddbe484 // indirect
 	github.com/golang/mock v1.3.1
