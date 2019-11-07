@@ -383,8 +383,7 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}).Should(ContainSubstring("netcoreapp2"))
 	})
 
-	// TODO: dotnet 3.0 resource is currently malformed for cnb useage see https://www.pivotaltracker.com/story/show/169138134 for more details
-	it.Pend("should build a working OCI image for a source_3_0_app application", func() {
+	it("should build a working OCI image for a source_3_0_app application", func() {
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "source_3_0_app"),
 			dagger.RandomImage(),
@@ -397,12 +396,12 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 			app.SetHealthCheck("stat /workspace", "2s", "15s")
 		}
 
-		Expect(app.StartWithCommand("dotnet source_3_0_app.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
+		Expect(app.StartWithCommand("dotnet simple_3_0_app.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
 		Eventually(func() string {
 			body, _, _ := app.HTTPGet("/")
 			return body
-		}).Should(ContainSubstring("source_3_0_app"))
+		}).Should(ContainSubstring("simple_3_0_app"))
 	})
 
 	it("should build a working OCI image for a source_aspnetcore_all_2.1 application", func() {
