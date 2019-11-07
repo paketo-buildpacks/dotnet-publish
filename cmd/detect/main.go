@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
+	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils"
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
@@ -56,7 +57,12 @@ func runDetect(context detect.Detect) (int, error) {
 	plan := buildplan.Plan{
 		Provides: []buildplan.Provided{{Name: publish.Publish}}}
 
-	projFile, err := getProjFile(context.Application.Root)
+	appRoot, err := utils.GetAppRoot(context.Application.Root)
+	if err != nil {
+		return context.Fail(), err
+	}
+
+	projFile, err := getProjFile(appRoot)
 	if err != nil {
 		return context.Fail(), err
 	}

@@ -1,6 +1,11 @@
 package publish_test
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
 	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
@@ -9,10 +14,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"testing"
 )
 
 //go:generate mockgen -source=publish.go -destination=mocks_test.go -package=publish_test
@@ -78,7 +79,7 @@ func testPublish(t *testing.T, when spec.G, it spec.S) {
 			Expect(os.MkdirAll(filepath.Join(dotnetRoot, "host"), os.ModePerm)).To(Succeed())
 			Expect(os.Symlink(symlinkTarget, filepath.Join(dotnetRoot, "shared", "dir1"))).To(Succeed())
 			Expect(os.Symlink(symlinkTarget, filepath.Join(dotnetRoot, "shared", "dir2"))).To(Succeed())
-			Expect(ioutil.WriteFile(filepath.Join(dotnetRoot, "dotnet"), []byte("dotnet executable"), 0644))
+			Expect(ioutil.WriteFile(filepath.Join(dotnetRoot, "dotnet"), []byte("dotnet executable"), 0644)).To(Succeed())
 
 			Expect(os.MkdirAll(filepath.Join(sdkLayer, "sdk"), os.ModePerm)).To(Succeed())
 
@@ -101,6 +102,42 @@ func testPublish(t *testing.T, when spec.G, it spec.S) {
 				factory.Build.Application.Root,
 				false,
 				"publish",
+				factory.Build.Application.Root,
+				"-c", "Release",
+				"-r", "ubuntu.18.04-x64",
+				"--self-contained", "false",
+				"-o", factory.Build.Application.Root,
+			).Return(nil)
+
+			publishContributor, _, err := publish.NewContributor(factory.Build, mockRunner)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(publishContributor.Contribute()).To(Succeed())
+
+			ExpectSymlink(filepath.Join(buildLayer.Root, "shared", "dir1"), t)
+			ExpectSymlink(filepath.Join(buildLayer.Root, "shared", "dir2"), t)
+
+			ExpectSymlink(filepath.Join(buildLayer.Root, "host"), t)
+
+			Expect(filepath.Join(buildLayer.Root, "dotnet")).To(BeARegularFile())
+
+			ExpectSymlink(filepath.Join(buildLayer.Root, "sdk"), t)
+
+			Expect(os.Getenv("PATH")).To(HavePrefix(buildLayer.Root))
+		})
+
+		it("symlinks shared frameworks and sdk, copies the dotnet driver", func() {
+			factory.AddPlan(buildpackplan.Plan{Name: publish.Publish})
+			Expect(ioutil.WriteFile(filepath.Join(factory.Build.Application.Root, "buildpack.yml"), []byte(`---
+dotnet-build:
+  project-path: "src/proj1"
+`), 0644)).To(Succeed())
+			mockRunner.EXPECT().Run(
+				"dotnet",
+				factory.Build.Application.Root,
+				false,
+				"publish",
+				filepath.Join(factory.Build.Application.Root, "src", "proj1"),
 				"-c", "Release",
 				"-r", "ubuntu.18.04-x64",
 				"--self-contained", "false",

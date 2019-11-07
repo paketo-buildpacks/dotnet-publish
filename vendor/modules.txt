@@ -22,7 +22,7 @@ github.com/buildpack/libbuildpack/stack
 # github.com/cloudfoundry/dagger v0.0.0-20191105211753-5d1b464d63f1
 github.com/cloudfoundry/dagger
 github.com/cloudfoundry/dagger/utils
-# github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.67
+# github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.73
 github.com/cloudfoundry/dotnet-core-conf-cnb/utils
 github.com/cloudfoundry/dotnet-core-conf-cnb/utils/dotnettesting
 # github.com/cloudfoundry/libcfbuildpack v1.91.4
@@ -96,7 +96,7 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20191105142833-ac3223d80179
+# golang.org/x/sys v0.0.0-20191105231009-c1f44814a5cd
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.2
 golang.org/x/text/encoding

@@ -251,12 +251,11 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 	// The Build CNB should either be able to support
 	//	1. *.sln files for build (or)
 	//	2. Build all csproj refereneced as a project in the root or entry point csproj
-	// TODO: Figure out supoported struture for multiple proj files
-	it.Pend("should build a working OCI image for an with multiple project files", func() {
+	it("should build a working OCI image for an with multiple project files", func() {
 		app, err = dagger.NewPack(
-			filepath.Join("testdata", "multiple_projects_msbuild/src/asp_web_app"),
+			filepath.Join("testdata", "multiple_projects_msbuild"),
 			dagger.RandomImage(),
-			dagger.SetBuildpacks(bpList...),
+			dagger.SetBuildpacks(bpNoASPList...),
 			dagger.SetBuilder(builder),
 		).Build()
 		Expect(err).ToNot(HaveOccurred())

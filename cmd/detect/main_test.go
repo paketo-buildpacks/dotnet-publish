@@ -250,6 +250,57 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 				}))
 			})
 		})
+
+		when("the .csproj file is not at the base of the directory and a project_path is set in buildpack.yml", func() {
+			it("it passes", func() {
+				projPath := filepath.Join(factory.Detect.Application.Root, "src", "proj1")
+				Expect(os.MkdirAll(projPath, os.ModePerm)).To(Succeed())
+				Expect(ioutil.WriteFile(filepath.Join(projPath, "appName.csproj"), []byte(`
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>`), os.ModePerm)).To(Succeed())
+				defer os.RemoveAll(filepath.Join(projPath, "appName.csproj"))
+
+				Expect(ioutil.WriteFile(filepath.Join(factory.Detect.Application.Root, "buildpack.yml"), []byte(`---
+dotnet-build:
+  project-path: "src/proj1"
+`), os.ModePerm)).To(Succeed())
+				defer os.RemoveAll(filepath.Join(factory.Detect.Application.Root, "buildpack.yml"))
+
+				code, err := runDetect(factory.Detect)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(code).To(Equal(detect.PassStatusCode))
+				Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
+					Provides: []buildplan.Provided{{Name: publish.Publish}},
+					Requires: []buildplan.Required{{
+						Name:     publish.Publish,
+						Metadata: buildplan.Metadata{"build": true},
+					}, {
+						Name:     "dotnet-sdk",
+						Version:  "2.2.0",
+						Metadata: buildplan.Metadata{"build": true, "launch": true},
+					}, {
+						Name:     "dotnet-runtime",
+						Version:  "2.2.*",
+						Metadata: buildplan.Metadata{"build": true, "launch": true},
+					}, {
+						Name:     "dotnet-aspnet",
+						Version:  "2.2.*",
+						Metadata: buildplan.Metadata{"build": true, "launch": true},
+					}},
+				}))
+			})
+		})
 	})
 
 	when("app has .fsproj", func() {

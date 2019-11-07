@@ -101,8 +101,13 @@ func (c Contributor) contributeBuildLayer(layer layers.Layer) error {
 
 func (c Contributor) contributePublish(layer layers.Layer) error {
 	layer.Logger.Body("Publishing source code")
+	appRoot, err := utils.GetAppRoot(c.context.Application.Root)
+	if err != nil {
+		return err
+	}
 	args := []string{
 		"publish",
+		appRoot,
 		"-c", "Release",
 		"-r", "ubuntu.18.04-x64",
 		"--self-contained", "false",
