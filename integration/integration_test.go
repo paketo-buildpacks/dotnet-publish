@@ -447,6 +447,27 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}).Should(ContainSubstring("Hello World!"))
 	})
 
+	it("should build a working OCI image for a source_steeltoe_3.0 application", func() {
+		app, err = dagger.NewPack(
+			filepath.Join("testdata", "source_steeltoe_3.0"),
+			dagger.RandomImage(),
+			dagger.SetBuildpacks(bpList...),
+			dagger.SetBuilder(builder),
+		).Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		app.SetHealthCheck("stat /workspace", "2s", "15s")
+
+		// watch out this PORT is hard-coded to 8080 in the application
+		err = app.StartWithCommand("./Steeltoe.Demo --urls http://0.0.0.0:8080")
+		Expect(err).ToNot(HaveOccurred())
+
+		Eventually(func() string {
+			body, _, _ := app.HTTPGet("/api/values/6")
+			return body
+		}).Should(ContainSubstring("value"))
+	})
+
 	// TODO: Requires node should be moved
 	it.Pend("should build a working OCI image for a source_prerender_node application", func() {
 		app, err = dagger.NewPack(

@@ -22,6 +22,7 @@ import (
 )
 
 type Proj struct {
+	Sdk           string `xml:"Sdk,attr"`
 	PropertyGroup struct {
 		TargetFramework         string `xml:"TargetFramework"`
 		RuntimeFrameworkVersion string `xml:"RuntimeFrameworkVersion"`
@@ -159,6 +160,10 @@ func resolveVersion(projObj Proj) string {
 }
 
 func detectASPNet(projObj Proj) bool {
+	// needed to detect steeltoe apps when can ommit Aspnet from the ItemGroup list
+	if projObj.Sdk == "Microsoft.NET.Sdk.Web" {
+		return true
+	}
 	for _, ig := range projObj.ItemGroups {
 		for _, pr := range ig.PackageReferences {
 			if pr.Include == "Microsoft.AspNetCore.App" || pr.Include == "Microsoft.AspNetCore.All" {

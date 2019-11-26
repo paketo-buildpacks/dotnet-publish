@@ -40,7 +40,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 		when("the app only has a runtime dependency", func() {
 			it("it passes", func() {
 				Expect(ioutil.WriteFile(filepath.Join(factory.Detect.Application.Root, "appName.csproj"), []byte(`
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
@@ -76,7 +76,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 		when("the app only has a runtime dependency and a specified runtime framework version", func() {
 			it("it passes", func() {
 				Expect(ioutil.WriteFile(filepath.Join(factory.Detect.Application.Root, "appName.csproj"), []byte(`
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
@@ -203,6 +203,48 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 					}, {
 						Name:     aspnet.DotnetAspNet,
 						Version:  "2.2.*",
+						Metadata: buildplan.Metadata{"build": true, "launch": true},
+					}},
+				}))
+			})
+		})
+
+		when("the app only has runtime and aspnet dependencies", func() {
+			it("it uses Project SDK to determine if aspnet is needed", func() {
+				Expect(ioutil.WriteFile(filepath.Join(factory.Detect.Application.Root, "appName.csproj"), []byte(`
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+		<PackageReference Include="Steeltoe.Management.ExporterCore"  Version="2.4.0"/>
+    <PackageReference Include="Steeltoe.Management.CloudFoundryCore" Version="2.4.0" />
+  </ItemGroup>
+
+</Project>`), os.ModePerm)).To(Succeed())
+				defer os.RemoveAll(filepath.Join(factory.Detect.Application.Root, "appName.csproj"))
+				code, err := runDetect(factory.Detect)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(code).To(Equal(detect.PassStatusCode))
+				Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
+					Provides: []buildplan.Provided{{Name: publish.Publish}},
+					Requires: []buildplan.Required{{
+						Name:     publish.Publish,
+						Metadata: buildplan.Metadata{"build": true},
+					}, {
+						Name:     sdk.DotnetSDK,
+						Version:  "3.0.0",
+						Metadata: buildplan.Metadata{"build": true, "launch": true},
+					}, {
+						Name:     runtime.DotnetRuntime,
+						Version:  "3.0.*",
+						Metadata: buildplan.Metadata{"build": true, "launch": true},
+					}, {
+						Name:     aspnet.DotnetAspNet,
+						Version:  "3.0.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},
 				}))
