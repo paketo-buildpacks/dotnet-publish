@@ -10,7 +10,7 @@ require (
 	github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.78
 	github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.67
 	github.com/cloudfoundry/icu-cnb v0.0.2
-	github.com/cloudfoundry/libcfbuildpack v1.91.20
+	github.com/cloudfoundry/libcfbuildpack v1.91.21
 	github.com/cloudfoundry/node-engine-cnb v0.0.95
 	github.com/golang/mock v1.3.1
 	github.com/onsi/gomega v1.8.1
