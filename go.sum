@@ -39,8 +39,8 @@ github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDk
 github.com/cloudfoundry/dagger v0.0.0-20191025181811-15ebd2408e87/go.mod h1:xqRl2xy0Q75hzZXM/Cv2DZNl7OIzaT/6JOy8TZbb4yk=
 github.com/cloudfoundry/dagger v0.0.0-20191105211753-5d1b464d63f1 h1:XUCmAJOBvOHLsqZjNk3sitYYM6r/bjRp7ogZe0mKxVU=
 github.com/cloudfoundry/dagger v0.0.0-20191105211753-5d1b464d63f1/go.mod h1:xqRl2xy0Q75hzZXM/Cv2DZNl7OIzaT/6JOy8TZbb4yk=
-github.com/cloudfoundry/dagger v0.0.0-20200114192520-43fb0b3ec98f h1:FGZ3xUDBwRwgzrzKBUE7OcZJvpz+V/8BI9STVROI61g=
-github.com/cloudfoundry/dagger v0.0.0-20200114192520-43fb0b3ec98f/go.mod h1:PiNRNPj6nYimhASeft5kCrRhXzyKeqfkP9Wg+/7NivA=
+github.com/cloudfoundry/dagger v0.0.0-20200115142400-b69a9b4eabf4 h1:bE5Oe75iiYgFOcrvH9FUGLK8KfYyrA+QGvl2RlFH0lA=
+github.com/cloudfoundry/dagger v0.0.0-20200115142400-b69a9b4eabf4/go.mod h1:PiNRNPj6nYimhASeft5kCrRhXzyKeqfkP9Wg+/7NivA=
 github.com/cloudfoundry/dotnet-core-aspnet-cnb v0.0.66 h1:/8DFHpwHFLNytkZ+1wIoyA7WIv0KZ91V/FYbS2tAUqc=
 github.com/cloudfoundry/dotnet-core-aspnet-cnb v0.0.66/go.mod h1:Lagw3OzYrotPYSrTqYLO16ev9yuz8B1HJ3ocvTGBAz8=
 github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.64/go.mod h1:a6A/4JAbwyu10hnlm8QaNssfaU0mwXoY4lqT3oR0bhE=

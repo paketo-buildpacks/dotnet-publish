@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/buildpack/libbuildpack v1.25.10
-	github.com/cloudfoundry/dagger v0.0.0-20200114192520-43fb0b3ec98f
+	github.com/cloudfoundry/dagger v0.0.0-20200115142400-b69a9b4eabf4
 	github.com/cloudfoundry/dotnet-core-aspnet-cnb v0.0.66
 	github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.73
 	github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.78
