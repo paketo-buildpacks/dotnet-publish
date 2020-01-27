@@ -91,27 +91,6 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		app.Destroy()
 	})
 
-	it("should build a working OCI image for a simple 2.2 app with aspnet dependencies", func() {
-		app, err = dagger.NewPack(
-			filepath.Join("testdata", "source-2.2-aspnet"),
-			dagger.RandomImage(),
-			dagger.SetBuildpacks(bpList...),
-			dagger.SetBuilder(builder),
-		).Build()
-		Expect(err).ToNot(HaveOccurred())
-
-		if builder == "bionic" {
-			app.SetHealthCheck("stat /workspace", "2s", "15s")
-		}
-
-		Expect(app.Start()).To(Succeed())
-
-		Eventually(func() string {
-			body, _, _ := app.HTTPGet("/")
-			return body
-		}).Should(ContainSubstring("Welcome"))
-	})
-
 	it("should build a working OCI image for a simple 2.1 app with aspnet dependencies", func() {
 		app, err = dagger.NewPack(
 			filepath.Join("testdata", "source-2.1-aspnet"),
@@ -133,9 +112,9 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}).Should(ContainSubstring("source_2._1_aspnet"))
 	})
 
-	it("should build a working OCI image for a simple 2.2 webapi with swagger dependency", func() {
+	it("should build a working OCI image for a simple 2.1 webapi with swagger dependency", func() {
 		app, err = dagger.NewPack(
-			filepath.Join("testdata", "source-2.2-aspnet-with-public-nuget"),
+			filepath.Join("testdata", "source-2.1-aspnet-with-public-nuget"),
 			dagger.RandomImage(),
 			dagger.SetBuildpacks(bpList...),
 			dagger.SetBuilder(builder),
@@ -146,7 +125,7 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 			app.SetHealthCheck("stat /workspace", "2s", "15s")
 		}
 
-		Expect(app.StartWithCommand("dotnet source-2.2-aspnet-with-public-nuget.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
+		Expect(app.StartWithCommand("dotnet source-2.1-aspnet-with-public-nuget.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
 		Eventually(func() string {
 			body, _, _ := app.HTTPGet("/swagger/index.html")
@@ -293,27 +272,6 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 			body, _, _ := app.HTTPGet("/")
 			return body
 		}).Should(ContainSubstring("Hello from Nancy running on CoreCLR"))
-	})
-
-	it("should build a working OCI image for a simple 2.2 application", func() {
-		app, err = dagger.NewPack(
-			filepath.Join("testdata", "simple_2.2_source"),
-			dagger.RandomImage(),
-			dagger.SetBuildpacks(bpList...),
-			dagger.SetBuilder(builder),
-		).Build()
-		Expect(err).ToNot(HaveOccurred())
-
-		if builder == "bionic" {
-			app.SetHealthCheck("stat /workspace", "2s", "15s")
-		}
-
-		Expect(app.StartWithCommand("dotnet simple_2.2_source.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
-
-		Eventually(func() string {
-			body, _, _ := app.HTTPGet("/")
-			return body
-		}).Should(ContainSubstring("Hello World!"))
 	})
 
 	it("should build a working OCI image for a source_2.1_explicit_runtime_templated application", func() {

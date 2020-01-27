@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace source_2._2_aspnet_with_public_nuget
+namespace source_2._1_aspnet_with_public_nuget
 {
     public class Program
     {
