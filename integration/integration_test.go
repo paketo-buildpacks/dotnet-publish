@@ -341,9 +341,9 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}).Should(ContainSubstring("netcoreapp2"))
 	})
 
-	it("should build a working OCI image for a source_3_0_app application", func() {
+	it("should build a working OCI image for a source_3_1_app application", func() {
 		app, err = dagger.NewPack(
-			filepath.Join("testdata", "source_3_0_app"),
+			filepath.Join("testdata", "source_3_1_app"),
 			dagger.RandomImage(),
 			dagger.SetBuildpacks(bpList...),
 			dagger.SetBuilder(builder),
@@ -405,9 +405,9 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}).Should(ContainSubstring("Hello World!"))
 	})
 
-	it("should build a working OCI image for a source_steeltoe_3.0 application", func() {
+	it("should build a working OCI image for a source_steeltoe_3.1 application", func() {
 		app, err = dagger.NewPack(
-			filepath.Join("testdata", "source_steeltoe_3.0"),
+			filepath.Join("testdata", "source_steeltoe_3.1"),
 			dagger.RandomImage(),
 			dagger.SetBuildpacks(bpList...),
 			dagger.SetBuilder(builder),

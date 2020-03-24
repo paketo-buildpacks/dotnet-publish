@@ -1,2 +1,2 @@
 dotnet-core:
-  sdk: 3.0.x
+  sdk: 3.1.x
