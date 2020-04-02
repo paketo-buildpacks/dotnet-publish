@@ -333,8 +333,8 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 		}
 
 		Expect(app.StartWithCommand("dotnet netcoreapp2.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
-		Expect(app.BuildLogs()).To(ContainSubstring("dotnet-runtime.2.1"))
-		Expect(app.BuildLogs()).To(ContainSubstring("dotnet-aspnetcore.2.1"))
+		Expect(app.BuildLogs()).To(ContainSubstring("dotnet-runtime_2.1"))
+		Expect(app.BuildLogs()).To(ContainSubstring("dotnet-aspnetcore_2.1"))
 		Eventually(func() string {
 			body, _, _ := app.HTTPGet("/")
 			return body
