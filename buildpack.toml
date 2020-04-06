@@ -1,7 +1,7 @@
 api = "0.2"
 
 [buildpack]
-id = "org.cloudfoundry.dotnet-core-build"
+id = "paketo-buildpacks/dotnet-core-build"
 name = ".Net Build Buildpack"
 version = "{{ .Version }}"
 
