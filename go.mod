@@ -13,7 +13,7 @@ require (
 	github.com/cloudfoundry/libcfbuildpack v1.91.23
 	github.com/cloudfoundry/node-engine-cnb v0.0.95
 	github.com/golang/mock v1.3.1
-	github.com/onsi/gomega v1.8.1
+	github.com/onsi/gomega v1.9.0
 	github.com/sclevine/agouti v3.0.0+incompatible
 	github.com/sclevine/spec v1.4.0
 )
