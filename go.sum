@@ -46,6 +46,8 @@ github.com/cloudfoundry/dotnet-core-aspnet-cnb v0.0.66/go.mod h1:Lagw3OzYrotPYSr
 github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.64/go.mod h1:a6A/4JAbwyu10hnlm8QaNssfaU0mwXoY4lqT3oR0bhE=
 github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.73 h1:pEsxs3Vu6JjvHtsDGGtPyCbW4XAHG1he9ZZIHwuVcgA=
 github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.73/go.mod h1:1b3iaYmRsKeRyJ1NMPzYz3MqqYp6sco6/sovbFSNbbY=
+github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.121 h1:O4pPyVb2e8pGfEGijiP20//nIIgqWIBV+5Ij78TPrI4=
+github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.121/go.mod h1:DcJclmw5yeTDYV3SY4WwRHpOKWtJqlx/USSlnG6BfHA=
 github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.78 h1:Yy70h6D/rn7daXBG1guB4nTi6d0YctoaKgnXQMtCkG4=
 github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.78/go.mod h1:P4LmYM/n/VM+gzg+MI8YpgwLLPlstAVBzm7xgIa5p4Q=
 github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.67 h1:M+5AmToTDjQpxyNtSmZz0oX0WvDiEYrbKQ+hSVsQMQE=
