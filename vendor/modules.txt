@@ -51,7 +51,7 @@ github.com/cloudfoundry/node-engine-cnb/node
 github.com/cloudfoundry/packit/pexec
 # github.com/fatih/color v1.9.0
 github.com/fatih/color
-# github.com/golang/mock v1.3.1
+# github.com/golang/mock v1.4.3
 github.com/golang/mock/gomock
 # github.com/golang/protobuf v1.3.2
 github.com/golang/protobuf/proto
@@ -67,7 +67,7 @@ github.com/mattn/go-colorable
 github.com/mattn/go-isatty
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
-# github.com/onsi/gomega v1.8.1
+# github.com/onsi/gomega v1.9.0
 github.com/onsi/gomega
 github.com/onsi/gomega/format
 github.com/onsi/gomega/internal/assertion
