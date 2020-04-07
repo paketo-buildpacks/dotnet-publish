@@ -7,7 +7,7 @@ require (
 	github.com/cloudfoundry/dagger v0.0.0-20200115142400-b69a9b4eabf4
 	github.com/cloudfoundry/dotnet-core-aspnet-cnb v0.0.66
 	github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.73
-	github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.78
+	github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.136
 	github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.67
 	github.com/cloudfoundry/libcfbuildpack v1.91.23
 	github.com/cloudfoundry/node-engine-cnb v0.0.95

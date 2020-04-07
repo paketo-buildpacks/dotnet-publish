@@ -48,6 +48,8 @@ github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.73 h1:pEsxs3Vu6JjvHtsDGGtPyCbW
 github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.73/go.mod h1:1b3iaYmRsKeRyJ1NMPzYz3MqqYp6sco6/sovbFSNbbY=
 github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.78 h1:Yy70h6D/rn7daXBG1guB4nTi6d0YctoaKgnXQMtCkG4=
 github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.78/go.mod h1:P4LmYM/n/VM+gzg+MI8YpgwLLPlstAVBzm7xgIa5p4Q=
+github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.136 h1:2+MyhmAnGwgoZ6GoC6Qm6QsK9Q8UvQ1lzWuQQ/SUZoY=
+github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.136/go.mod h1:BjUJfaJu05kf1DNiTXfL0TKiHMxcbRZbzEy5qiwCv4Y=
 github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.67 h1:M+5AmToTDjQpxyNtSmZz0oX0WvDiEYrbKQ+hSVsQMQE=
 github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.67/go.mod h1:Krtl7w28tWijBFPS8vUMZ6KzbJZPp8VSXf7oLPLwVEA=
 github.com/cloudfoundry/libbuildpack v0.0.0-20191015134530-4333d9358141/go.mod h1:fFFSbW3zjFi3/yt7Q3tSh8w0KZPp4QKLQ+gLdxcgMEg=
