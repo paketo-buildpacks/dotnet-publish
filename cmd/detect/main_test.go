@@ -8,7 +8,6 @@ import (
 	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
 	"github.com/cloudfoundry/dotnet-core-runtime-cnb/runtime"
 	"github.com/cloudfoundry/dotnet-core-sdk-cnb/sdk"
-	"github.com/cloudfoundry/icu-cnb/icu"
 	"github.com/cloudfoundry/node-engine-cnb/node"
 
 	"io/ioutil"
@@ -291,7 +290,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     icu.Dependency,
+						Name:     "icu",
 						Metadata: buildplan.Metadata{"build": true},
 					}},
 				}))

@@ -31,8 +31,6 @@ github.com/cloudfoundry/dotnet-core-conf-cnb/utils/dotnettesting
 github.com/cloudfoundry/dotnet-core-runtime-cnb/runtime
 # github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.67
 github.com/cloudfoundry/dotnet-core-sdk-cnb/sdk
-# github.com/cloudfoundry/icu-cnb v0.0.2
-github.com/cloudfoundry/icu-cnb/icu
 # github.com/cloudfoundry/libcfbuildpack v1.91.23
 github.com/cloudfoundry/libcfbuildpack/build
 github.com/cloudfoundry/libcfbuildpack/buildpack
