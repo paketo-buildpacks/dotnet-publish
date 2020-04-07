@@ -52,6 +52,8 @@ github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.67 h1:M+5AmToTDjQpxyNtSmZz0oX0W
 github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.67/go.mod h1:Krtl7w28tWijBFPS8vUMZ6KzbJZPp8VSXf7oLPLwVEA=
 github.com/cloudfoundry/icu-cnb v0.0.2 h1:/Boy1CuKP+dZ8laUp5GJcBCiWprFTqsMlyp/YhO+O5c=
 github.com/cloudfoundry/icu-cnb v0.0.2/go.mod h1:R/8NkqqmxKWKAUl25fvc++FJawmoQGmI26kuKaplHpA=
+github.com/cloudfoundry/icu-cnb v0.0.52 h1:mgqDxENGSIZShx2mlCBdh1jLlx0wpNYUBR69GPdz+iM=
+github.com/cloudfoundry/icu-cnb v0.0.52/go.mod h1:OqhT0+gJlYuVTXfLZLVXpebBDRiYD5y6CPa+5C2dk8o=
 github.com/cloudfoundry/libbuildpack v0.0.0-20191015134530-4333d9358141/go.mod h1:fFFSbW3zjFi3/yt7Q3tSh8w0KZPp4QKLQ+gLdxcgMEg=
 github.com/cloudfoundry/libcfbuildpack v1.89.0/go.mod h1:ufhp/bp0LxbDDwbf2Ms3Bf4x9YnLr9dkL1RTUYSdKg0=
 github.com/cloudfoundry/libcfbuildpack v1.91.2/go.mod h1:MmVyN2ZbxoWcuJ3cK5HVQWwUmwFTRrJbKAao6f2/EZ8=
