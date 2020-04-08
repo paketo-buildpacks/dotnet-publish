@@ -8,7 +8,7 @@ require (
 	github.com/cloudfoundry/dotnet-core-aspnet-cnb v0.0.66
 	github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.73
 	github.com/cloudfoundry/dotnet-core-runtime-cnb v0.0.78
-	github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.67
+	github.com/cloudfoundry/dotnet-core-sdk-cnb v0.0.134
 	github.com/cloudfoundry/libcfbuildpack v1.91.23
 	github.com/cloudfoundry/node-engine-cnb v0.0.95
 	github.com/golang/mock v1.4.3
