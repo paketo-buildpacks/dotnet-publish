@@ -2,25 +2,19 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
-	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
-	"github.com/cloudfoundry/dotnet-core-runtime-cnb/runtime"
-	"github.com/cloudfoundry/dotnet-core-sdk-cnb/sdk"
-	"github.com/cloudfoundry/node-engine-cnb/node"
-
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
-	. "github.com/onsi/gomega"
-
+	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
+
+	. "github.com/onsi/gomega"
 )
 
 func TestUnitDetect(t *testing.T) {
@@ -60,11 +54,11 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Name:     publish.Publish,
 						Metadata: buildplan.Metadata{"build": true},
 					}, {
-						Name:     sdk.DotnetSDK,
+						Name:     "dotnet-sdk",
 						Version:  "2.2.0",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     runtime.DotnetRuntime,
+						Name:     "dotnet-runtime",
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},
@@ -97,11 +91,11 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Name:     publish.Publish,
 						Metadata: buildplan.Metadata{"build": true},
 					}, {
-						Name:     sdk.DotnetSDK,
+						Name:     "dotnet-sdk",
 						Version:  "2.2.0",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     runtime.DotnetRuntime,
+						Name:     "dotnet-runtime",
 						Version:  "2.2.7",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},
@@ -158,7 +152,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 
 				Expect(factory.Plans.Plan.Requires).To(ContainElement(
 					buildplan.Required{
-						Name:     node.Dependency,
+						Name:     "node",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					},
 				))
@@ -192,15 +186,15 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Name:     publish.Publish,
 						Metadata: buildplan.Metadata{"build": true},
 					}, {
-						Name:     sdk.DotnetSDK,
+						Name:     "dotnet-sdk",
 						Version:  "2.2.0",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     runtime.DotnetRuntime,
+						Name:     "dotnet-runtime",
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     aspnet.DotnetAspNet,
+						Name:     "dotnet-aspnetcore",
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},
@@ -234,15 +228,15 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Name:     publish.Publish,
 						Metadata: buildplan.Metadata{"build": true},
 					}, {
-						Name:     sdk.DotnetSDK,
+						Name:     "dotnet-sdk",
 						Version:  "3.0.0",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     runtime.DotnetRuntime,
+						Name:     "dotnet-runtime",
 						Version:  "3.0.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     aspnet.DotnetAspNet,
+						Name:     "dotnet-aspnetcore",
 						Version:  "3.0.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},
@@ -278,15 +272,15 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 						Name:     publish.Publish,
 						Metadata: buildplan.Metadata{"build": true},
 					}, {
-						Name:     sdk.DotnetSDK,
+						Name:     "dotnet-sdk",
 						Version:  "2.2.0",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     runtime.DotnetRuntime,
+						Name:     "dotnet-runtime",
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     aspnet.DotnetAspNet,
+						Name:     "dotnet-aspnetcore",
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
@@ -332,15 +326,15 @@ dotnet-build:
 						Name:     publish.Publish,
 						Metadata: buildplan.Metadata{"build": true},
 					}, {
-						Name:     sdk.DotnetSDK,
+						Name:     "dotnet-sdk",
 						Version:  "2.2.0",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     runtime.DotnetRuntime,
+						Name:     "dotnet-runtime",
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}, {
-						Name:     aspnet.DotnetAspNet,
+						Name:     "dotnet-aspnetcore",
 						Version:  "2.2.*",
 						Metadata: buildplan.Metadata{"build": true, "launch": true},
 					}},
@@ -372,8 +366,7 @@ dotnet-build:
 	})
 
 	when("app has multiple proj files", func() {
-		var projBody []byte
-		projBody = []byte(`
+		projBody := []byte(`
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>

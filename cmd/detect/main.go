@@ -9,14 +9,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cloudfoundry/dotnet-core-aspnet-cnb/aspnet"
+	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
 	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils"
-	"github.com/cloudfoundry/dotnet-core-runtime-cnb/runtime"
-	"github.com/cloudfoundry/dotnet-core-sdk-cnb/sdk"
-	"github.com/cloudfoundry/node-engine-cnb/node"
-
-	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 )
 
@@ -85,11 +80,11 @@ func runDetect(context detect.Detect) (int, error) {
 		Name:     publish.Publish,
 		Metadata: buildplan.Metadata{"build": true},
 	}, {
-		Name:     sdk.DotnetSDK,
+		Name:     "dotnet-sdk",
 		Version:  sdkVersion,
 		Metadata: buildplan.Metadata{"build": true, "launch": true},
 	}, {
-		Name:     runtime.DotnetRuntime,
+		Name:     "dotnet-runtime",
 		Version:  version,
 		Metadata: buildplan.Metadata{"build": true, "launch": true},
 	}}
@@ -97,14 +92,14 @@ func runDetect(context detect.Detect) (int, error) {
 	//Parse csproj to find "npm"
 	if detectNPM(projObj) {
 		plan.Requires = append(plan.Requires, buildplan.Required{
-			Name:     node.Dependency,
+			Name:     "node",
 			Metadata: buildplan.Metadata{"build": true, "launch": true},
 		})
 	}
 
 	if detectASPNet(projObj) {
 		plan.Requires = append(plan.Requires, buildplan.Required{
-			Name:     aspnet.DotnetAspNet,
+			Name:     "dotnet-aspnetcore",
 			Version:  version,
 			Metadata: buildplan.Metadata{"build": true, "launch": true},
 		})
