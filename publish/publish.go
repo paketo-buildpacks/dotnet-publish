@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/helper"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
@@ -72,12 +71,12 @@ func (c Contributor) contributeBuildLayer(layer layers.Layer) error {
 	layer.Logger.Body("Symlinking runtime libraries")
 	pathToRuntime := os.Getenv("DOTNET_ROOT")
 
-	if err := utils.SymlinkSharedFolder(pathToRuntime, layer.Root); err != nil {
+	if err := SymlinkSharedFolder(pathToRuntime, layer.Root); err != nil {
 		return err
 	}
 
 	hostDir := filepath.Join(pathToRuntime, "host")
-	if err := utils.CreateValidSymlink(hostDir, filepath.Join(layer.Root, filepath.Base(hostDir))); err != nil {
+	if err := CreateValidSymlink(hostDir, filepath.Join(layer.Root, filepath.Base(hostDir))); err != nil {
 		return err
 	}
 
@@ -88,7 +87,7 @@ func (c Contributor) contributeBuildLayer(layer layers.Layer) error {
 
 	sdkLocation := os.Getenv("SDK_LOCATION")
 	layer.Logger.Body("Symlinking the SDK from %s", sdkLocation)
-	if err := utils.CreateValidSymlink(filepath.Join(sdkLocation, "sdk"), filepath.Join(layer.Root, "sdk")); err != nil {
+	if err := CreateValidSymlink(filepath.Join(sdkLocation, "sdk"), filepath.Join(layer.Root, "sdk")); err != nil {
 		return err
 	}
 
@@ -101,7 +100,7 @@ func (c Contributor) contributeBuildLayer(layer layers.Layer) error {
 
 func (c Contributor) contributePublish(layer layers.Layer) error {
 	layer.Logger.Body("Publishing source code")
-	appRoot, err := utils.GetAppRoot(c.context.Application.Root)
+	appRoot, err := GetAppRoot(c.context.Application.Root)
 	if err != nil {
 		return err
 	}

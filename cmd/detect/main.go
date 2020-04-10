@@ -11,7 +11,6 @@ import (
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
-	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 )
 
@@ -57,7 +56,7 @@ func runDetect(context detect.Detect) (int, error) {
 	plan := buildplan.Plan{
 		Provides: []buildplan.Provided{{Name: publish.Publish}}}
 
-	appRoot, err := utils.GetAppRoot(context.Application.Root)
+	appRoot, err := publish.GetAppRoot(context.Application.Root)
 	if err != nil {
 		return context.Fail(), err
 	}
@@ -169,7 +168,6 @@ func detectASPNet(projObj Proj) bool {
 }
 
 func detectNPM(projObj Proj) bool {
-
 	for _, target := range projObj.Targets {
 		for _, ex := range target.Exec {
 			command := ex.Command

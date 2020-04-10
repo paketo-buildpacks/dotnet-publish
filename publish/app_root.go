@@ -1,4 +1,4 @@
-package utils
+package publish
 
 import (
 	"path/filepath"

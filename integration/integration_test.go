@@ -7,12 +7,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/BurntSushi/toml"
+	"github.com/Masterminds/semver"
 	"github.com/cloudfoundry/dagger"
-	"github.com/cloudfoundry/dotnet-core-conf-cnb/utils/dotnettesting"
-	. "github.com/onsi/gomega"
 	"github.com/sclevine/agouti"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
+
+	. "github.com/onsi/gomega"
 )
 
 var (
@@ -136,13 +138,6 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 	it("should build a working OCI image for a angular dotnet 2.1 application", func() {
 		//This test pulls in a node module that relies on python, which is not present in bionic
 		if builder != "bionic" {
-			browser := agouti.ChromeDriver(agouti.ChromeOptions("args", []string{"--headless", "--disable-gpu", "--no-sandbox"}))
-			err = browser.Start()
-			Expect(err).NotTo(HaveOccurred())
-
-			page, err := browser.NewPage()
-			Expect(err).NotTo(HaveOccurred())
-
 			nodeOrder := append([]string{nodeURI}, bpList...)
 			app, err = dagger.NewPack(
 				filepath.Join("testdata", "angular_msbuild_dotnet_2.1"),
@@ -156,6 +151,13 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 			Expect(app.StartWithCommand("dotnet angular_msbuild.dll --urls http://0.0.0.0:${PORT}")).To(Succeed())
 
 			url := app.GetBaseURL()
+
+			browser := agouti.ChromeDriver(agouti.ChromeOptions("args", []string{"--headless", "--disable-gpu", "--no-sandbox"}))
+			err = browser.Start()
+			Expect(err).NotTo(HaveOccurred())
+
+			page, err := browser.NewPage()
+			Expect(err).NotTo(HaveOccurred())
 			Expect(page.Navigate(url)).To(Succeed())
 			Eventually(page.HTML, 30*time.Second).Should(ContainSubstring("Hello, world!"))
 		}
@@ -276,7 +278,7 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 
 	it("should build a working OCI image for a source_2.1_explicit_runtime_templated application", func() {
 		majorMinor := "2.1"
-		version, err := dotnettesting.GetLowestRuntimeVersionInMajorMinor(majorMinor, filepath.Join(runtimeURI, "buildpack.toml"))
+		version, err := GetLowestRuntimeVersionInMajorMinor(majorMinor, filepath.Join(runtimeURI, "buildpack.toml"))
 		Expect(err).ToNot(HaveOccurred())
 		bpYml := fmt.Sprintf(`<Project Sdk="Microsoft.NET.Sdk.Web">
 
@@ -491,4 +493,49 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 			return body
 		}).Should(ContainSubstring("with_dot_in_name"))
 	})
+}
+
+func GetLowestRuntimeVersionInMajorMinor(majorMinor, bpTomlPath string) (string, error) {
+	type buildpackTomlVersion struct {
+		Metadata struct {
+			Dependencies []struct {
+				Version string `toml:"version"`
+			} `toml:"dependencies"`
+		} `toml:"metadata"`
+	}
+
+	bpToml := buildpackTomlVersion{}
+	output, err := ioutil.ReadFile(filepath.Join(bpTomlPath))
+	if err != nil {
+		return "", err
+	}
+
+	majorMinorConstraint, err := semver.NewConstraint(fmt.Sprintf("%s.*", majorMinor))
+	if err != nil {
+		return "", err
+	}
+
+	lowestVersion, err := semver.NewVersion(fmt.Sprintf("%s.9999", majorMinor))
+	if err != nil {
+		return "", err
+	}
+
+	_, err = toml.Decode(string(output), &bpToml)
+	if err != nil {
+		return "", err
+	}
+
+	for _, dep := range bpToml.Metadata.Dependencies {
+		depVersion, err := semver.NewVersion(dep.Version)
+		if err != nil {
+			return "", err
+		}
+		if majorMinorConstraint.Check(depVersion) {
+			if depVersion.LessThan(lowestVersion) {
+				lowestVersion = depVersion
+			}
+		}
+	}
+
+	return lowestVersion.String(), nil
 }
