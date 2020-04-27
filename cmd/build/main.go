@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
-	"github.com/cloudfoundry/libcfbuildpack/build"
 	"io/ioutil"
 	"os"
 	"os/exec"
+
+	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/paketo-buildpacks/dotnet-core-build/publish"
 )
 
 func main() {

@@ -6,14 +6,15 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
 	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	"github.com/golang/mock/gomock"
-	. "github.com/onsi/gomega"
+	"github.com/paketo-buildpacks/dotnet-core-build/publish"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
+
+	. "github.com/onsi/gomega"
 )
 
 //go:generate mockgen -source=publish.go -destination=mocks_test.go -package=publish_test

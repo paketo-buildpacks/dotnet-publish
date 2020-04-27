@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/test"
+	"github.com/paketo-buildpacks/dotnet-core-build/publish"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 
