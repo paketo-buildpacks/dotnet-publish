@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/dotnet-core-build-cnb/publish"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/paketo-buildpacks/dotnet-core-build/publish"
 )
 
 type Proj struct {
