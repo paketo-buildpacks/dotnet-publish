@@ -90,7 +90,7 @@ func testIntegration(t *testing.T, _ spec.G, it spec.S) {
 	)
 
 	it.After(func() {
-		app.Destroy()
+		Expect(app.Destroy()).To(Succeed())
 	})
 
 	it("should build a working OCI image for a simple 2.1 app with aspnet dependencies", func() {
