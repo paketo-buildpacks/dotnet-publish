@@ -1,20 +1,16 @@
-module github.com/paketo-buildpacks/dotnet-core-build
+module github.com/paketo-buildpacks/dotnet-publish
 
-go 1.12
+go 1.14
 
 require (
-	cloud.google.com/go v0.60.0 // indirect
 	github.com/BurntSushi/toml v0.3.1
-	github.com/Masterminds/semver v1.5.0
-	github.com/buildpack/libbuildpack v1.25.11
-	github.com/cloudfoundry/dagger v0.0.0-20200710140748-bed4cf02eaf9
-	github.com/cloudfoundry/libcfbuildpack v1.91.23
-	github.com/golang/mock v1.4.4
-	github.com/mattn/go-colorable v0.1.7 // indirect
-	github.com/mitchellh/mapstructure v1.3.2 // indirect
+	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/onsi/gomega v1.10.2
-	github.com/sclevine/agouti v3.0.0+incompatible
+	github.com/paketo-buildpacks/occam v0.0.18
+	github.com/paketo-buildpacks/packit v0.2.8
 	github.com/sclevine/spec v1.4.0
-	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
-	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
+	golang.org/x/net v0.0.0-20200927032502-5d4f70055728 // indirect
+	golang.org/x/sys v0.0.0-20200926100807-9d91bd62050c // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	gopkg.in/yaml.v2 v2.3.0
 )
