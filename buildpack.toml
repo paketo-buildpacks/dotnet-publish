@@ -2,7 +2,7 @@ api = "0.2"
 
 [buildpack]
 id = "paketo-buildpacks/dotnet-publish"
-name = "Paketo .Net Build Buildpack"
+name = "Paketo .Net Publish Buildpack"
 version = "{{ .Version }}"
 homepage = "https://github.com/paketo-buildpacks/dotnet-publish"
 
