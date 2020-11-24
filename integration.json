@@ -1,6 +1,6 @@
 {
   "dotnet-core-aspnet": "github.com/paketo-buildpacks/dotnet-core-aspnet",
-  "dotnet-core-conf": "github.com/paketo-buildpacks/dotnet-core-conf",
+  "dotnet-execute": "github.com/paketo-buildpacks/dotnet-execute",
   "dotnet-core-runtime": "github.com/paketo-buildpacks/dotnet-core-runtime",
   "dotnet-core-sdk": "github.com/paketo-buildpacks/dotnet-core-sdk",
   "icu": "github.com/paketo-buildpacks/icu",

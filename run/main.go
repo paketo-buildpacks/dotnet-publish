@@ -27,6 +27,7 @@ func main() {
 				chronos.DefaultClock,
 			),
 			bpYMLParser,
+			chronos.DefaultClock,
 			logger,
 		),
 	)

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/paketo-buildpacks/occam"
@@ -49,6 +50,48 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
 
+		it("should build a working OCI image for an app that contains a directory with the same name as the app", func() {
+			var err error
+			source, err = occam.Source(filepath.Join("testdata", "match_dir_and_app_name"))
+			Expect(err).NotTo(HaveOccurred())
+
+			var logs fmt.Stringer
+			image, logs, err = pack.WithNoColor().Build.
+				WithBuildpacks(
+					icuBuildpack,
+					dotnetCoreRuntimeBuildpack,
+					dotnetCoreSDKBuildpack,
+					buildpack,
+					dotnetExecuteBuildpack,
+				).
+				Execute(name, source)
+			Expect(err).NotTo(HaveOccurred(), logs.String())
+
+			Expect(logs).To(ContainLines(
+				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
+				"  Executing build process",
+				fmt.Sprintf("    Running 'dotnet publish /workspace/console --configuration Release --runtime ubuntu.18.04-x64 --self-contained false --output /layers/%s'", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_")),
+				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
+				"",
+			))
+
+			container, err = docker.Container.Run.
+				Execute(image.ID)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(container).Should(BeAvailable())
+
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			Expect(err).NotTo(HaveOccurred())
+			defer response.Body.Close()
+
+			Expect(response.StatusCode).To(Equal(http.StatusOK))
+
+			content, err := ioutil.ReadAll(response.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(content)).To(ContainSubstring("Hello World!"))
+		})
+
 		it("should build a working OCI image for a simple 2.1 app with aspnet dependencies", func() {
 			var err error
 			source, err = occam.Source(filepath.Join("testdata", "source-2.1-aspnet"))
@@ -62,7 +105,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreAspNetBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -105,7 +148,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreAspNetBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -144,7 +187,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreAspNetBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -178,7 +221,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreRuntimeBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -212,7 +255,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreRuntimeBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -241,7 +284,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreAspNetBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -275,7 +318,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreRuntimeBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -309,7 +352,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreRuntimeBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -348,7 +391,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreAspNetBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -383,7 +426,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreAspNetBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -418,7 +461,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreAspNetBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -453,7 +496,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreAspNetBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -488,7 +531,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreAspNetBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -523,7 +566,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					dotnetCoreAspNetBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
-					dotnetCoreConfBuildpack,
+					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())

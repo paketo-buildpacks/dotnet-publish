@@ -60,7 +60,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 	})
 
 	it("executes the dotnet publish process", func() {
-		err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/project/path")
+		err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/project/path", "some-publish-output-dir")
 		Expect(err).NotTo(HaveOccurred())
 
 		args := []string{
@@ -68,7 +68,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			"--configuration", "Release",
 			"--runtime", "ubuntu.18.04-x64",
 			"--self-contained", "false",
-			"--output", "some-working-dir",
+			"--output", "some-publish-output-dir",
 		}
 
 		Expect(executable.ExecuteCall.Receives.Execution.Args).To(Equal(args))
@@ -92,12 +92,12 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			})
 
 			it("returns an error", func() {
-				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "")
+				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "", "some-output-dir")
 				Expect(err).To(MatchError("failed to execute 'dotnet publish': execution error"))
 			})
 
 			it("logs the command output", func() {
-				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "")
+				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "", "some-output-dir")
 				Expect(err).To(HaveOccurred())
 
 				Expect(buffer.String()).To(ContainSubstring("      Failed after 1s"))
