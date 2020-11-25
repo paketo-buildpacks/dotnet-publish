@@ -35,6 +35,11 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
+		publishOutputLayer.BuildEnv.Override("PUBLISH_OUTPUT_LOCATION", publishOutputLayer.Path)
+		logger.Process("Configuring environment")
+		logger.Subprocess("%s", scribe.NewFormattedMapFromEnvironment(publishOutputLayer.BuildEnv))
+		logger.Break()
+
 		rootDir := filepath.Join(context.WorkingDir, ".dotnet-root")
 		err = rootManager.Setup(rootDir, os.Getenv("DOTNET_ROOT"), os.Getenv("SDK_LOCATION"))
 		if err != nil {

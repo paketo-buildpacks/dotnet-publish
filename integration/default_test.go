@@ -69,8 +69,11 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(logs).To(ContainLines(
 				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
+				"  Configuring environment",
+				MatchRegexp(fmt.Sprintf(`    PUBLISH_OUTPUT_LOCATION -> "/layers/%s/publish-output"`, strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"))),
+				"",
 				"  Executing build process",
-				fmt.Sprintf("    Running 'dotnet publish /workspace/console --configuration Release --runtime ubuntu.18.04-x64 --self-contained false --output /layers/%s'", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_")),
+				fmt.Sprintf("    Running 'dotnet publish /workspace/console --configuration Release --runtime ubuntu.18.04-x64 --self-contained false --output /layers/%s/publish-output'", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_")),
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
 			))
@@ -112,8 +115,11 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(logs).To(ContainLines(
 				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
+				"  Configuring environment",
+				MatchRegexp(fmt.Sprintf(`    PUBLISH_OUTPUT_LOCATION -> "/layers/%s/publish-output"`, strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"))),
+				"",
 				"  Executing build process",
-				"    Running 'dotnet publish /workspace --configuration Release --runtime ubuntu.18.04-x64 --self-contained false --output /workspace'",
+				fmt.Sprintf("    Running 'dotnet publish /workspace/console --configuration Release --runtime ubuntu.18.04-x64 --self-contained false --output /layers/%s/publish-output'", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_")),
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
 			))

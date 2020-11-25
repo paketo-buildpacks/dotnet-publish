@@ -87,7 +87,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					Name:      "publish-output",
 					Path:      filepath.Join(layersDir, "publish-output"),
 					SharedEnv: packit.Environment{},
-					BuildEnv:  packit.Environment{},
+					BuildEnv:  packit.Environment{"PUBLISH_OUTPUT_LOCATION.override": filepath.Join(layersDir, "publish-output")},
 					LaunchEnv: packit.Environment{},
 					Build:     true,
 					Launch:    true,
