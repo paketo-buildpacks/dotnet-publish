@@ -30,14 +30,14 @@ func NewDotnetPublishProcess(executable Executable, logger scribe.Logger, clock 
 	}
 }
 
-func (p DotnetPublishProcess) Execute(workingDir, root, projectPath string) error {
+func (p DotnetPublishProcess) Execute(workingDir, root, projectPath, outputPath string) error {
 	buffer := bytes.NewBuffer(nil)
 	args := []string{
 		"publish", filepath.Join(workingDir, projectPath), // change to workingDir plus project path
 		"--configuration", "Release",
 		"--runtime", "ubuntu.18.04-x64",
 		"--self-contained", "false",
-		"--output", workingDir,
+		"--output", outputPath,
 	}
 
 	p.logger.Subprocess("Running 'dotnet %s'", strings.Join(args, " "))

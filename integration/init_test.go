@@ -21,7 +21,7 @@ var (
 	dotnetCoreRuntimeBuildpack string
 	dotnetCoreAspNetBuildpack  string
 	dotnetCoreSDKBuildpack     string
-	dotnetCoreConfBuildpack    string
+	dotnetExecuteBuildpack     string
 	buildpack                  string
 	offlineBuildpack           string
 	buildpackInfo              struct {
@@ -36,7 +36,7 @@ var (
 		DotnetCoreRuntime string `json:"dotnet-core-runtime"`
 		DotnetCoreAspNet  string `json:"dotnet-core-aspnet"`
 		DotnetCoreSDK     string `json:"dotnet-core-sdk"`
-		DotnetCoreConf    string `json:"dotnet-core-conf"`
+		DotnetExecute     string `json:"dotnet-execute"`
 	}
 )
 
@@ -92,8 +92,8 @@ func TestIntegration(t *testing.T) {
 		Execute(config.DotnetCoreSDK)
 	Expect(err).NotTo(HaveOccurred())
 
-	dotnetCoreConfBuildpack, err = buildpackStore.Get.
-		Execute(config.DotnetCoreConf)
+	dotnetExecuteBuildpack, err = buildpackStore.Get.
+		Execute(config.DotnetExecute)
 	Expect(err).NotTo(HaveOccurred())
 
 	SetDefaultEventuallyTimeout(5 * time.Second)
