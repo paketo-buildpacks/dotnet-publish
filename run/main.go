@@ -16,7 +16,7 @@ func main() {
 
 	packit.Run(
 		dotnetpublish.Detect(
-			dotnetpublish.NewDotnetProjectFileParser(),
+			dotnetpublish.NewProjectFileParser(),
 			bpYMLParser,
 		),
 		dotnetpublish.Build(

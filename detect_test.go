@@ -35,7 +35,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 		projectParser = &fakes.ProjectParser{}
 		buildpackYMLParser = &fakes.BuildpackYMLParser{}
-		projectParser.ParseVersionCall.Returns.Version = "1.2.3"
 
 		detect = dotnetpublish.Detect(projectParser, buildpackYMLParser)
 	})
@@ -56,25 +55,15 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 				},
 				Requires: []packit.BuildPlanRequirement{
 					{
-						Name: "build",
+						Name: "dotnet-sdk",
 						Metadata: dotnetpublish.BuildPlanMetadata{
 							Build: true,
 						},
 					},
 					{
-						Name: "dotnet-sdk",
-						Metadata: dotnetpublish.BuildPlanMetadata{
-							Version: "1.2.0",
-							Build:   true,
-							Launch:  true,
-						},
-					},
-					{
 						Name: "dotnet-runtime",
 						Metadata: dotnetpublish.BuildPlanMetadata{
-							Version: "1.2.3",
-							Build:   true,
-							Launch:  true,
+							Build: true,
 						},
 					},
 					{
@@ -105,25 +94,15 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					},
 					Requires: []packit.BuildPlanRequirement{
 						{
-							Name: "build",
+							Name: "dotnet-sdk",
 							Metadata: dotnetpublish.BuildPlanMetadata{
 								Build: true,
 							},
 						},
 						{
-							Name: "dotnet-sdk",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Version: "1.2.0",
-								Build:   true,
-								Launch:  true,
-							},
-						},
-						{
 							Name: "dotnet-runtime",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Version: "1.2.3",
-								Build:   true,
-								Launch:  true,
+								Build: true,
 							},
 						},
 						{
@@ -135,9 +114,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 						{
 							Name: "dotnet-aspnetcore",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Version: "1.2.3",
-								Build:   true,
-								Launch:  true,
+								Build: true,
 							},
 						},
 					},
@@ -163,25 +140,15 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					},
 					Requires: []packit.BuildPlanRequirement{
 						{
-							Name: "build",
+							Name: "dotnet-sdk",
 							Metadata: dotnetpublish.BuildPlanMetadata{
 								Build: true,
 							},
 						},
 						{
-							Name: "dotnet-sdk",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Version: "1.2.0",
-								Build:   true,
-								Launch:  true,
-							},
-						},
-						{
 							Name: "dotnet-runtime",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Version: "1.2.3",
-								Build:   true,
-								Launch:  true,
+								Build: true,
 							},
 						},
 						{
@@ -193,8 +160,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 						{
 							Name: "node",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build:  true,
-								Launch: true,
+								Build: true,
 							},
 						},
 					},
@@ -221,25 +187,15 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					},
 					Requires: []packit.BuildPlanRequirement{
 						{
-							Name: "build",
+							Name: "dotnet-sdk",
 							Metadata: dotnetpublish.BuildPlanMetadata{
 								Build: true,
 							},
 						},
 						{
-							Name: "dotnet-sdk",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Version: "1.2.0",
-								Build:   true,
-								Launch:  true,
-							},
-						},
-						{
 							Name: "dotnet-runtime",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Version: "1.2.3",
-								Build:   true,
-								Launch:  true,
+								Build: true,
 							},
 						},
 						{
@@ -251,15 +207,13 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 						{
 							Name: "node",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build:  true,
-								Launch: true,
+								Build: true,
 							},
 						},
 						{
 							Name: "npm",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build:  true,
-								Launch: true,
+								Build: true,
 							},
 						},
 					},
@@ -295,25 +249,15 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					},
 					Requires: []packit.BuildPlanRequirement{
 						{
-							Name: "build",
+							Name: "dotnet-sdk",
 							Metadata: dotnetpublish.BuildPlanMetadata{
 								Build: true,
 							},
 						},
 						{
-							Name: "dotnet-sdk",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Version: "1.2.0",
-								Build:   true,
-								Launch:  true,
-							},
-						},
-						{
 							Name: "dotnet-runtime",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Version: "1.2.3",
-								Build:   true,
-								Launch:  true,
+								Build: true,
 							},
 						},
 						{
@@ -352,28 +296,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					WorkingDir: workingDir,
 				})
 				Expect(err).To(MatchError(packit.Fail.WithMessage("no project file found")))
-			})
-		})
-
-		context("when .?proj file cannot be parsed", func() {
-			it.Before(func() {
-				projectParser.ParseVersionCall.Returns.Err = errors.New("failed to parse project file version")
-			})
-
-			it("returns an error", func() {
-				_, err := detect(packit.DetectContext{WorkingDir: workingDir})
-				Expect(err).To(MatchError("failed to parse project file version"))
-			})
-		})
-
-		context("when the runtime version is malformed", func() {
-			it.Before(func() {
-				projectParser.ParseVersionCall.Returns.Version = "some-version"
-			})
-
-			it("returns an error", func() {
-				_, err := detect(packit.DetectContext{WorkingDir: workingDir})
-				Expect(err).To(MatchError("failed to parse runtime version \"some-version\": expected valid semver format"))
 			})
 		})
 
