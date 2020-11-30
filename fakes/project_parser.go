@@ -39,18 +39,6 @@ type ProjectParser struct {
 		}
 		Stub func(string) (bool, error)
 	}
-	ParseVersionCall struct {
-		sync.Mutex
-		CallCount int
-		Receives  struct {
-			Path string
-		}
-		Returns struct {
-			Version string
-			Err     error
-		}
-		Stub func(string) (string, error)
-	}
 }
 
 func (f *ProjectParser) ASPNetIsRequired(param1 string) (bool, error) {
@@ -82,14 +70,4 @@ func (f *ProjectParser) NodeIsRequired(param1 string) (bool, error) {
 		return f.NodeIsRequiredCall.Stub(param1)
 	}
 	return f.NodeIsRequiredCall.Returns.Bool, f.NodeIsRequiredCall.Returns.Error
-}
-func (f *ProjectParser) ParseVersion(param1 string) (string, error) {
-	f.ParseVersionCall.Lock()
-	defer f.ParseVersionCall.Unlock()
-	f.ParseVersionCall.CallCount++
-	f.ParseVersionCall.Receives.Path = param1
-	if f.ParseVersionCall.Stub != nil {
-		return f.ParseVersionCall.Stub(param1)
-	}
-	return f.ParseVersionCall.Returns.Version, f.ParseVersionCall.Returns.Err
 }

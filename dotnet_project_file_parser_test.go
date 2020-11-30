@@ -13,97 +13,11 @@ import (
 func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 	var (
 		Expect = NewWithT(t).Expect
-		parser dotnetpublish.DotnetProjectFileParser
+		parser dotnetpublish.ProjectFileParser
 	)
 
 	it.Before(func() {
-		parser = dotnetpublish.NewDotnetProjectFileParser()
-	})
-
-	context("ParseVersion", func() {
-		var path string
-
-		it.Before(func() {
-			file, err := ioutil.TempFile("", "app.csproj")
-			Expect(err).NotTo(HaveOccurred())
-			defer file.Close()
-
-			_, err = file.WriteString(`
-				<Project>
-					<PropertyGroup>
-						<Obfuscate>true</Obfuscate>
-					</PropertyGroup>
-					<PropertyGroup>
-						<RuntimeFrameworkVersion>1.2.3</RuntimeFrameworkVersion>
-					</PropertyGroup>
-				</Project>
-			`)
-			Expect(err).NotTo(HaveOccurred())
-
-			path = file.Name()
-		})
-
-		it.After(func() {
-			Expect(os.Remove(path)).To(Succeed())
-		})
-
-		it("parses the dotnet runtime version from the ?sproj file", func() {
-			version, err := parser.ParseVersion(path)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(version).To(Equal("1.2.3"))
-		})
-
-		context("when the RuntimeFrameworkVersion is not specified", func() {
-			it.Before(func() {
-				err := ioutil.WriteFile(path, []byte(`
-					<Project>
-						<PropertyGroup>
-							<TargetFramework>netcoreapp1.2</TargetFramework>
-						</PropertyGroup>
-					</Project>
-				`), 0600)
-				Expect(err).NotTo(HaveOccurred())
-			})
-
-			it("falls back to using the TargetFramework version", func() {
-				version, err := parser.ParseVersion(path)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(version).To(Equal("1.2.0"))
-			})
-		})
-
-		context("failure cases", func() {
-			context("when the project file does not exist", func() {
-				it("returns an error", func() {
-					_, err := parser.ParseVersion("no-such-file")
-					Expect(err).To(MatchError(MatchRegexp(`failed to read project file: .* no such file or directory`)))
-				})
-			})
-
-			context("when the project file is malformed", func() {
-				it.Before(func() {
-					err := ioutil.WriteFile(path, []byte(`<<< %%%`), 0600)
-					Expect(err).NotTo(HaveOccurred())
-				})
-
-				it("returns an error", func() {
-					_, err := parser.ParseVersion(path)
-					Expect(err).To(MatchError(MatchRegexp(`failed to parse project file: XML syntax error .*`)))
-				})
-			})
-
-			context("when the project file does not contain a version", func() {
-				it.Before(func() {
-					err := ioutil.WriteFile(path, []byte(`<Project></Project>`), 0600)
-					Expect(err).NotTo(HaveOccurred())
-				})
-
-				it("returns an error", func() {
-					_, err := parser.ParseVersion(path)
-					Expect(err).To(MatchError("failed to find version in project file: missing TargetFramework property"))
-				})
-			})
-		})
+		parser = dotnetpublish.NewProjectFileParser()
 	})
 
 	context("ASPNetIsRequired", func() {
@@ -134,16 +48,40 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 
-		context("when project SDK is NOT Microsoft.NET.Sdk.Web", func() {
+		context("when project PackageReference is Microsoft.AspNetCore.App", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(path, []byte(`<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop"></Project>`), 0600)).To(Succeed())
+				Expect(ioutil.WriteFile(path, []byte(`
+<Project Sdk="Microsoft.NET.Sdk">
+<ItemGroup>
+	<PackageReference Include="Microsoft.AspNetCore.App"/>
+</ItemGroup>
+</Project>
+`), 0600)).To(Succeed())
 			})
 
-			it("returns false", func() {
+			it("returns true", func() {
 				needsAspnt, err := parser.ASPNetIsRequired(path)
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(needsAspnt).To(BeFalse())
+				Expect(needsAspnt).To(BeTrue())
+			})
+		})
+
+		context("when project PackageReference is Microsoft.AspNetCore.All", func() {
+			it.Before(func() {
+				Expect(ioutil.WriteFile(path, []byte(`
+<Project Sdk="Microsoft.NET.Sdk">
+<ItemGroup>
+	<PackageReference Include="Microsoft.AspNetCore.All"/>
+</ItemGroup>
+</Project>
+`), 0600)).To(Succeed())
+			})
+
+			it("returns true", func() {
+				needsAspnt, err := parser.ASPNetIsRequired(path)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(needsAspnt).To(BeTrue())
 			})
 		})
 
