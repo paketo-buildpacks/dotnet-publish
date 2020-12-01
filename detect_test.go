@@ -73,6 +73,33 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 						},
 					},
 				},
+				Or: []packit.BuildPlan{
+					{
+						Provides: []packit.BuildPlanProvision{
+							{Name: "dotnet-application"},
+						},
+						Requires: []packit.BuildPlanRequirement{
+							{
+								Name: "dotnet-sdk",
+								Metadata: dotnetpublish.BuildPlanMetadata{
+									Build: true,
+								},
+							},
+							{
+								Name: "dotnet-runtime",
+								Metadata: dotnetpublish.BuildPlanMetadata{
+									Build: true,
+								},
+							},
+							{
+								Name: "icu",
+								Metadata: dotnetpublish.BuildPlanMetadata{
+									Build: true,
+								},
+							},
+						},
+					},
+				},
 			},
 		}))
 	})
@@ -115,6 +142,39 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 							Name: "dotnet-aspnetcore",
 							Metadata: dotnetpublish.BuildPlanMetadata{
 								Build: true,
+							},
+						},
+					},
+					Or: []packit.BuildPlan{
+						{
+							Provides: []packit.BuildPlanProvision{
+								{Name: "dotnet-application"},
+							},
+							Requires: []packit.BuildPlanRequirement{
+								{
+									Name: "dotnet-sdk",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "dotnet-runtime",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "icu",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "dotnet-aspnetcore",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
 							},
 						},
 					},
@@ -161,6 +221,39 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 							Name: "node",
 							Metadata: dotnetpublish.BuildPlanMetadata{
 								Build: true,
+							},
+						},
+					},
+					Or: []packit.BuildPlan{
+						{
+							Provides: []packit.BuildPlanProvision{
+								{Name: "dotnet-application"},
+							},
+							Requires: []packit.BuildPlanRequirement{
+								{
+									Name: "dotnet-sdk",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "dotnet-runtime",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "icu",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "node",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
 							},
 						},
 					},
@@ -217,6 +310,45 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 							},
 						},
 					},
+					Or: []packit.BuildPlan{
+						{
+							Provides: []packit.BuildPlanProvision{
+								{Name: "dotnet-application"},
+							},
+							Requires: []packit.BuildPlanRequirement{
+								{
+									Name: "dotnet-sdk",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "dotnet-runtime",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "icu",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "node",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "npm",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+							},
+						},
+					},
 				},
 			}))
 		})
@@ -264,6 +396,33 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 							Name: "icu",
 							Metadata: dotnetpublish.BuildPlanMetadata{
 								Build: true,
+							},
+						},
+					},
+					Or: []packit.BuildPlan{
+						{
+							Provides: []packit.BuildPlanProvision{
+								{Name: "dotnet-application"},
+							},
+							Requires: []packit.BuildPlanRequirement{
+								{
+									Name: "dotnet-sdk",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "dotnet-runtime",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
+								{
+									Name: "icu",
+									Metadata: dotnetpublish.BuildPlanMetadata{
+										Build: true,
+									},
+								},
 							},
 						},
 					},

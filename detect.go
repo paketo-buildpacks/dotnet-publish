@@ -113,6 +113,14 @@ func Detect(parser ProjectParser, buildpackYMLParser BuildpackYMLParser) packit.
 					{Name: "build"},
 				},
 				Requires: requirements,
+				Or: []packit.BuildPlan{
+					{
+						Provides: []packit.BuildPlanProvision{
+							{Name: "dotnet-application"},
+						},
+						Requires: requirements,
+					},
+				},
 			},
 		}, nil
 	}
