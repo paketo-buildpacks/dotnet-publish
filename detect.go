@@ -110,17 +110,9 @@ func Detect(parser ProjectParser, buildpackYMLParser BuildpackYMLParser) packit.
 		return packit.DetectResult{
 			Plan: packit.BuildPlan{
 				Provides: []packit.BuildPlanProvision{
-					{Name: "build"},
+					{Name: "dotnet-application"},
 				},
 				Requires: requirements,
-				Or: []packit.BuildPlan{
-					{
-						Provides: []packit.BuildPlanProvision{
-							{Name: "dotnet-application"},
-						},
-						Requires: requirements,
-					},
-				},
 			},
 		}, nil
 	}
