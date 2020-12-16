@@ -119,12 +119,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			))
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
@@ -154,18 +157,21 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() int {
-				response, _ := http.Get(fmt.Sprintf("http://localhost:%s/swagger/index.html", container.HostPort()))
+				response, _ := http.Get(fmt.Sprintf("http://localhost:%s/swagger/index.html", container.HostPort("8080")))
 				if response != nil {
 					return response.StatusCode
 				}
 				return -1
 			}).Should(Equal(http.StatusOK))
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s/swagger/index.html", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s/swagger/index.html", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 
 			content, err := ioutil.ReadAll(response.Body)
@@ -193,12 +199,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
@@ -227,12 +236,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
@@ -290,12 +302,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
@@ -324,12 +339,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
@@ -362,12 +380,14 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 					"PORT":            "8080",
 					"ASPNETCORE_URLS": "http://0.0.0.0:8080",
 				}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
@@ -397,12 +417,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
@@ -432,12 +455,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
@@ -467,12 +493,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
@@ -502,12 +531,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
@@ -537,12 +569,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
@@ -572,12 +607,15 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(container).Should(BeAvailable())
 
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s/api/values/6", container.HostPort()))
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s/api/values/6", container.HostPort("8080")))
 			Expect(err).NotTo(HaveOccurred())
 			defer response.Body.Close()
 
