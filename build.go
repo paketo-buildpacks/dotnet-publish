@@ -30,10 +30,13 @@ func Build(
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
 
-		publishOutputLayer, err := context.Layers.Get("publish-output", packit.BuildLayer, packit.LaunchLayer)
+		publishOutputLayer, err := context.Layers.Get("publish-output")
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
+
+		publishOutputLayer.Launch = true
+		publishOutputLayer.Build = true
 
 		publishOutputLayer.BuildEnv.Override("PUBLISH_OUTPUT_LOCATION", publishOutputLayer.Path)
 		logger.Process("Configuring environment")
