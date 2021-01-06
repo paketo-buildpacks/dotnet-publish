@@ -38,9 +38,9 @@ func Build(
 		publishOutputLayer.Launch = true
 		publishOutputLayer.Build = true
 
-		publishOutputLayer.BuildEnv.Override("PUBLISH_OUTPUT_LOCATION", publishOutputLayer.Path)
+		publishOutputLayer.SharedEnv.Override("PUBLISH_OUTPUT_LOCATION", publishOutputLayer.Path)
 		logger.Process("Configuring environment")
-		logger.Subprocess("%s", scribe.NewFormattedMapFromEnvironment(publishOutputLayer.BuildEnv))
+		logger.Subprocess("%s", scribe.NewFormattedMapFromEnvironment(publishOutputLayer.SharedEnv))
 		logger.Break()
 
 		rootDir := filepath.Join(context.WorkingDir, ".dotnet-root")
