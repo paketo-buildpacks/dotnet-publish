@@ -1,12 +1,13 @@
 package dotnetpublish
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/paketo-buildpacks/packit"
 	"github.com/paketo-buildpacks/packit/chronos"
+	"github.com/paketo-buildpacks/packit/fs"
 	"github.com/paketo-buildpacks/packit/scribe"
 )
 
@@ -30,21 +31,8 @@ func Build(
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
 
-		publishOutputLayer, err := context.Layers.Get("publish-output")
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-
-		publishOutputLayer.Launch = true
-		publishOutputLayer.Build = true
-
-		publishOutputLayer.BuildEnv.Override("PUBLISH_OUTPUT_LOCATION", publishOutputLayer.Path)
-		logger.Process("Configuring environment")
-		logger.Subprocess("%s", scribe.NewFormattedMapFromEnvironment(publishOutputLayer.BuildEnv))
-		logger.Break()
-
 		rootDir := filepath.Join(context.WorkingDir, ".dotnet-root")
-		err = rootManager.Setup(rootDir, os.Getenv("DOTNET_ROOT"), os.Getenv("SDK_LOCATION"))
+		err := rootManager.Setup(rootDir, os.Getenv("DOTNET_ROOT"), os.Getenv("SDK_LOCATION"))
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
@@ -55,18 +43,46 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
+		tempDir, err := ioutil.TempDir("", "dotnet-publish-output")
+		if err != nil {
+			panic(err)
+		}
+
 		logger.Process("Executing build process")
-		err = publishProcess.Execute(context.WorkingDir, rootDir, projectPath, publishOutputLayer.Path)
+		err = publishProcess.Execute(context.WorkingDir, rootDir, projectPath, tempDir)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
 
-		publishOutputLayer.Metadata = map[string]interface{}{
-			"built_at": clock.Now().Format(time.RFC3339Nano),
+		// fs.Move(rootDir, filepath.Join(tempDir, filepath.Base(rootDir)))
+
+		workspaceFiles, err := filepath.Glob(filepath.Join(context.WorkingDir, "*"))
+		if err != nil {
+			panic(err)
 		}
 
-		return packit.BuildResult{
-			Layers: []packit.Layer{publishOutputLayer},
-		}, nil
+		for _, file := range workspaceFiles {
+			if filepath.Base(file) != filepath.Base(rootDir) && filepath.Base(file) != ".dotnet_root" {
+				err = os.RemoveAll(file)
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+
+		generatedFiles, err := filepath.Glob(filepath.Join(tempDir, "*"))
+		if err != nil {
+			panic(err)
+		}
+		for _, file := range generatedFiles {
+			fs.Move(file, filepath.Join(context.WorkingDir, filepath.Base(file)))
+		}
+
+		err = os.RemoveAll(tempDir)
+		if err != nil {
+			panic(err)
+		}
+
+		return packit.BuildResult{}, nil
 	}
 }
