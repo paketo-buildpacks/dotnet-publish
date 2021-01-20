@@ -1,19 +1,24 @@
 package dotnetpublish
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/paketo-buildpacks/packit"
 	"github.com/paketo-buildpacks/packit/chronos"
-	"github.com/paketo-buildpacks/packit/fs"
 	"github.com/paketo-buildpacks/packit/scribe"
 )
 
 //go:generate faux --interface RootManager --output fakes/root_manager.go
 type RootManager interface {
 	Setup(root, existingRoot, sdkLocation string) error
+}
+
+//go:generate faux --interface SourceRemover --output fakes/source_remover.go
+type SourceRemover interface {
+	Remove(workingDir, publishOutputDir string, excludedFiles ...string) error
 }
 
 //go:generate faux --interface PublishProcess --output fakes/publish_process.go
@@ -23,6 +28,7 @@ type PublishProcess interface {
 
 func Build(
 	rootManager RootManager,
+	sourceRemover SourceRemover,
 	publishProcess PublishProcess,
 	buildpackYMLParser BuildpackYMLParser,
 	clock chronos.Clock,
@@ -45,7 +51,7 @@ func Build(
 
 		tempDir, err := ioutil.TempDir("", "dotnet-publish-output")
 		if err != nil {
-			panic(err)
+			return packit.BuildResult{}, fmt.Errorf("could not create temp directory: %w", err)
 		}
 
 		logger.Process("Executing build process")
@@ -54,33 +60,15 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
-		// fs.Move(rootDir, filepath.Join(tempDir, filepath.Base(rootDir)))
-
-		workspaceFiles, err := filepath.Glob(filepath.Join(context.WorkingDir, "*"))
+		logger.Process("Removing source code")
+		err = sourceRemover.Remove(context.WorkingDir, tempDir, ".dotnet_root", ".dotnet-root")
 		if err != nil {
-			panic(err)
-		}
-
-		for _, file := range workspaceFiles {
-			if filepath.Base(file) != filepath.Base(rootDir) && filepath.Base(file) != ".dotnet_root" {
-				err = os.RemoveAll(file)
-				if err != nil {
-					panic(err)
-				}
-			}
-		}
-
-		generatedFiles, err := filepath.Glob(filepath.Join(tempDir, "*"))
-		if err != nil {
-			panic(err)
-		}
-		for _, file := range generatedFiles {
-			fs.Move(file, filepath.Join(context.WorkingDir, filepath.Base(file)))
+			return packit.BuildResult{}, err
 		}
 
 		err = os.RemoveAll(tempDir)
 		if err != nil {
-			panic(err)
+			return packit.BuildResult{}, fmt.Errorf("could not remove temp directory: %w", err)
 		}
 
 		return packit.BuildResult{}, nil

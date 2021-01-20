@@ -13,6 +13,7 @@ func TestUnitDotnetPublish(t *testing.T) {
 	suite("Detect", testDetect)
 	suite("DotnetPublishProcess", testDotnetPublishProcess)
 	suite("DotnetRootManager", testDotnetRootManager)
+	suite("DotnetSourceRemover", testDotnetSourceRemover)
 	suite("ProjectFileParser", testProjectFileParser)
 	suite("BuildpackYMLParser", testBuildpackYMLParser)
 	suite.Run(t)

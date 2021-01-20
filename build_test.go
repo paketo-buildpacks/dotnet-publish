@@ -25,6 +25,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		workingDir         string
 		rootManager        *fakes.RootManager
+		sourceRemover      *fakes.SourceRemover
 		publishProcess     *fakes.PublishProcess
 		buildpackYMLParser *fakes.BuildpackYMLParser
 		build              packit.BuildFunc
@@ -41,6 +42,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(ioutil.WriteFile(filepath.Join(workingDir, "buildpack.yml"), nil, 0600)).To(Succeed())
 
 		rootManager = &fakes.RootManager{}
+		sourceRemover = &fakes.SourceRemover{}
 		publishProcess = &fakes.PublishProcess{}
 
 		buildpackYMLParser = &fakes.BuildpackYMLParser{}
@@ -57,7 +59,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			return timestamp
 		})
 
-		build = dotnetpublish.Build(rootManager, publishProcess, buildpackYMLParser, clock, logger)
+		build = dotnetpublish.Build(rootManager, sourceRemover, publishProcess, buildpackYMLParser, clock, logger)
 	})
 
 	it.After(func() {
@@ -82,6 +84,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(rootManager.SetupCall.Receives.ExistingRoot).To(Equal("some-existing-root-dir"))
 		Expect(rootManager.SetupCall.Receives.SdkLocation).To(Equal("some-sdk-location"))
 
+		Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
+		Expect(sourceRemover.RemoveCall.Receives.PublishOutputDir).To(MatchRegexp(`dotnet-publish-output\d+`))
+		Expect(sourceRemover.RemoveCall.Receives.ExcludedFiles).To(ConsistOf([]string{".dotnet-root", ".dotnet_root"}))
+
 		Expect(publishProcess.ExecuteCall.Receives.WorkingDir).To(Equal(workingDir))
 		Expect(publishProcess.ExecuteCall.Receives.RootDir).To(Equal(filepath.Join(workingDir, ".dotnet-root")))
 		Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
@@ -95,6 +101,19 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		context("when the DOTNET_ROOT can not be found", func() {
 			it.Before(func() {
 				rootManager.SetupCall.Returns.Error = errors.New("some-error")
+			})
+
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					WorkingDir: workingDir,
+				})
+				Expect(err).To(MatchError("some-error"))
+			})
+		})
+
+		context("when the source code cannot be removed", func() {
+			it.Before(func() {
+				sourceRemover.RemoveCall.Returns.Error = errors.New("some-error")
 			})
 
 			it("returns an error", func() {

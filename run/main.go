@@ -21,6 +21,7 @@ func main() {
 		),
 		dotnetpublish.Build(
 			dotnetpublish.NewDotnetRootManager(),
+			dotnetpublish.NewDotnetSourceRemover(),
 			dotnetpublish.NewDotnetPublishProcess(
 				pexec.NewExecutable("dotnet"),
 				logger,
