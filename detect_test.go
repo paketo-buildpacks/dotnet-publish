@@ -222,6 +222,54 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		})
 	})
 
+	context("when there is a .vbproj file", func() {
+		it.Before(func() {
+			Expect(os.RemoveAll(filepath.Join(workingDir, "app.xsproj"))).To(Succeed())
+			Expect(ioutil.WriteFile(filepath.Join(workingDir, "app.vbproj"), nil, 0600)).To(Succeed())
+
+		})
+
+		it.After(func() {
+			Expect(os.RemoveAll(workingDir)).To(Succeed())
+		})
+
+		it("detects the file and passes it to the projfile parser", func() {
+			result, err := detect(packit.DetectContext{
+				WorkingDir: workingDir,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(result).To(Equal(packit.DetectResult{
+				Plan: packit.BuildPlan{
+					Provides: []packit.BuildPlanProvision{
+						{Name: "dotnet-application"},
+					},
+					Requires: []packit.BuildPlanRequirement{
+						{
+							Name: "dotnet-sdk",
+							Metadata: dotnetpublish.BuildPlanMetadata{
+								Build: true,
+							},
+						},
+						{
+							Name: "dotnet-runtime",
+							Metadata: dotnetpublish.BuildPlanMetadata{
+								Build: true,
+							},
+						},
+						{
+							Name: "icu",
+							Metadata: dotnetpublish.BuildPlanMetadata{
+								Build: true,
+							},
+						},
+					},
+				},
+			}))
+			Expect(projectParser.ASPNetIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.vbproj")))
+		})
+
+	})
+
 	context("when the .csproj file is not at the base of the directory and project_path is set in buildpack.yml", func() {
 		it.Before(func() {
 			buildpackYMLParser.ParseProjectPathCall.Returns.ProjectFilePath = "src/proj1"

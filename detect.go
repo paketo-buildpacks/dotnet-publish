@@ -38,6 +38,13 @@ func Detect(parser ProjectParser, buildpackYMLParser BuildpackYMLParser) packit.
 			return packit.DetectResult{}, err
 		}
 
+		vbProjFiles, err := filepath.Glob(filepath.Join(context.WorkingDir, projectPath, "*.vbproj"))
+		if err != nil {
+			return packit.DetectResult{}, err
+		}
+
+		matches = append(matches, vbProjFiles...)
+
 		if len(matches) == 0 {
 			return packit.DetectResult{}, packit.Fail.WithMessage("no project file found")
 		}

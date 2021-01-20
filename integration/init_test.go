@@ -128,6 +128,7 @@ func TestIntegration(t *testing.T) {
 	Expect(err).NotTo(HaveOccurred())
 
 	dotnetExecuteBuildpack, err = buildpackStore.Get.
+		WithVersion("1.2.3").
 		Execute(config.DotnetExecute)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -146,5 +147,6 @@ func TestIntegration(t *testing.T) {
 	suite("SelfContained", testSelfContained)
 	suite("SourceRemoval", testSourceRemoval)
 	suite("Versioning", testVersioning)
+	suite("VisualBasic", testVisualBasic)
 	suite.Run(t)
 }
