@@ -48,7 +48,7 @@ func testVisualBasic(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
 
-		it.Focus("should build a working OCI image", func() {
+		it("should build a working OCI image", func() {
 			var err error
 			source, err = occam.Source(filepath.Join("testdata", "visual_basic_app"))
 			Expect(err).NotTo(HaveOccurred())
