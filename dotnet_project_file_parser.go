@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -11,6 +12,31 @@ type ProjectFileParser struct{}
 
 func NewProjectFileParser() ProjectFileParser {
 	return ProjectFileParser{}
+}
+
+func (p ProjectFileParser) FindProjectFile(path string) (string, error) {
+	projectFiles, err := filepath.Glob(filepath.Join(path, "*.csproj"))
+	if err != nil {
+		return "", err
+	}
+
+	fsProjFiles, err := filepath.Glob(filepath.Join(path, "*.fsproj"))
+	if err != nil {
+		return "", err
+	}
+	projectFiles = append(projectFiles, fsProjFiles...)
+
+	vbProjFiles, err := filepath.Glob(filepath.Join(path, "*.vbproj"))
+	if err != nil {
+		return "", err
+	}
+	projectFiles = append(projectFiles, vbProjFiles...)
+
+	if len(projectFiles) > 0 {
+		return projectFiles[0], nil
+	}
+
+	return "", nil
 }
 
 func (p ProjectFileParser) ASPNetIsRequired(path string) (bool, error) {

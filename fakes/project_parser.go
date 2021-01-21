@@ -15,6 +15,18 @@ type ProjectParser struct {
 		}
 		Stub func(string) (bool, error)
 	}
+	FindProjectFileCall struct {
+		sync.Mutex
+		CallCount int
+		Receives  struct {
+			Root string
+		}
+		Returns struct {
+			String string
+			Error  error
+		}
+		Stub func(string) (string, error)
+	}
 	NPMIsRequiredCall struct {
 		sync.Mutex
 		CallCount int
@@ -50,6 +62,16 @@ func (f *ProjectParser) ASPNetIsRequired(param1 string) (bool, error) {
 		return f.ASPNetIsRequiredCall.Stub(param1)
 	}
 	return f.ASPNetIsRequiredCall.Returns.Bool, f.ASPNetIsRequiredCall.Returns.Error
+}
+func (f *ProjectParser) FindProjectFile(param1 string) (string, error) {
+	f.FindProjectFileCall.Lock()
+	defer f.FindProjectFileCall.Unlock()
+	f.FindProjectFileCall.CallCount++
+	f.FindProjectFileCall.Receives.Root = param1
+	if f.FindProjectFileCall.Stub != nil {
+		return f.FindProjectFileCall.Stub(param1)
+	}
+	return f.FindProjectFileCall.Returns.String, f.FindProjectFileCall.Returns.Error
 }
 func (f *ProjectParser) NPMIsRequired(param1 string) (bool, error) {
 	f.NPMIsRequiredCall.Lock()

@@ -15,6 +15,7 @@ type BuildPlanMetadata struct {
 
 //go:generate faux --interface ProjectParser --output fakes/project_parser.go
 type ProjectParser interface {
+	FindProjectFile(root string) (string, error)
 	ASPNetIsRequired(path string) (bool, error)
 	NodeIsRequired(path string) (bool, error)
 	NPMIsRequired(path string) (bool, error)
@@ -33,23 +34,14 @@ func Detect(parser ProjectParser, buildpackYMLParser BuildpackYMLParser) packit.
 			return packit.DetectResult{}, fmt.Errorf("failed to parse buildpack.yml: %w", err)
 		}
 
-		matches, err := filepath.Glob(filepath.Join(context.WorkingDir, projectPath, "*.?sproj"))
+		projectFilePath, err := parser.FindProjectFile(filepath.Join(context.WorkingDir, projectPath))
 		if err != nil {
-			return packit.DetectResult{}, err
+			panic(err)
 		}
 
-		vbProjFiles, err := filepath.Glob(filepath.Join(context.WorkingDir, projectPath, "*.vbproj"))
-		if err != nil {
-			return packit.DetectResult{}, err
-		}
-
-		matches = append(matches, vbProjFiles...)
-
-		if len(matches) == 0 {
+		if projectFilePath == "" {
 			return packit.DetectResult{}, packit.Fail.WithMessage("no project file found")
 		}
-
-		projectFilePath := matches[0]
 
 		requirements := []packit.BuildPlanRequirement{
 			{
