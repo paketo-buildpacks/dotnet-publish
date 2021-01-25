@@ -11,11 +11,6 @@ import (
 	"github.com/paketo-buildpacks/packit/scribe"
 )
 
-//go:generate faux --interface RootManager --output fakes/root_manager.go
-type RootManager interface {
-	Setup(root, existingRoot, sdkLocation string) error
-}
-
 //go:generate faux --interface SourceRemover --output fakes/source_remover.go
 type SourceRemover interface {
 	Remove(workingDir, publishOutputDir string, excludedFiles ...string) error
@@ -27,7 +22,6 @@ type PublishProcess interface {
 }
 
 func Build(
-	rootManager RootManager,
 	sourceRemover SourceRemover,
 	publishProcess PublishProcess,
 	buildpackYMLParser BuildpackYMLParser,
@@ -37,14 +31,7 @@ func Build(
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
 
-		rootDir := filepath.Join(context.WorkingDir, ".dotnet-root")
-		err := rootManager.Setup(rootDir, os.Getenv("DOTNET_ROOT"), os.Getenv("SDK_LOCATION"))
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-
-		var projectPath string
-		projectPath, err = buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
+		projectPath, err := buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
@@ -55,13 +42,13 @@ func Build(
 		}
 
 		logger.Process("Executing build process")
-		err = publishProcess.Execute(context.WorkingDir, rootDir, projectPath, tempDir)
+		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, tempDir)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
 
 		logger.Process("Removing source code")
-		err = sourceRemover.Remove(context.WorkingDir, tempDir, ".dotnet_root", ".dotnet-root")
+		err = sourceRemover.Remove(context.WorkingDir, tempDir, ".dotnet_root")
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
