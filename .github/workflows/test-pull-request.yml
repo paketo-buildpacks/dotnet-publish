@@ -38,7 +38,8 @@ jobs:
 
     - name: Run Integration Tests
       run: |
-        (while true; do df -h; sleep 15; done) &
+        docker system info
+        (while true; do df -h; docker system df; sleep 15; done) &
         ./scripts/integration.sh --use-token
       env:
         GIT_TOKEN: ${{ github.token }}
