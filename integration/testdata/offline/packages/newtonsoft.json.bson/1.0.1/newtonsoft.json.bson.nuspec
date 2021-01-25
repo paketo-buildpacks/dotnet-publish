@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Newtonsoft.Json.Bson</id>
+    <version>1.0.1</version>
+    <title>Json.NET BSON</title>
+    <authors>James Newton-King</authors>
+    <owners>James Newton-King</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://raw.github.com/JamesNK/Newtonsoft.Json.Bson/master/LICENSE.md</licenseUrl>
+    <projectUrl>http://www.newtonsoft.com/json</projectUrl>
+    <iconUrl>http://www.newtonsoft.com/content/images/nugeticon.png</iconUrl>
+    <description>Json.NET BSON adds support for reading and writing BSON</description>
+    <copyright>Copyright © James Newton-King 2017</copyright>
+    <tags>bson</tags>
+    <repository type="git" url="https://github.com/JamesNK/Newtonsoft.Json.Bson" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="Newtonsoft.Json" version="10.0.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard1.3">
+        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+        <dependency id="Newtonsoft.Json" version="10.0.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

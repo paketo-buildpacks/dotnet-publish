@@ -16,15 +16,20 @@ import (
 )
 
 var (
-	nodeEngineBuildpack        string
-	icuBuildpack               string
-	dotnetCoreRuntimeBuildpack string
-	dotnetCoreAspNetBuildpack  string
-	dotnetCoreSDKBuildpack     string
-	dotnetExecuteBuildpack     string
-	buildpack                  string
-	offlineBuildpack           string
-	buildpackInfo              struct {
+	nodeEngineBuildpack               string
+	nodeEngineOfflineBuildpack        string
+	icuBuildpack                      string
+	icuOfflineBuildpack               string
+	dotnetCoreRuntimeBuildpack        string
+	dotnetCoreRuntimeOfflineBuildpack string
+	dotnetCoreAspNetBuildpack         string
+	dotnetCoreAspNetOfflineBuildpack  string
+	dotnetCoreSDKBuildpack            string
+	dotnetCoreSDKOfflineBuildpack     string
+	dotnetExecuteBuildpack            string
+	buildpack                         string
+	offlineBuildpack                  string
+	buildpackInfo                     struct {
 		Buildpack struct {
 			ID   string
 			Name string
@@ -76,7 +81,19 @@ func TestIntegration(t *testing.T) {
 		Execute(config.NodeEngine)
 	Expect(err).NotTo(HaveOccurred())
 
+	nodeEngineOfflineBuildpack, err = buildpackStore.Get.
+		WithOfflineDependencies().
+		WithVersion("1.2.3").
+		Execute(config.NodeEngine)
+	Expect(err).NotTo(HaveOccurred())
+
 	icuBuildpack, err = buildpackStore.Get.
+		Execute(config.ICU)
+	Expect(err).NotTo(HaveOccurred())
+
+	icuOfflineBuildpack, err = buildpackStore.Get.
+		WithOfflineDependencies().
+		WithVersion("1.2.3").
 		Execute(config.ICU)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -84,11 +101,29 @@ func TestIntegration(t *testing.T) {
 		Execute(config.DotnetCoreRuntime)
 	Expect(err).NotTo(HaveOccurred())
 
+	dotnetCoreRuntimeOfflineBuildpack, err = buildpackStore.Get.
+		WithOfflineDependencies().
+		WithVersion("1.2.3").
+		Execute(config.DotnetCoreRuntime)
+	Expect(err).NotTo(HaveOccurred())
+
 	dotnetCoreAspNetBuildpack, err = buildpackStore.Get.
 		Execute(config.DotnetCoreAspNet)
 	Expect(err).NotTo(HaveOccurred())
 
+	dotnetCoreAspNetOfflineBuildpack, err = buildpackStore.Get.
+		WithOfflineDependencies().
+		WithVersion("1.2.3").
+		Execute(config.DotnetCoreAspNet)
+	Expect(err).NotTo(HaveOccurred())
+
 	dotnetCoreSDKBuildpack, err = buildpackStore.Get.
+		Execute(config.DotnetCoreSDK)
+	Expect(err).NotTo(HaveOccurred())
+
+	dotnetCoreSDKOfflineBuildpack, err = buildpackStore.Get.
+		WithOfflineDependencies().
+		WithVersion("1.2.3").
 		Execute(config.DotnetCoreSDK)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -99,7 +134,16 @@ func TestIntegration(t *testing.T) {
 	SetDefaultEventuallyTimeout(30 * time.Second)
 
 	suite := spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
+	suite("21Apps", test21Apps)
+	suite("31Apps", test31Apps)
+	suite("ASPNet", testAspnetSource)
+	suite("Console", testConsole)
 	suite("Default", testDefault)
 	suite("SourceRemoval", testSourceRemoval)
+	suite("FSharp", testFSharp)
+	suite("Kestrel", testKestrel)
+	suite("MultipleProject", testMultipleProject)
+	suite("SelfContained", testSelfContained)
+	suite("Versioning", testVersioning)
 	suite.Run(t)
 }

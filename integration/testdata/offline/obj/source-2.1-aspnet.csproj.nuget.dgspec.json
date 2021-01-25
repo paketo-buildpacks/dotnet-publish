@@ -1,0 +1,77 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/offline/source-2.1-aspnet.csproj": {}
+  },
+  "projects": {
+    "/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/offline/source-2.1-aspnet.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/offline/source-2.1-aspnet.csproj",
+        "projectName": "source-2.1-aspnet",
+        "projectPath": "/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/offline/source-2.1-aspnet.csproj",
+        "packagesPath": "/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/offline/packages",
+        "outputPath": "/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/offline/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/pivotal/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp2.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp2.1": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp2.1": {
+          "dependencies": {
+            "Microsoft.AspNetCore.App": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.1.1, )",
+              "autoReferenced": true
+            },
+            "Microsoft.AspNetCore.Razor.Design": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.1.2, )"
+            },
+            "Microsoft.NETCore.App": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.1.0, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.0.100/RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "ubuntu.18.04-x64": {
+          "#import": []
+        }
+      }
+    }
+  }
+}

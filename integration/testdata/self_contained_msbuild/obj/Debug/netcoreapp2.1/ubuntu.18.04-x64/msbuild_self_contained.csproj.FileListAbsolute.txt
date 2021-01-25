@@ -1,0 +1,13 @@
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/bin/Debug/netcoreapp2.1/ubuntu.18.04-x64/libhostpolicy.so
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/bin/Debug/netcoreapp2.1/ubuntu.18.04-x64/libhostfxr.so
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/bin/Debug/netcoreapp2.1/ubuntu.18.04-x64/msbuild_self_contained
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/bin/Debug/netcoreapp2.1/ubuntu.18.04-x64/msbuild_self_contained.deps.json
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/bin/Debug/netcoreapp2.1/ubuntu.18.04-x64/msbuild_self_contained.runtimeconfig.json
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/bin/Debug/netcoreapp2.1/ubuntu.18.04-x64/msbuild_self_contained.runtimeconfig.dev.json
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/bin/Debug/netcoreapp2.1/ubuntu.18.04-x64/msbuild_self_contained.dll
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/bin/Debug/netcoreapp2.1/ubuntu.18.04-x64/msbuild_self_contained.pdb
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/obj/Debug/netcoreapp2.1/ubuntu.18.04-x64/msbuild_self_contained.csprojAssemblyReference.cache
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/obj/Debug/netcoreapp2.1/ubuntu.18.04-x64/msbuild_self_contained.AssemblyInfoInputs.cache
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/obj/Debug/netcoreapp2.1/ubuntu.18.04-x64/msbuild_self_contained.AssemblyInfo.cs
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/obj/Debug/netcoreapp2.1/ubuntu.18.04-x64/msbuild_self_contained.dll
+/Users/pivotal/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/self_contained_msbuild/obj/Debug/netcoreapp2.1/ubuntu.18.04-x64/msbuild_self_contained.pdb

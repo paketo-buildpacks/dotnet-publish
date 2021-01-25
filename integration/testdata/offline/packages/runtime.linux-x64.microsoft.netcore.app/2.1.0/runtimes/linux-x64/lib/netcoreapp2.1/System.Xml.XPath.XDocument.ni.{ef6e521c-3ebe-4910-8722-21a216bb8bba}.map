@@ -1,0 +1,3 @@
+0000000000020FE0 29 class [System.Private.Xml]System.Xml.XPath.IXPathNavigable [System.Xml.XPath.XDocument] System.Xml.XPath.XDocumentExtensions::ToXPathNavigable(class [System.Private.Xml.Linq]System.Xml.Linq.XNode)
+0000000000021010 11 instance void [System.Xml.XPath.XDocument] System.Xml.XPath.XDocumentExtensions+XDocumentNavigable::.ctor(class [System.Private.Xml.Linq]System.Xml.Linq.XNode)
+0000000000021030 15 instance class [System.Private.Xml]System.Xml.XPath.XPathNavigator [System.Xml.XPath.XDocument] System.Xml.XPath.XDocumentExtensions+XDocumentNavigable::CreateNavigator()
