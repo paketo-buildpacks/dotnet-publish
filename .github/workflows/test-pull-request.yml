@@ -39,6 +39,7 @@ jobs:
     - name: Run Integration Tests
       run: |
         docker system info
+        docker system prune -a -f --volumes
         (while true; do df -h; docker system df; sleep 15; done) &
         ./scripts/integration.sh --use-token
       env:
