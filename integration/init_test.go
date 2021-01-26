@@ -128,7 +128,6 @@ func TestIntegration(t *testing.T) {
 	Expect(err).NotTo(HaveOccurred())
 
 	dotnetExecuteBuildpack, err = buildpackStore.Get.
-		WithVersion("1.2.3").
 		Execute(config.DotnetExecute)
 	Expect(err).NotTo(HaveOccurred())
 
