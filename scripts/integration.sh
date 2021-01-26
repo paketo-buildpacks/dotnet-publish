@@ -118,7 +118,7 @@ function tests::run() {
 
   testout=$(mktemp)
   pushd "${BUILDPACKDIR}" > /dev/null
-    if GOMAXPROCS="${GOMAXPROCS:-4}" go test -count=1 -timeout 0 ./integration/... -v -run Integration | tee "${testout}"; then
+    if go test -count=1 -timeout 0 ./integration/... -v -run Integration | tee "${testout}"; then
       util::tools::tests::checkfocus "${testout}"
       util::print::success "** GO Test Succeeded **"
     else
