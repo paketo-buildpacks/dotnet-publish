@@ -72,6 +72,7 @@ func testSourceRemoval(t *testing.T, context spec.G, it spec.S) {
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
 				"  Removing source code",
+				"",
 			))
 
 			container, err = docker.Container.Run.

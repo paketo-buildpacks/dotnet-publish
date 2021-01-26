@@ -48,6 +48,7 @@ func Build(
 		}
 
 		logger.Process("Removing source code")
+		logger.Break()
 		err = sourceRemover.Remove(context.WorkingDir, tempDir, ".dotnet_root")
 		if err != nil {
 			return packit.BuildResult{}, err
