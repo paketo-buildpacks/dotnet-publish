@@ -83,6 +83,5 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 				return cLogs.String()
 			}).Should(ContainSubstring("Hello World!"))
 		})
-
 	})
 }

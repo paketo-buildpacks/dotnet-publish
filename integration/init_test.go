@@ -139,11 +139,12 @@ func TestIntegration(t *testing.T) {
 	suite("ASPNet", testAspnetSource)
 	suite("Console", testConsole)
 	suite("Default", testDefault)
-	suite("SourceRemoval", testSourceRemoval)
 	suite("FSharp", testFSharp)
 	suite("Kestrel", testKestrel)
 	suite("MultipleProject", testMultipleProject)
+	suite("Offline", testOffline)
 	suite("SelfContained", testSelfContained)
+	suite("SourceRemoval", testSourceRemoval)
 	suite("Versioning", testVersioning)
 	suite.Run(t)
 }

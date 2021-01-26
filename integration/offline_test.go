@@ -2,9 +2,10 @@ package integration_test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/paketo-buildpacks/occam"
@@ -27,7 +28,7 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 		docker = occam.NewDocker()
 	})
 
-	context("when building an app", func() {
+	context("when packages are vendored", func() {
 		var (
 			image     occam.Image
 			container occam.Container
@@ -48,9 +49,9 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
 
-		it.Focus("should build a working OCI image for an app that contains a directory with the same name as the app", func() {
+		it("should build a working OCI image for a simple app", func() {
 			var err error
-			source, err = occam.Source(filepath.Join("testdata", "match_dir_and_app_name"))
+			source, err = occam.Source(filepath.Join("testdata", "offline"))
 			Expect(err).NotTo(HaveOccurred())
 
 			var logs fmt.Stringer
@@ -58,6 +59,7 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 				WithBuildpacks(
 					icuOfflineBuildpack,
 					dotnetCoreRuntimeOfflineBuildpack,
+					dotnetCoreAspNetOfflineBuildpack,
 					dotnetCoreSDKOfflineBuildpack,
 					offlineBuildpack,
 					dotnetExecuteBuildpack,
@@ -68,24 +70,30 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(logs).To(ContainLines(
 				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
-				"  Configuring environment",
-				MatchRegexp(fmt.Sprintf(`    PUBLISH_OUTPUT_LOCATION -> "/layers/%s/publish-output"`, strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"))),
-				"",
 				"  Executing build process",
-				fmt.Sprintf("    Running 'dotnet publish /workspace/console --configuration Release --runtime ubuntu.18.04-x64 --self-contained false --output /layers/%s/publish-output'", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_")),
+				MatchRegexp(`    Running 'dotnet publish \/workspace --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+`),
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
 			))
 
 			container, err = docker.Container.Run.
+				WithEnv(map[string]string{"PORT": "8080"}).
+				WithPublish("8080").
+				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(func() string {
-				cLogs, err := docker.Container.Logs.Execute(container.ID)
-				Expect(err).NotTo(HaveOccurred())
-				return cLogs.String()
-			}).Should(ContainSubstring("Hello World!"))
+			Eventually(container).Should(BeAvailable())
+
+			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
+			Expect(err).NotTo(HaveOccurred())
+			defer response.Body.Close()
+
+			Expect(response.StatusCode).To(Equal(http.StatusOK))
+
+			content, err := ioutil.ReadAll(response.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(content)).To(ContainSubstring("source_2._1_aspnet"))
 		})
 
 	})
