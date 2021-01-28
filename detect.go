@@ -36,7 +36,7 @@ func Detect(parser ProjectParser, buildpackYMLParser BuildpackYMLParser) packit.
 
 		projectFilePath, err := parser.FindProjectFile(filepath.Join(context.WorkingDir, projectPath))
 		if err != nil {
-			panic(err)
+			return packit.DetectResult{}, err
 		}
 
 		if projectFilePath == "" {
