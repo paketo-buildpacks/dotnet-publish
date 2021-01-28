@@ -311,6 +311,19 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 
+		context("when finding project file returns an error", func() {
+			it.Before(func() {
+				projectParser.FindProjectFileCall.Returns.Error = errors.New("some project file error")
+			})
+
+			it("fails detection", func() {
+				_, err := detect(packit.DetectContext{
+					WorkingDir: workingDir,
+				})
+				Expect(err).To(MatchError("some project file error"))
+			})
+		})
+
 		context("when a project file cannot be found", func() {
 			it.Before(func() {
 				projectParser.FindProjectFileCall.Returns.String = ""
