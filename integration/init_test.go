@@ -133,7 +133,7 @@ func TestIntegration(t *testing.T) {
 
 	SetDefaultEventuallyTimeout(30 * time.Second)
 
-	suite := spec.New("Integration", spec.Report(report.Terminal{}), spec.Sequential())
+	suite := spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
 	suite("21Apps", test21Apps)
 	suite("31Apps", test31Apps)
 	suite("ASPNet", testAspnetSource)
