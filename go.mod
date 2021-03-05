@@ -11,7 +11,7 @@ require (
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/onsi/ginkgo v1.15.0 // indirect
 	github.com/onsi/gomega v1.10.5
-	github.com/paketo-buildpacks/occam v0.1.1
+	github.com/paketo-buildpacks/occam v0.1.2
 	github.com/paketo-buildpacks/packit v0.7.0
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sclevine/spec v1.4.0
