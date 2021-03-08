@@ -141,7 +141,6 @@ func TestIntegration(t *testing.T) {
 	suite("FSharp", testFSharp)
 	suite("MultipleProject", testMultipleProject)
 	suite("Offline", testOffline)
-	suite("SelfContained", testSelfContained)
 	suite("SourceRemoval", testSourceRemoval)
 	suite("VisualBasic", testVisualBasic)
 	suite.Run(t)
