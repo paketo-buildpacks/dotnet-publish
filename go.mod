@@ -4,7 +4,6 @@ go 1.14
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/cheggaaa/pb/v3 v3.0.6 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/mattn/go-runewidth v0.0.10 // indirect
@@ -12,7 +11,7 @@ require (
 	github.com/onsi/ginkgo v1.15.0 // indirect
 	github.com/onsi/gomega v1.11.0
 	github.com/paketo-buildpacks/occam v0.1.2
-	github.com/paketo-buildpacks/packit v0.7.0
+	github.com/paketo-buildpacks/packit v0.8.0
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sclevine/spec v1.4.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
