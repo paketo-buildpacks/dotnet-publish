@@ -31,11 +31,9 @@ $ ./scripts/package.sh
 ```
 This builds the buildpack's source using GOOS=linux by default. You can supply another value as the first argument to package.sh.
 
-## `buildpack.yml` Configurations
+## Specifying a project path
 
-```yaml
-dotnet-build:
-  # this allows you to set the location of the web app inside of the app root
-  # if not set it will default to the app root
-  project-path: "src/asp_web_app"
-```
+To specify a project subdirectory to be used as the root of the app, please use
+the BP_DOTNET_PROJECT_PATH environment variable at build time either directly
+(e.g. pack build my-app --env BP_DOTNET_PROJECT_PATH=./src/my-app) or through a
+project.toml file.
