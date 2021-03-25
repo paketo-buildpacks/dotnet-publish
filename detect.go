@@ -2,6 +2,7 @@ package dotnetpublish
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/paketo-buildpacks/packit"
@@ -29,9 +30,14 @@ type BuildpackYMLParser interface {
 func Detect(parser ProjectParser, buildpackYMLParser BuildpackYMLParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
 		var projectPath string
-		projectPath, err := buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
-		if err != nil {
-			return packit.DetectResult{}, fmt.Errorf("failed to parse buildpack.yml: %w", err)
+		var err error
+
+		projectPath = os.Getenv("BP_DOTNET_PROJECT_PATH")
+		if projectPath == "" {
+			projectPath, err = buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
+			if err != nil {
+				return packit.DetectResult{}, fmt.Errorf("failed to parse buildpack.yml: %w", err)
+			}
 		}
 
 		projectFilePath, err := parser.FindProjectFile(filepath.Join(context.WorkingDir, projectPath))

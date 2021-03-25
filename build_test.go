@@ -48,6 +48,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		buildpackYMLParser.ParseProjectPathCall.Returns.ProjectFilePath = "some/project/path"
 
 		os.Setenv("DOTNET_ROOT", "some-existing-root-dir")
+		os.Setenv("BP_DOTNET_PROJECT_PATH", "")
 
 		buffer = bytes.NewBuffer(nil)
 		logger := scribe.NewLogger(buffer)
@@ -62,6 +63,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 	it.After(func() {
 		os.Unsetenv("DOTNET_ROOT")
+		os.Unsetenv("BP_DOTNET_PROJECT_PATH")
 
 		Expect(os.RemoveAll(workingDir)).To(Succeed())
 	})
@@ -88,6 +90,38 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		Expect(buffer.String()).To(ContainSubstring("Some Buildpack some-version"))
 		Expect(buffer.String()).To(ContainSubstring("Executing build process"))
+		Expect(buffer.String()).To(ContainSubstring("WARNING: Setting the project path through buildpack.yml will be deprecated soon in Dotnet Publish Buildpack v1.0.0"))
+		Expect(buffer.String()).To(ContainSubstring("Please specify the project path through the $BP_DOTNET_PROJECT_PATH environment variable instead. See README.md or the documentation on paketo.io for more information."))
+	})
+
+	context("when project path is set via BP_DOTNET_PROJECT_PATH", func() {
+		it.Before(func() {
+			Expect(os.Setenv("BP_DOTNET_PROJECT_PATH", "some/project/path"))
+		})
+
+		it("returns a build result", func() {
+			result, err := build(packit.BuildContext{
+				WorkingDir: workingDir,
+				BuildpackInfo: packit.BuildpackInfo{
+					Name:    "Some Buildpack",
+					Version: "some-version",
+				},
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(result).To(Equal(packit.BuildResult{}))
+
+			Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
+			Expect(sourceRemover.RemoveCall.Receives.PublishOutputDir).To(MatchRegexp(`dotnet-publish-output\d+`))
+			Expect(sourceRemover.RemoveCall.Receives.ExcludedFiles).To(ConsistOf([]string{".dotnet_root"}))
+
+			Expect(publishProcess.ExecuteCall.Receives.WorkingDir).To(Equal(workingDir))
+			Expect(publishProcess.ExecuteCall.Receives.RootDir).To(Equal("some-existing-root-dir"))
+			Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
+			Expect(publishProcess.ExecuteCall.Receives.OutputPath).To(MatchRegexp(`dotnet-publish-output\d+`))
+
+			Expect(buffer.String()).To(ContainSubstring("Some Buildpack some-version"))
+			Expect(buffer.String()).To(ContainSubstring("Executing build process"))
+		})
 	})
 
 	context("failure cases", func() {
@@ -104,7 +138,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 
-		context("when the buildpack.yml can not be pased", func() {
+		context("when the buildpack.yml can not be parsed", func() {
 			it.Before(func() {
 				buildpackYMLParser.ParseProjectPathCall.Returns.Err = errors.New("some-error")
 			})
