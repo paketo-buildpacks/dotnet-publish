@@ -66,7 +66,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(logs).To(ContainLines(
 				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
-				"    WARNING: Setting the project path through buildpack.yml will be deprecated soon in Dotnet Publish Buildpack v1.0.0",
+				"    WARNING: Setting the project path through buildpack.yml will be deprecated soon in Dotnet Publish Buildpack v2.0.0",
 				"    Please specify the project path through the $BP_DOTNET_PROJECT_PATH environment variable instead. See README.md or the documentation on paketo.io for more information.",
 				"  Executing build process",
 				MatchRegexp(`    Running 'dotnet publish \/workspace\/console --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+'`),
