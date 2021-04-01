@@ -12,7 +12,7 @@ require (
 	github.com/onsi/ginkgo v1.15.0 // indirect
 	github.com/onsi/gomega v1.11.0
 	github.com/paketo-buildpacks/occam v0.1.2
-	github.com/paketo-buildpacks/packit v0.8.0
+	github.com/paketo-buildpacks/packit v0.10.0
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sclevine/spec v1.4.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
