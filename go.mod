@@ -1,11 +1,10 @@
 module github.com/paketo-buildpacks/dotnet-publish
 
-go 1.14
+go 1.16
 
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/fatih/color v1.10.0 // indirect
-	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/mattn/go-runewidth v0.0.10 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/onsi/ginkgo v1.15.0 // indirect
