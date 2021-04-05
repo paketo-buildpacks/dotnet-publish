@@ -48,7 +48,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		buildpackYMLParser.ParseProjectPathCall.Returns.ProjectFilePath = "some/project/path"
 
 		os.Setenv("DOTNET_ROOT", "some-existing-root-dir")
-		os.Setenv("BP_DOTNET_PROJECT_PATH", "")
 
 		buffer = bytes.NewBuffer(nil)
 		logger := scribe.NewLogger(buffer)
@@ -63,8 +62,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 	it.After(func() {
 		os.Unsetenv("DOTNET_ROOT")
-		os.Unsetenv("BP_DOTNET_PROJECT_PATH")
-
 		Expect(os.RemoveAll(workingDir)).To(Succeed())
 	})
 
@@ -97,6 +94,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 	context("when project path is set via BP_DOTNET_PROJECT_PATH", func() {
 		it.Before(func() {
 			Expect(os.Setenv("BP_DOTNET_PROJECT_PATH", "some/project/path"))
+		})
+
+		it.After(func() {
+			os.Unsetenv("BP_DOTNET_PROJECT_PATH")
 		})
 
 		it("returns a build result", func() {

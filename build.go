@@ -32,10 +32,10 @@ func Build(
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
 		var projectPath string
+		var ok bool
 		var err error
 
-		projectPath = os.Getenv("BP_DOTNET_PROJECT_PATH")
-		if projectPath == "" {
+		if projectPath, ok = os.LookupEnv("BP_DOTNET_PROJECT_PATH"); !ok {
 			projectPath, err = buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
 			if err != nil {
 				return packit.BuildResult{}, err
