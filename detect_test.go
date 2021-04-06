@@ -246,6 +246,57 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		})
 	})
 
+	context("when the .csproj file is not at the base of the directory and project_path is set via $BP_DOTNET_PROJECT_PATH", func() {
+		it.Before(func() {
+			Expect(os.Setenv("BP_DOTNET_PROJECT_PATH", "src/proj1")).To(Succeed())
+			projectParser.FindProjectFileCall.Returns.String = filepath.Join(workingDir, "src/proj1", "app.csproj")
+		})
+
+		it.After(func() {
+			Expect(os.Unsetenv("BP_DOTNET_PROJECT_PATH")).To(Succeed())
+			Expect(os.RemoveAll(workingDir)).To(Succeed())
+		})
+
+		it("finds the projfile and passes detection", func() {
+			result, err := detect(packit.DetectContext{
+				WorkingDir: workingDir,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(result).To(Equal(packit.DetectResult{
+				Plan: packit.BuildPlan{
+					Provides: []packit.BuildPlanProvision{
+						{Name: "dotnet-application"},
+					},
+					Requires: []packit.BuildPlanRequirement{
+						{
+							Name: "dotnet-sdk",
+							Metadata: dotnetpublish.BuildPlanMetadata{
+								Build: true,
+							},
+						},
+						{
+							Name: "dotnet-runtime",
+							Metadata: dotnetpublish.BuildPlanMetadata{
+								Build: true,
+							},
+						},
+						{
+							Name: "icu",
+							Metadata: dotnetpublish.BuildPlanMetadata{
+								Build: true,
+							},
+						},
+					},
+				},
+			}))
+
+			Expect(buildpackYMLParser.ParseProjectPathCall.CallCount).To(Equal(0))
+			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(filepath.Join(workingDir, "src/proj1")))
+			Expect(projectParser.ASPNetIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
+			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
+			Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
+		})
+	})
 	context("when the .csproj file is not at the base of the directory and project_path is set in buildpack.yml", func() {
 		it.Before(func() {
 			buildpackYMLParser.ParseProjectPathCall.Returns.ProjectFilePath = "src/proj1"

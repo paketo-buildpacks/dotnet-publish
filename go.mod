@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/BurntSushi/toml v0.3.1
+	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/mattn/go-runewidth v0.0.10 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect

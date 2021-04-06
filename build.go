@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Masterminds/semver"
 	"github.com/paketo-buildpacks/packit"
 	"github.com/paketo-buildpacks/packit/chronos"
 	"github.com/paketo-buildpacks/packit/scribe"
@@ -30,10 +31,21 @@ func Build(
 ) packit.BuildFunc {
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
+		var projectPath string
+		var ok bool
+		var err error
 
-		projectPath, err := buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
-		if err != nil {
-			return packit.BuildResult{}, err
+		if projectPath, ok = os.LookupEnv("BP_DOTNET_PROJECT_PATH"); !ok {
+			projectPath, err = buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
+			if err != nil {
+				return packit.BuildResult{}, err
+			}
+
+			if projectPath != "" {
+				nextMajorVersion := semver.MustParse(context.BuildpackInfo.Version).IncMajor()
+				logger.Subprocess("WARNING: Setting the project path through buildpack.yml will be deprecated soon in Dotnet Publish Buildpack v%s", nextMajorVersion.String())
+				logger.Subprocess("Please specify the project path through the $BP_DOTNET_PROJECT_PATH environment variable instead. See README.md or the documentation on paketo.io for more information.")
+			}
 		}
 
 		tempDir, err := ioutil.TempDir("", "dotnet-publish-output")
