@@ -28,7 +28,7 @@ func testFSharp(t *testing.T, context spec.G, it spec.S) {
 		docker = occam.NewDocker()
 	})
 
-	context("when building an app", func() {
+	context("when building an fsharp application", func() {
 		var (
 			image     occam.Image
 			container occam.Container
@@ -48,7 +48,7 @@ func testFSharp(t *testing.T, context spec.G, it spec.S) {
 			Expect(docker.Volume.Remove.Execute(occam.CacheVolumeNames(name))).To(Succeed())
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
-		it("should build a working OCI image for an fsharp application", func() {
+		it("should build a working OCI image", func() {
 			var err error
 			source, err = occam.Source(filepath.Join("testdata", "fsharp_msbuild"))
 			Expect(err).NotTo(HaveOccurred())

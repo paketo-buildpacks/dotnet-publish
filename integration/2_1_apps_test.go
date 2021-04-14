@@ -28,7 +28,7 @@ func test21Apps(t *testing.T, context spec.G, it spec.S) {
 		docker = occam.NewDocker()
 	})
 
-	context("when building an app", func() {
+	context("when building a .NET Core 2.1 app", func() {
 		var (
 			image     occam.Image
 			container occam.Container

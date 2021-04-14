@@ -13,7 +13,7 @@ import (
 	. "github.com/paketo-buildpacks/occam/matchers"
 )
 
-func testDefault(t *testing.T, context spec.G, it spec.S) {
+func testBuildpackYML(t *testing.T, context spec.G, it spec.S) {
 	var (
 		Expect     = NewWithT(t).Expect
 		Eventually = NewWithT(t).Eventually
@@ -26,7 +26,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 		docker = occam.NewDocker()
 	})
 
-	context("when building an app", func() {
+	context("when building an app that specifies a project path in buildpack.yml", func() {
 		var (
 			image     occam.Image
 			container occam.Container
@@ -47,9 +47,16 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
 
-		it("should build a working OCI image for an app that contains a directory with the same name as the app", func() {
+		it("should build a working OCI image for an app that specifies project path via buildpack.yml AND warn", func() {
 			var err error
 			source, err = occam.Source(filepath.Join("testdata", "match_dir_and_app_name"))
+			Expect(err).NotTo(HaveOccurred())
+
+			err = os.WriteFile(filepath.Join(source, "buildpack.yml"), []byte(`
+---
+dotnet-build:
+  project-path: "./console"
+`), os.ModePerm)
 			Expect(err).NotTo(HaveOccurred())
 
 			var logs fmt.Stringer
@@ -85,49 +92,6 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 				return cLogs.String()
 			}).Should(ContainSubstring("Hello World!"))
-		})
-
-		context("when custom project path is set via $BP_DOTNET_PROJECT_PATH", func() {
-			it("should build a working OCI image for an app", func() {
-				var err error
-				source, err = occam.Source(filepath.Join("testdata", "match_dir_and_app_name"))
-				Expect(err).NotTo(HaveOccurred())
-
-				var logs fmt.Stringer
-				image, logs, err = pack.WithNoColor().Build.
-					WithBuildpacks(
-						icuBuildpack,
-						dotnetCoreRuntimeBuildpack,
-						dotnetCoreSDKBuildpack,
-						buildpack,
-						dotnetExecuteBuildpack,
-					).
-					WithEnv(map[string]string{"BP_DOTNET_PROJECT_PATH": "console"}).
-					Execute(name, source)
-				Expect(err).NotTo(HaveOccurred(), logs.String())
-
-				Expect(logs).To(ContainLines(
-					MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
-					"  Executing build process",
-					MatchRegexp(`    Running 'dotnet publish \/workspace\/console --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+'`),
-					MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
-					"",
-					"  Removing source code",
-					"",
-				))
-
-				Expect(logs).ToNot(ContainSubstring("WARNING: Setting the project path through buildpack.yml will be deprecated soon in Dotnet Publish Buildpack v1.0.0"))
-
-				container, err = docker.Container.Run.
-					Execute(image.ID)
-				Expect(err).NotTo(HaveOccurred())
-
-				Eventually(func() string {
-					cLogs, err := docker.Container.Logs.Execute(container.ID)
-					Expect(err).NotTo(HaveOccurred())
-					return cLogs.String()
-				}).Should(ContainSubstring("Hello World!"))
-			})
 		})
 	})
 }
