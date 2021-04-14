@@ -25,7 +25,7 @@ func testConsole(t *testing.T, context spec.G, it spec.S) {
 		docker = occam.NewDocker()
 	})
 
-	context("when building an app", func() {
+	context("when building a console app", func() {
 		var (
 			image     occam.Image
 			container occam.Container
@@ -46,7 +46,7 @@ func testConsole(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
 
-		it("should build a working OCI image for a console app", func() {
+		it("should build a working OCI image", func() {
 			var err error
 			source, err = occam.Source(filepath.Join("testdata", "console_app"))
 			Expect(err).NotTo(HaveOccurred())
