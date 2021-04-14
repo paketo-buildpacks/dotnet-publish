@@ -2,8 +2,6 @@ package integration_test
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,7 +13,7 @@ import (
 	. "github.com/paketo-buildpacks/occam/matchers"
 )
 
-func testMultipleProject(t *testing.T, context spec.G, it spec.S) {
+func testMatchDirAndAppName(t *testing.T, context spec.G, it spec.S) {
 	var (
 		Expect     = NewWithT(t).Expect
 		Eventually = NewWithT(t).Eventually
@@ -28,7 +26,7 @@ func testMultipleProject(t *testing.T, context spec.G, it spec.S) {
 		docker = occam.NewDocker()
 	})
 
-	context("when building an app from a monorepo with multiple project subdirectories", func() {
+	context("when building an app whose source code is in a subdir of same name as projfile", func() {
 		var (
 			image     occam.Image
 			container occam.Container
@@ -49,9 +47,9 @@ func testMultipleProject(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
 
-		it("should build a working OCI image for an app in a subdirectory", func() {
+		it("should build a working OCI image for an app", func() {
 			var err error
-			source, err = occam.Source(filepath.Join("testdata", "multiple_projects_msbuild"))
+			source, err = occam.Source(filepath.Join("testdata", "match_dir_and_app_name"))
 			Expect(err).NotTo(HaveOccurred())
 
 			var logs fmt.Stringer
@@ -63,30 +61,29 @@ func testMultipleProject(t *testing.T, context spec.G, it spec.S) {
 					buildpack,
 					dotnetExecuteBuildpack,
 				).
-				WithEnv(map[string]string{
-					"BP_DOTNET_PROJECT_PATH": "src/asp_web_app",
-				}).
+				WithEnv(map[string]string{"BP_DOTNET_PROJECT_PATH": "console"}).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
+			Expect(logs).To(ContainLines(
+				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
+				"  Executing build process",
+				MatchRegexp(`    Running 'dotnet publish \/workspace\/console --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+'`),
+				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
+				"",
+				"  Removing source code",
+				"",
+			))
+
 			container, err = docker.Container.Run.
-				WithEnv(map[string]string{"PORT": "8080"}).
-				WithPublish("8080").
-				WithPublishAll().
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(container).Should(BeAvailable())
-
-			response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
-			Expect(err).NotTo(HaveOccurred())
-			defer response.Body.Close()
-
-			Expect(response.StatusCode).To(Equal(http.StatusOK))
-
-			content, err := ioutil.ReadAll(response.Body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(content)).To(ContainSubstring("Hello, I'm a string!"))
+			Eventually(func() string {
+				cLogs, err := docker.Container.Logs.Execute(container.ID)
+				Expect(err).NotTo(HaveOccurred())
+				return cLogs.String()
+			}).Should(ContainSubstring("Hello World!"))
 		})
 	})
 }

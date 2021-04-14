@@ -95,6 +95,5 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(content)).To(ContainSubstring("source_2._1_aspnet"))
 		})
-
 	})
 }
