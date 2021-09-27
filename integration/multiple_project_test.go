@@ -65,7 +65,7 @@ func testMultipleProject(t *testing.T, context spec.G, it spec.S) {
 					dotnetExecuteBuildpack,
 				).
 				WithEnv(map[string]string{
-					"BP_DOTNET_PROJECT_PATH": "src/asp_web_app",
+					"BP_DOTNET_PROJECT_PATH": "asp_web_app",
 				}).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
