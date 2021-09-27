@@ -60,6 +60,7 @@ func testMultipleProject(t *testing.T, context spec.G, it spec.S) {
 					icuBuildpack,
 					dotnetCoreRuntimeBuildpack,
 					dotnetCoreSDKBuildpack,
+					dotnetCoreAspNetBuildpack,
 					buildpack,
 					dotnetExecuteBuildpack,
 				).

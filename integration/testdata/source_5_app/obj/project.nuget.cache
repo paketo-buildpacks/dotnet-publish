@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "dgSpecHash": "Kzme/ER03Fv4IWk/AjrGPTXgILB/iYbgNn5PHEgZ3qXagBe1HJI4X7JjESVod/7RvWW6omzUA9XirhaSV18Heg==",
+  "success": true,
+  "projectFilePath": "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/source_5_app/source_5_app.csproj",
+  "expectedPackageFiles": [],
+  "logs": []
+}

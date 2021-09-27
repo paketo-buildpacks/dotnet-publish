@@ -51,7 +51,7 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 
 		it("should build a working OCI image for a simple app", func() {
 			var err error
-			source, err = occam.Source(filepath.Join("testdata", "offline"))
+			source, err = occam.Source(filepath.Join("testdata", "source_3_1_app"))
 			Expect(err).NotTo(HaveOccurred())
 
 			var logs fmt.Stringer
@@ -93,7 +93,7 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 
 			content, err := ioutil.ReadAll(response.Body)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(content)).To(ContainSubstring("source_2._1_aspnet"))
+			Expect(string(content)).To(ContainSubstring("simple_3_0_app"))
 		})
 	})
 }
