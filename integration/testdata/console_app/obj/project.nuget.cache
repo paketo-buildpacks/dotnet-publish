@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "dgSpecHash": "FFXcLH1LdnhS2ghPsaC73NBtBCHceN17oeizu3QML7nEIGg3arwIY/phOg9esqJaT/OFGXMT8cTYpQ/KZ7gqng==",
+  "success": true,
+  "projectFilePath": "/Users/swigmore/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/console_app/console_app.csproj",
+  "expectedPackageFiles": [],
+  "logs": []
+}
