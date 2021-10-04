@@ -17,14 +17,15 @@ type SourceRemover interface {
 	Remove(workingDir, publishOutputDir string, excludedFiles ...string) error
 }
 
-//go:generate faux --interface PublishProcess --output fakes/publish_process.go
-type PublishProcess interface {
-	Execute(workingDir, rootDir, projectPath, outputPath string) error
+//go:generate faux --interface Dotnet --output fakes/dotnet.go
+type Dotnet interface {
+	Restore(workingDir, rootDir, projectPath string) error
+	Publish(workingDir, rootDir, projectPath, outputPath string) error
 }
 
 func Build(
 	sourceRemover SourceRemover,
-	publishProcess PublishProcess,
+	dotnetProcess Dotnet,
 	buildpackYMLParser BuildpackYMLParser,
 	clock chronos.Clock,
 	logger scribe.Logger,
@@ -53,8 +54,14 @@ func Build(
 			return packit.BuildResult{}, fmt.Errorf("could not create temp directory: %w", err)
 		}
 
+		logger.Process("Executing package restore process")
+		err = dotnetProcess.Restore(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath)
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
 		logger.Process("Executing build process")
-		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, tempDir)
+		err = dotnetProcess.Publish(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, tempDir)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}

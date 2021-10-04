@@ -21,7 +21,7 @@ func main() {
 		),
 		dotnetpublish.Build(
 			dotnetpublish.NewDotnetSourceRemover(),
-			dotnetpublish.NewDotnetPublishProcess(
+			dotnetpublish.NewDotnetProcess(
 				pexec.NewExecutable("dotnet"),
 				logger,
 				chronos.DefaultClock,

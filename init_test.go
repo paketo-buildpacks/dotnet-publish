@@ -8,10 +8,10 @@ import (
 )
 
 func TestUnitDotnetPublish(t *testing.T) {
-	suite := spec.New("dotnet-publish", spec.Report(report.Terminal{}))
+	suite := spec.New("dotnet-publish", spec.Report(report.Terminal{}), spec.Sequential())
 	suite("Build", testBuild)
 	suite("Detect", testDetect)
-	suite("DotnetPublishProcess", testDotnetPublishProcess)
+	suite("DotnetProcess", testDotnetProcess)
 	suite("DotnetSourceRemover", testDotnetSourceRemover)
 	suite("ProjectFileParser", testProjectFileParser)
 	suite("BuildpackYMLParser", testBuildpackYMLParser)

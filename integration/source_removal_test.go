@@ -67,8 +67,12 @@ func testSourceRemoval(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(logs).To(ContainLines(
 				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
+				"  Executing package restore process",
+				"    Running 'dotnet restore /workspace --runtime ubuntu.18.04-x64'",
+				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
+				"",
 				"  Executing build process",
-				MatchRegexp(`    Running 'dotnet publish \/workspace --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+`),
+				MatchRegexp(`    Running 'dotnet publish \/workspace --no-restore --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+`),
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
 				"  Removing source code",
