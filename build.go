@@ -19,14 +19,20 @@ type SourceRemover interface {
 
 //go:generate faux --interface Dotnet --output fakes/dotnet.go
 type Dotnet interface {
-	Restore(workingDir, rootDir, projectPath string) error
-	Publish(workingDir, rootDir, projectPath, outputPath string) error
+	Restore(workingDir, rootDir, projectPath string, flags []string) error
+	Publish(workingDir, rootDir, projectPath, outputPath string, flags []string) error
+}
+
+//go:generate faux --interface CommandConfigParser --output fakes/command_config_parser.go
+type CommandConfigParser interface {
+	ParseFlagsFromEnvVar(envVar string) ([]string, error)
 }
 
 func Build(
 	sourceRemover SourceRemover,
 	dotnetProcess Dotnet,
 	buildpackYMLParser BuildpackYMLParser,
+	configParser CommandConfigParser,
 	clock chronos.Clock,
 	logger scribe.Logger,
 ) packit.BuildFunc {
@@ -54,14 +60,24 @@ func Build(
 			return packit.BuildResult{}, fmt.Errorf("could not create temp directory: %w", err)
 		}
 
+		restoreFlags, err := configParser.ParseFlagsFromEnvVar("BP_DOTNET_RESTORE_FLAGS")
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
 		logger.Process("Executing package restore process")
-		err = dotnetProcess.Restore(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath)
+		err = dotnetProcess.Restore(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, restoreFlags)
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		publishFlags, err := configParser.ParseFlagsFromEnvVar("BP_DOTNET_PUBLISH_FLAGS")
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
 
 		logger.Process("Executing build process")
-		err = dotnetProcess.Publish(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, tempDir)
+		err = dotnetProcess.Publish(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, tempDir, publishFlags)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}

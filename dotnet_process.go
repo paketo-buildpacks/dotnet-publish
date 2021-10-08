@@ -30,12 +30,17 @@ func NewDotnetProcess(executable Executable, logger scribe.Logger, clock chronos
 	}
 }
 
-func (p DotnetProcess) Restore(workingDir, root, projectPath string) error {
+func (p DotnetProcess) Restore(workingDir, root, projectPath string, flags []string) error {
 	buffer := bytes.NewBuffer(nil)
 	args := []string{
 		"restore", filepath.Join(workingDir, projectPath),
-		"--runtime", "ubuntu.18.04-x64",
 	}
+
+	if !containsFlag(flags, "--runtime") && !containsFlag(flags, "-r") {
+		args = append(args, "--runtime", "ubuntu.18.04-x64")
+	}
+
+	args = append(args, flags...)
 
 	p.logger.Subprocess("Running 'dotnet %s'", strings.Join(args, " "))
 
@@ -61,16 +66,30 @@ func (p DotnetProcess) Restore(workingDir, root, projectPath string) error {
 	return nil
 }
 
-func (p DotnetProcess) Publish(workingDir, root, projectPath, outputPath string) error {
+func (p DotnetProcess) Publish(workingDir, root, projectPath, outputPath string, flags []string) error {
 	buffer := bytes.NewBuffer(nil)
 	args := []string{
 		"publish", filepath.Join(workingDir, projectPath), // change to workingDir plus project path
 		"--no-restore",
-		"--configuration", "Release",
-		"--runtime", "ubuntu.18.04-x64",
-		"--self-contained", "false",
-		"--output", outputPath,
 	}
+
+	if !containsFlag(flags, "--configuration") && !containsFlag(flags, "-c") {
+		args = append(args, "--configuration", "Release")
+	}
+
+	if !containsFlag(flags, "--runtime") && !containsFlag(flags, "-r") {
+		args = append(args, "--runtime", "ubuntu.18.04-x64")
+	}
+
+	if !containsFlag(flags, "--self-contained") && !containsFlag(flags, "--no-self-contained") {
+		args = append(args, "--self-contained", "false")
+	}
+
+	if !containsFlag(flags, "--output") && !containsFlag(flags, "-o") {
+		args = append(args, "--output", outputPath)
+	}
+
+	args = append(args, flags...)
 
 	p.logger.Subprocess("Running 'dotnet %s'", strings.Join(args, " "))
 

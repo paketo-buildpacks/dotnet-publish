@@ -11,11 +11,12 @@ type Dotnet struct {
 			RootDir     string
 			ProjectPath string
 			OutputPath  string
+			Flags       []string
 		}
 		Returns struct {
 			Error error
 		}
-		Stub func(string, string, string, string) error
+		Stub func(string, string, string, string, []string) error
 	}
 	RestoreCall struct {
 		sync.Mutex
@@ -24,15 +25,16 @@ type Dotnet struct {
 			WorkingDir  string
 			RootDir     string
 			ProjectPath string
+			Flags       []string
 		}
 		Returns struct {
 			Error error
 		}
-		Stub func(string, string, string) error
+		Stub func(string, string, string, []string) error
 	}
 }
 
-func (f *Dotnet) Publish(param1 string, param2 string, param3 string, param4 string) error {
+func (f *Dotnet) Publish(param1 string, param2 string, param3 string, param4 string, param5 []string) error {
 	f.PublishCall.Lock()
 	defer f.PublishCall.Unlock()
 	f.PublishCall.CallCount++
@@ -40,20 +42,22 @@ func (f *Dotnet) Publish(param1 string, param2 string, param3 string, param4 str
 	f.PublishCall.Receives.RootDir = param2
 	f.PublishCall.Receives.ProjectPath = param3
 	f.PublishCall.Receives.OutputPath = param4
+	f.PublishCall.Receives.Flags = param5
 	if f.PublishCall.Stub != nil {
-		return f.PublishCall.Stub(param1, param2, param3, param4)
+		return f.PublishCall.Stub(param1, param2, param3, param4, param5)
 	}
 	return f.PublishCall.Returns.Error
 }
-func (f *Dotnet) Restore(param1 string, param2 string, param3 string) error {
+func (f *Dotnet) Restore(param1 string, param2 string, param3 string, param4 []string) error {
 	f.RestoreCall.Lock()
 	defer f.RestoreCall.Unlock()
 	f.RestoreCall.CallCount++
 	f.RestoreCall.Receives.WorkingDir = param1
 	f.RestoreCall.Receives.RootDir = param2
 	f.RestoreCall.Receives.ProjectPath = param3
+	f.RestoreCall.Receives.Flags = param4
 	if f.RestoreCall.Stub != nil {
-		return f.RestoreCall.Stub(param1, param2, param3)
+		return f.RestoreCall.Stub(param1, param2, param3, param4)
 	}
 	return f.RestoreCall.Returns.Error
 }

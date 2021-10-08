@@ -27,9 +27,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		buffer     *bytes.Buffer
 		workingDir string
 
-		sourceRemover      *fakes.SourceRemover
-		dotnetProcess      *fakes.Dotnet
-		buildpackYMLParser *fakes.BuildpackYMLParser
+		sourceRemover       *fakes.SourceRemover
+		dotnetProcess       *fakes.Dotnet
+		buildpackYMLParser  *fakes.BuildpackYMLParser
+		commandConfigParser *fakes.CommandConfigParser
 
 		build packit.BuildFunc
 	)
@@ -47,6 +48,17 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		buildpackYMLParser = &fakes.BuildpackYMLParser{}
 		buildpackYMLParser.ParseProjectPathCall.Returns.ProjectFilePath = "some/project/path"
 
+		commandConfigParser = &fakes.CommandConfigParser{}
+		commandConfigParser.ParseFlagsFromEnvVarCall.Stub = func(envVar string) ([]string, error) {
+			if envVar == "BP_DOTNET_RESTORE_FLAGS" {
+				return []string{"--restoreflag", "value"}, nil
+			}
+			if envVar == "BP_DOTNET_PUBLISH_FLAGS" {
+				return []string{"--publishflag", "value"}, nil
+			}
+			return nil, nil
+		}
+
 		os.Setenv("DOTNET_ROOT", "some-existing-root-dir")
 
 		buffer = bytes.NewBuffer(nil)
@@ -57,7 +69,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			return timestamp
 		})
 
-		build = dotnetpublish.Build(sourceRemover, dotnetProcess, buildpackYMLParser, clock, logger)
+		build = dotnetpublish.Build(sourceRemover, dotnetProcess, buildpackYMLParser, commandConfigParser, clock, logger)
 	})
 
 	it.After(func() {
@@ -84,11 +96,13 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(dotnetProcess.RestoreCall.Receives.WorkingDir).To(Equal(workingDir))
 		Expect(dotnetProcess.RestoreCall.Receives.RootDir).To(Equal("some-existing-root-dir"))
 		Expect(dotnetProcess.RestoreCall.Receives.ProjectPath).To(Equal("some/project/path"))
+		Expect(dotnetProcess.RestoreCall.Receives.Flags).To(Equal([]string{"--restoreflag", "value"}))
 
 		Expect(dotnetProcess.PublishCall.Receives.WorkingDir).To(Equal(workingDir))
 		Expect(dotnetProcess.PublishCall.Receives.RootDir).To(Equal("some-existing-root-dir"))
 		Expect(dotnetProcess.PublishCall.Receives.ProjectPath).To(Equal("some/project/path"))
 		Expect(dotnetProcess.PublishCall.Receives.OutputPath).To(MatchRegexp(`dotnet-publish-output\d+`))
+		Expect(dotnetProcess.PublishCall.Receives.Flags).To(Equal([]string{"--publishflag", "value"}))
 
 		Expect(buffer.String()).To(ContainSubstring("Some Buildpack 0.0.1"))
 		Expect(buffer.String()).To(ContainSubstring("Executing package restore process"))
@@ -167,6 +181,27 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 
+		context("BP_DOTNET_RESTORE_FLAGS cannot be parsed", func() {
+			it.Before(func() {
+				commandConfigParser.ParseFlagsFromEnvVarCall.Stub = func(envVar string) ([]string, error) {
+					if envVar == "BP_DOTNET_RESTORE_FLAGS" {
+						return nil, errors.New("some restore parsing error")
+					}
+					return nil, nil
+				}
+			})
+
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					WorkingDir: workingDir,
+					BuildpackInfo: packit.BuildpackInfo{
+						Version: "0.0.1",
+					},
+				})
+				Expect(err).To(MatchError("some restore parsing error"))
+			})
+		})
+
 		context("when the restore process fails", func() {
 			it.Before(func() {
 				dotnetProcess.RestoreCall.Returns.Error = errors.New("some-error")
@@ -180,6 +215,27 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					},
 				})
 				Expect(err).To(MatchError("some-error"))
+			})
+		})
+
+		context("BP_DOTNET_PUBLISH_FLAGS cannot be parsed", func() {
+			it.Before(func() {
+				commandConfigParser.ParseFlagsFromEnvVarCall.Stub = func(envVar string) ([]string, error) {
+					if envVar == "BP_DOTNET_PUBLISH_FLAGS" {
+						return nil, errors.New("some publish parsing error")
+					}
+					return nil, nil
+				}
+			})
+
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					WorkingDir: workingDir,
+					BuildpackInfo: packit.BuildpackInfo{
+						Version: "0.0.1",
+					},
+				})
+				Expect(err).To(MatchError("some publish parsing error"))
 			})
 		})
 

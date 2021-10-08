@@ -12,6 +12,7 @@ import (
 
 func main() {
 	bpYMLParser := dotnetpublish.NewDotnetBuildpackYMLParser()
+	configParser := dotnetpublish.NewCommandConfigurationParser()
 	logger := scribe.NewLogger(os.Stdout)
 
 	packit.Run(
@@ -27,6 +28,7 @@ func main() {
 				chronos.DefaultClock,
 			),
 			bpYMLParser,
+			configParser,
 			chronos.DefaultClock,
 			logger,
 		),
