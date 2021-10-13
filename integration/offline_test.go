@@ -28,7 +28,7 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 		docker = occam.NewDocker()
 	})
 
-	context("when packages are vendored", func() {
+	context.Focus("when packages are vendored", func() {
 		var (
 			image     occam.Image
 			container occam.Container
@@ -64,6 +64,9 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 					offlineBuildpack,
 					dotnetExecuteBuildpack,
 				).
+				WithEnv(map[string]string{
+					"BP_DOTNET_RESTORE_FLAGS": "--verbosity=d",
+				}).
 				WithNetwork("none").
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())

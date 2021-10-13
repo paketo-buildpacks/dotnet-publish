@@ -102,6 +102,7 @@ func (p DotnetProcess) Publish(workingDir, root, projectPath, outputPath string,
 			Stderr: buffer,
 		})
 	})
+
 	if err != nil {
 		p.logger.Action("Failed after %s", duration)
 		p.logger.Detail(buffer.String())
