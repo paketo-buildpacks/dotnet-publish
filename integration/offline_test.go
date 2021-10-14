@@ -28,7 +28,7 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 		docker = occam.NewDocker()
 	})
 
-	context.Focus("when packages are vendored", func() {
+	context("when packages are vendored", func() {
 		var (
 			image     occam.Image
 			container occam.Container

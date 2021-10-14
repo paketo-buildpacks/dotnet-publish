@@ -65,13 +65,13 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
-		logger.Process("Executing package restore process")
-		err = dotnetProcess.Restore(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, restoreFlags)
+		publishFlags, err := configParser.ParseFlagsFromEnvVar("BP_DOTNET_PUBLISH_FLAGS")
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
 
-		publishFlags, err := configParser.ParseFlagsFromEnvVar("BP_DOTNET_PUBLISH_FLAGS")
+		logger.Process("Executing package restore process")
+		err = dotnetProcess.Restore(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, restoreFlags)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
