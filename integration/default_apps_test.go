@@ -65,8 +65,15 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 						buildpack,
 						dotnetExecuteBuildpack,
 					).
+					WithEnv(map[string]string{
+						"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
+					}).
 					Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())
+
+				Expect(logs).To(ContainLines(
+					MatchRegexp(`    Running 'dotnet publish .* --verbosity=normal'`),
+				))
 
 				container, err = docker.Container.Run.
 					WithEnv(map[string]string{"PORT": "8080"}).
