@@ -19,13 +19,19 @@ type SourceRemover interface {
 
 //go:generate faux --interface PublishProcess --output fakes/publish_process.go
 type PublishProcess interface {
-	Execute(workingDir, rootDir, projectPath, outputPath string) error
+	Execute(workingDir, rootDir, projectPath, outputPath string, flags []string) error
+}
+
+//go:generate faux --interface CommandConfigParser --output fakes/command_config_parser.go
+type CommandConfigParser interface {
+	ParseFlagsFromEnvVar(envVar string) ([]string, error)
 }
 
 func Build(
 	sourceRemover SourceRemover,
 	publishProcess PublishProcess,
 	buildpackYMLParser BuildpackYMLParser,
+	configParser CommandConfigParser,
 	clock chronos.Clock,
 	logger scribe.Logger,
 ) packit.BuildFunc {
@@ -53,8 +59,13 @@ func Build(
 			return packit.BuildResult{}, fmt.Errorf("could not create temp directory: %w", err)
 		}
 
+		flags, err := configParser.ParseFlagsFromEnvVar("BP_DOTNET_PUBLISH_FLAGS")
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
 		logger.Process("Executing build process")
-		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, tempDir)
+		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, tempDir, flags)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}

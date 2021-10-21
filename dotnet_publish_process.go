@@ -30,15 +30,29 @@ func NewDotnetPublishProcess(executable Executable, logger scribe.Logger, clock 
 	}
 }
 
-func (p DotnetPublishProcess) Execute(workingDir, root, projectPath, outputPath string) error {
+func (p DotnetPublishProcess) Execute(workingDir, root, projectPath, outputPath string, flags []string) error {
 	buffer := bytes.NewBuffer(nil)
 	args := []string{
 		"publish", filepath.Join(workingDir, projectPath), // change to workingDir plus project path
-		"--configuration", "Release",
-		"--runtime", "ubuntu.18.04-x64",
-		"--self-contained", "false",
-		"--output", outputPath,
 	}
+
+	if !containsFlag(flags, "--configuration") && !containsFlag(flags, "-c") {
+		args = append(args, "--configuration", "Release")
+	}
+
+	if !containsFlag(flags, "--runtime") && !containsFlag(flags, "-r") {
+		args = append(args, "--runtime", "ubuntu.18.04-x64")
+	}
+
+	if !containsFlag(flags, "--self-contained") && !containsFlag(flags, "--no-self-contained") {
+		args = append(args, "--self-contained", "false")
+	}
+
+	if !containsFlag(flags, "--output") && !containsFlag(flags, "-o") {
+		args = append(args, "--output", outputPath)
+	}
+
+	args = append(args, flags...)
 
 	p.logger.Subprocess("Running 'dotnet %s'", strings.Join(args, " "))
 
@@ -51,6 +65,7 @@ func (p DotnetPublishProcess) Execute(workingDir, root, projectPath, outputPath 
 			Stderr: buffer,
 		})
 	})
+
 	if err != nil {
 		p.logger.Action("Failed after %s", duration)
 		p.logger.Detail(buffer.String())

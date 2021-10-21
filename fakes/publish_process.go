@@ -11,15 +11,16 @@ type PublishProcess struct {
 			RootDir     string
 			ProjectPath string
 			OutputPath  string
+			Flags       []string
 		}
 		Returns struct {
 			Error error
 		}
-		Stub func(string, string, string, string) error
+		Stub func(string, string, string, string, []string) error
 	}
 }
 
-func (f *PublishProcess) Execute(param1 string, param2 string, param3 string, param4 string) error {
+func (f *PublishProcess) Execute(param1 string, param2 string, param3 string, param4 string, param5 []string) error {
 	f.ExecuteCall.Lock()
 	defer f.ExecuteCall.Unlock()
 	f.ExecuteCall.CallCount++
@@ -27,8 +28,9 @@ func (f *PublishProcess) Execute(param1 string, param2 string, param3 string, pa
 	f.ExecuteCall.Receives.RootDir = param2
 	f.ExecuteCall.Receives.ProjectPath = param3
 	f.ExecuteCall.Receives.OutputPath = param4
+	f.ExecuteCall.Receives.Flags = param5
 	if f.ExecuteCall.Stub != nil {
-		return f.ExecuteCall.Stub(param1, param2, param3, param4)
+		return f.ExecuteCall.Stub(param1, param2, param3, param4, param5)
 	}
 	return f.ExecuteCall.Returns.Error
 }
