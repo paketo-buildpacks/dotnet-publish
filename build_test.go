@@ -27,9 +27,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		buffer     *bytes.Buffer
 		workingDir string
 
-		sourceRemover      *fakes.SourceRemover
-		publishProcess     *fakes.PublishProcess
-		buildpackYMLParser *fakes.BuildpackYMLParser
+		sourceRemover       *fakes.SourceRemover
+		publishProcess      *fakes.PublishProcess
+		buildpackYMLParser  *fakes.BuildpackYMLParser
+		commandConfigParser *fakes.CommandConfigParser
 
 		build packit.BuildFunc
 	)
@@ -47,6 +48,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		buildpackYMLParser = &fakes.BuildpackYMLParser{}
 		buildpackYMLParser.ParseProjectPathCall.Returns.ProjectFilePath = "some/project/path"
 
+		commandConfigParser = &fakes.CommandConfigParser{}
+		commandConfigParser.ParseFlagsFromEnvVarCall.Returns.StringSlice = []string{"--publishflag", "value"}
+
 		os.Setenv("DOTNET_ROOT", "some-existing-root-dir")
 
 		buffer = bytes.NewBuffer(nil)
@@ -57,7 +61,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			return timestamp
 		})
 
-		build = dotnetpublish.Build(sourceRemover, publishProcess, buildpackYMLParser, clock, logger)
+		build = dotnetpublish.Build(sourceRemover, publishProcess, buildpackYMLParser, commandConfigParser, clock, logger)
 	})
 
 	it.After(func() {
@@ -84,6 +88,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(publishProcess.ExecuteCall.Receives.RootDir).To(Equal("some-existing-root-dir"))
 		Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
 		Expect(publishProcess.ExecuteCall.Receives.OutputPath).To(MatchRegexp(`dotnet-publish-output\d+`))
+		Expect(publishProcess.ExecuteCall.Receives.Flags).To(Equal([]string{"--publishflag", "value"}))
 
 		Expect(buffer.String()).To(ContainSubstring("Some Buildpack 0.0.1"))
 		Expect(buffer.String()).To(ContainSubstring("Executing build process"))
@@ -119,6 +124,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(publishProcess.ExecuteCall.Receives.RootDir).To(Equal("some-existing-root-dir"))
 			Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
 			Expect(publishProcess.ExecuteCall.Receives.OutputPath).To(MatchRegexp(`dotnet-publish-output\d+`))
+			Expect(publishProcess.ExecuteCall.Receives.Flags).To(Equal([]string{"--publishflag", "value"}))
 
 			Expect(buffer.String()).To(ContainSubstring("Some Buildpack some-version"))
 			Expect(buffer.String()).To(ContainSubstring("Executing build process"))
@@ -154,6 +160,22 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					},
 				})
 				Expect(err).To(MatchError("some-error"))
+			})
+		})
+
+		context("BP_DOTNET_PUBLISH_FLAGS cannot be parsed", func() {
+			it.Before(func() {
+				commandConfigParser.ParseFlagsFromEnvVarCall.Returns.Error = errors.New("some publish parsing error")
+			})
+
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					WorkingDir: workingDir,
+					BuildpackInfo: packit.BuildpackInfo{
+						Version: "0.0.1",
+					},
+				})
+				Expect(err).To(MatchError("some publish parsing error"))
 			})
 		})
 
