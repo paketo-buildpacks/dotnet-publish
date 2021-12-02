@@ -49,6 +49,53 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
 
+		context("given a source application with .NET Core 6", func() {
+			it("should build a working OCI image", func() {
+				var err error
+				source, err := occam.Source(filepath.Join("testdata", "source_6_app"))
+				Expect(err).NotTo(HaveOccurred())
+
+				var logs fmt.Stringer
+				image, logs, err = pack.WithNoColor().Build.
+					WithBuildpacks(
+						icuBuildpack,
+						dotnetCoreRuntimeBuildpack,
+						dotnetCoreAspNetBuildpack,
+						dotnetCoreSDKBuildpack,
+						buildpack,
+						dotnetExecuteBuildpack,
+					).
+					WithEnv(map[string]string{
+						"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
+					}).
+					Execute(name, source)
+				Expect(err).NotTo(HaveOccurred(), logs.String())
+
+				Expect(logs).To(ContainLines(
+					MatchRegexp(`    Running 'dotnet publish .* --verbosity=normal'`),
+				))
+
+				container, err = docker.Container.Run.
+					WithEnv(map[string]string{"PORT": "8080"}).
+					WithPublish("8080").
+					WithPublishAll().
+					Execute(image.ID)
+				Expect(err).NotTo(HaveOccurred())
+
+				Eventually(container).Should(BeAvailable())
+
+				response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
+				Expect(err).NotTo(HaveOccurred())
+				defer response.Body.Close()
+
+				Expect(response.StatusCode).To(Equal(http.StatusOK))
+
+				content, err := ioutil.ReadAll(response.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(content)).To(ContainSubstring("source_6_app"))
+			})
+		})
+
 		context("given a source application with .NET Core 5", func() {
 			it("should build a working OCI image", func() {
 				var err error

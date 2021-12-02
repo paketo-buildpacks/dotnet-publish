@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "dgSpecHash": "iGR3CRAB/Hk9j/wjJowNqGdkIQJD3OxJiNQVI2Zua37RkYSOBs9Nu35Kh+UJRi9AYlctIavSKEYUvbLrn9us+A==",
+  "success": true,
+  "projectFilePath": "/Users/frankieg/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/source_6_app/source_6_app.csproj",
+  "expectedPackageFiles": [],
+  "logs": []
+}
