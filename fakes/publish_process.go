@@ -4,7 +4,7 @@ import "sync"
 
 type PublishProcess struct {
 	ExecuteCall struct {
-		sync.Mutex
+		mutex     sync.Mutex
 		CallCount int
 		Receives  struct {
 			WorkingDir  string
@@ -21,8 +21,8 @@ type PublishProcess struct {
 }
 
 func (f *PublishProcess) Execute(param1 string, param2 string, param3 string, param4 string, param5 []string) error {
-	f.ExecuteCall.Lock()
-	defer f.ExecuteCall.Unlock()
+	f.ExecuteCall.mutex.Lock()
+	defer f.ExecuteCall.mutex.Unlock()
 	f.ExecuteCall.CallCount++
 	f.ExecuteCall.Receives.WorkingDir = param1
 	f.ExecuteCall.Receives.RootDir = param2

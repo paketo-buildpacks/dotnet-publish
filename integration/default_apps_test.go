@@ -40,6 +40,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 			var err error
 			name, err = occam.RandomName()
 			Expect(err).NotTo(HaveOccurred())
+
 		})
 
 		it.After(func() {

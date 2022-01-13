@@ -16,5 +16,6 @@ func TestUnitDotnetPublish(t *testing.T) {
 	suite("DotnetPublishProcess", testDotnetPublishProcess)
 	suite("DotnetSourceRemover", testDotnetSourceRemover)
 	suite("ProjectFileParser", testProjectFileParser)
+	suite("Symlinker", testSymlinker)
 	suite.Run(t)
 }

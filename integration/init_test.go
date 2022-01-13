@@ -143,5 +143,6 @@ func TestIntegration(t *testing.T) {
 	suite("Offline", testOffline)
 	suite("SourceRemoval", testSourceRemoval)
 	suite("VisualBasic", testVisualBasic)
+	suite("Nuget", testNugetConfig)
 	suite.Run(t)
 }

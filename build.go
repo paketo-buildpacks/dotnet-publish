@@ -1,6 +1,7 @@
 package dotnetpublish
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,7 +11,14 @@ import (
 	"github.com/paketo-buildpacks/packit"
 	"github.com/paketo-buildpacks/packit/chronos"
 	"github.com/paketo-buildpacks/packit/scribe"
+	"github.com/paketo-buildpacks/packit/servicebindings"
 )
+
+//go:generate faux --interface SymlinkManager --output fakes/symlink_manager.go
+type SymlinkManager interface {
+	Link(oldname, newname string) error
+	Unlink(path string) error
+}
 
 //go:generate faux --interface SourceRemover --output fakes/source_remover.go
 type SourceRemover interface {
@@ -22,6 +30,11 @@ type PublishProcess interface {
 	Execute(workingDir, rootDir, projectPath, outputPath string, flags []string) error
 }
 
+//go:generate faux --interface BindingResolver --output fakes/binding_resolver.go
+type BindingResolver interface {
+	Resolve(typ, provider, platformDir string) ([]servicebindings.Binding, error)
+}
+
 //go:generate faux --interface CommandConfigParser --output fakes/command_config_parser.go
 type CommandConfigParser interface {
 	ParseFlagsFromEnvVar(envVar string) ([]string, error)
@@ -29,6 +42,9 @@ type CommandConfigParser interface {
 
 func Build(
 	sourceRemover SourceRemover,
+	bindingResolver BindingResolver,
+	homeDir string,
+	symlinker SymlinkManager,
 	publishProcess PublishProcess,
 	buildpackYMLParser BuildpackYMLParser,
 	configParser CommandConfigParser,
@@ -64,6 +80,18 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
+		globalNugetPath, err := getBinding("nugetconfig", "", context.Platform.Path, "nuget.config", bindingResolver, logger)
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		if globalNugetPath != "" {
+			err = setupBindingSymlink(symlinker, globalNugetPath, filepath.Join(homeDir, ".nuget", "NuGet"), "NuGet.Config")
+			if err != nil {
+				return packit.BuildResult{}, err
+			}
+		}
+
 		logger.Process("Executing build process")
 		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, tempDir, flags)
 		if err != nil {
@@ -82,6 +110,54 @@ func Build(
 			return packit.BuildResult{}, fmt.Errorf("could not remove temp directory: %w", err)
 		}
 
+		if globalNugetPath != "" {
+			err = symlinker.Unlink(filepath.Join(homeDir, ".nuget", "NuGet", "NuGet.Config"))
+			if err != nil {
+				return packit.BuildResult{}, err
+			}
+		}
+
 		return packit.BuildResult{}, nil
 	}
+}
+
+func getBinding(typ, provider, bindingsRoot, entry string, bindingResolver BindingResolver, logger scribe.Logger) (string, error) {
+	bindings, err := bindingResolver.Resolve(typ, provider, bindingsRoot)
+	if err != nil {
+		return "", err
+	}
+
+	if len(bindings) > 1 {
+		return "", errors.New("binding resolver found more than one binding of type 'nugetconfig'")
+	}
+
+	if len(bindings) == 1 {
+		logger.Process("Loading nuget service binding")
+
+		fileExists := false
+		for key := range bindings[0].Entries {
+			if key == entry {
+				fileExists = true
+				break
+			}
+		}
+		if !fileExists {
+			return "", fmt.Errorf("binding of type %s does not contain required entry %s", typ, entry)
+		}
+		return filepath.Join(bindings[0].Path, entry), nil
+	}
+	return "", nil
+}
+
+func setupBindingSymlink(symlinker SymlinkManager, originalPath, newPath, filename string) error {
+	err := os.MkdirAll(newPath, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to make directory for %s: %w", filename, err)
+	}
+
+	err = symlinker.Link(originalPath, filepath.Join(newPath, filename))
+	if err != nil {
+		return err
+	}
+	return nil
 }
