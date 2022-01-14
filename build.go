@@ -86,7 +86,7 @@ func Build(
 		}
 
 		if globalNugetPath != "" {
-			err = setupBindingSymlink(symlinker, globalNugetPath, filepath.Join(homeDir, ".nuget", "NuGet"), "NuGet.Config")
+			err = symlinker.Link(globalNugetPath, filepath.Join(homeDir, ".nuget", "NuGet", "NuGet.Config"))
 			if err != nil {
 				return packit.BuildResult{}, err
 			}
@@ -147,17 +147,4 @@ func getBinding(typ, provider, bindingsRoot, entry string, bindingResolver Bindi
 		return filepath.Join(bindings[0].Path, entry), nil
 	}
 	return "", nil
-}
-
-func setupBindingSymlink(symlinker SymlinkManager, originalPath, newPath, filename string) error {
-	err := os.MkdirAll(newPath, os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("failed to make directory for %s: %w", filename, err)
-	}
-
-	err = symlinker.Link(originalPath, filepath.Join(newPath, filename))
-	if err != nil {
-		return err
-	}
-	return nil
 }

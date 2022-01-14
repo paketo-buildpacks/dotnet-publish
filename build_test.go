@@ -323,36 +323,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 
-		context("when the $HOME/.nuget/NuGet path cannot be created for the nuget.config", func() {
-			it.Before(func() {
-				bindingResolver.ResolveCall.Returns.BindingSlice = []servicebindings.Binding{
-					servicebindings.Binding{
-						Name: "some-binding",
-						Path: "some-binding-path",
-						Type: "nugetconfig",
-						Entries: map[string]*servicebindings.Entry{
-							"nuget.config": servicebindings.NewEntry("some-binding-path"),
-						},
-					},
-				}
-				Expect(os.Mkdir(filepath.Join(homeDir, ".nuget"), 0000)).To(Succeed())
-			})
-
-			it.After(func() {
-				Expect(os.RemoveAll(filepath.Join(homeDir, ".nuget"))).To(Succeed())
-			})
-
-			it("returns an error", func() {
-				_, err := build(packit.BuildContext{
-					WorkingDir: workingDir,
-					BuildpackInfo: packit.BuildpackInfo{
-						Version: "0.0.1",
-					},
-				})
-				Expect(err).To(MatchError(ContainSubstring("failed to make directory for NuGet.Config")))
-			})
-		})
-
 		context("when symlinking the nuget.config path to the binding path fails", func() {
 			it.Before(func() {
 				bindingResolver.ResolveCall.Returns.BindingSlice = []servicebindings.Binding{
