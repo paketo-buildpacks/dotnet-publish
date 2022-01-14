@@ -46,10 +46,38 @@ func testSymlinker(t *testing.T, context spec.G, it spec.S) {
 			Expect(link).To(Equal(filepath.Join(workingDir, "old")))
 		})
 
+		context("when newname includes directories that don't yet exist", func() {
+			it("creates the directories and then makes the symlink", func() {
+				Expect(symlinker.Link(filepath.Join(workingDir, "old"), filepath.Join(workingDir, "subdir", "new"))).To(Succeed())
+
+				link, err := os.Readlink(filepath.Join(workingDir, "subdir", "new"))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(link).To(Equal(filepath.Join(workingDir, "old")))
+			})
+		})
+
 		context("failure cases", func() {
-			context("symlink cannot be created", func() {
+			context("directory cannot be created for symlink", func() {
+				it.Before(func() {
+					Expect(os.Mkdir(filepath.Join(workingDir, "subdir"), 0000)).To(Succeed())
+				})
+
+				it.After(func() {
+					Expect(os.RemoveAll(filepath.Join(workingDir, "subdir"))).To(Succeed())
+				})
+
 				it("returns an error", func() {
-					err := symlinker.Link(filepath.Join(workingDir, "old"), filepath.Join(workingDir, "new-1", "new-2"))
+					err := symlinker.Link(filepath.Join(workingDir, "old"), filepath.Join(workingDir, "subdir", "anotherdir", "new"))
+					Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("failed to make directory for symlink: mkdir %s", filepath.Join(workingDir, "subdir", "anotherdir"))))
+				})
+			})
+
+			context("symlink cannot be created", func() {
+				it.Before(func() {
+					Expect(os.WriteFile(filepath.Join(workingDir, "preexisting"), []byte("preexisting file contents"), os.ModePerm)).To(Succeed())
+				})
+				it("returns an error", func() {
+					err := symlinker.Link(filepath.Join(workingDir, "old"), filepath.Join(workingDir, "preexisting"))
 					Expect(err).To(HaveOccurred())
 				})
 			})

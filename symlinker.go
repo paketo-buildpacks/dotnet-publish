@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 type Symlinker struct{}
@@ -13,6 +14,10 @@ func NewSymlinker() Symlinker {
 }
 
 func (s Symlinker) Link(oldname, newname string) error {
+	err := os.MkdirAll(filepath.Dir(newname), os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to make directory for symlink: %w", err)
+	}
 	return os.Symlink(oldname, newname)
 }
 
