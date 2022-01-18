@@ -7,13 +7,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/paketo-buildpacks/packit/chronos"
-	"github.com/paketo-buildpacks/packit/pexec"
-	"github.com/paketo-buildpacks/packit/scribe"
+	"github.com/paketo-buildpacks/packit/v2/chronos"
+	"github.com/paketo-buildpacks/packit/v2/pexec"
+	"github.com/paketo-buildpacks/packit/v2/scribe"
 )
 
+//go:generate faux --interface Executable --output fakes/executable.go
 type Executable interface {
-	Execute(pexec.Execution) error
+	Execute(pexec.Execution) (err error)
 }
 
 type DotnetPublishProcess struct {
