@@ -134,14 +134,7 @@ func getBinding(typ, provider, bindingsRoot, entry string, bindingResolver Bindi
 	if len(bindings) == 1 {
 		logger.Process("Loading nuget service binding")
 
-		fileExists := false
-		for key := range bindings[0].Entries {
-			if key == entry {
-				fileExists = true
-				break
-			}
-		}
-		if !fileExists {
+		if _, ok := bindings[0].Entries[entry]; !ok {
 			return "", fmt.Errorf("binding of type %s does not contain required entry %s", typ, entry)
 		}
 		return filepath.Join(bindings[0].Path, entry), nil
