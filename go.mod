@@ -8,7 +8,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/onsi/gomega v1.17.0
 	github.com/paketo-buildpacks/occam v0.3.0
-	github.com/paketo-buildpacks/packit/v2 v2.0.3
+	github.com/paketo-buildpacks/packit/v2 v2.0.4-0.20220119191611-d528aecea447
 	github.com/sclevine/spec v1.4.0
 	gopkg.in/yaml.v2 v2.4.0
 )

@@ -3,6 +3,7 @@ package dotnetpublish
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -57,13 +58,14 @@ func (p DotnetPublishProcess) Execute(workingDir, root, projectPath, outputPath 
 
 	p.logger.Subprocess("Running 'dotnet %s'", strings.Join(args, " "))
 
+	multi := io.MultiWriter(buffer, p.logger.Debug.ActionWriter)
 	duration, err := p.clock.Measure(func() error {
 		return p.executable.Execute(pexec.Execution{
 			Args:   args,
 			Dir:    workingDir,
 			Env:    append(os.Environ(), fmt.Sprintf("PATH=%s:%s", root, os.Getenv("PATH"))),
-			Stdout: buffer,
-			Stderr: buffer,
+			Stdout: multi,
+			Stderr: multi,
 		})
 	})
 

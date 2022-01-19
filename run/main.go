@@ -13,7 +13,7 @@ import (
 func main() {
 	bpYMLParser := dotnetpublish.NewDotnetBuildpackYMLParser()
 	configParser := dotnetpublish.NewCommandConfigurationParser()
-	logger := scribe.NewLogger(os.Stdout)
+	logger := scribe.NewLogger(os.Stdout).WithLevel(os.Getenv("BP_LOG_LEVEL"))
 
 	packit.Run(
 		dotnetpublish.Detect(
