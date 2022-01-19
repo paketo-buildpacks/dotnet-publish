@@ -68,14 +68,6 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
 
-			Expect(logs).To(ContainLines(
-				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
-				"  Executing build process",
-				MatchRegexp(`    Running 'dotnet publish \/workspace --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+`),
-				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
-				"",
-			))
-
 			container, err = docker.Container.Run.
 				WithEnv(map[string]string{"PORT": "8080"}).
 				WithPublish("8080").

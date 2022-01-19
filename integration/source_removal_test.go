@@ -10,7 +10,6 @@ import (
 	"github.com/sclevine/spec"
 
 	. "github.com/onsi/gomega"
-	. "github.com/paketo-buildpacks/occam/matchers"
 )
 
 func testSourceRemoval(t *testing.T, context spec.G, it spec.S) {
@@ -64,16 +63,6 @@ func testSourceRemoval(t *testing.T, context spec.G, it spec.S) {
 				).
 				Execute(name, source)
 			Expect(err).NotTo(HaveOccurred(), logs.String())
-
-			Expect(logs).To(ContainLines(
-				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
-				"  Executing build process",
-				MatchRegexp(`    Running 'dotnet publish \/workspace --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+`),
-				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
-				"",
-				"  Removing source code",
-				"",
-			))
 
 			container, err = docker.Container.Run.
 				WithEntrypoint("launcher").

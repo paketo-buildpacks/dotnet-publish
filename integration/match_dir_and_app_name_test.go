@@ -71,8 +71,6 @@ func testMatchDirAndAppName(t *testing.T, context spec.G, it spec.S) {
 				MatchRegexp(`    Running 'dotnet publish \/workspace\/console --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+'`),
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
-				"  Removing source code",
-				"",
 			))
 
 			container, err = docker.Container.Run.

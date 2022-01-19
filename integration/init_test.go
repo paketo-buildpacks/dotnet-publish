@@ -138,6 +138,7 @@ func TestIntegration(t *testing.T) {
 	suite("Console", testConsole)
 	suite("DefaultApps", testDefaultApps)
 	suite("FSharp", testFSharp)
+	suite("Logging", testLogging)
 	suite("MatchDirAndAppName", testMatchDirAndAppName)
 	suite("MultipleProject", testMultipleProject)
 	suite("Offline", testOffline)
