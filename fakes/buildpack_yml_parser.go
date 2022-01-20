@@ -4,7 +4,7 @@ import "sync"
 
 type BuildpackYMLParser struct {
 	ParseProjectPathCall struct {
-		sync.Mutex
+		mutex     sync.Mutex
 		CallCount int
 		Receives  struct {
 			Path string
@@ -18,8 +18,8 @@ type BuildpackYMLParser struct {
 }
 
 func (f *BuildpackYMLParser) ParseProjectPath(param1 string) (string, error) {
-	f.ParseProjectPathCall.Lock()
-	defer f.ParseProjectPathCall.Unlock()
+	f.ParseProjectPathCall.mutex.Lock()
+	defer f.ParseProjectPathCall.mutex.Unlock()
 	f.ParseProjectPathCall.CallCount++
 	f.ParseProjectPathCall.Receives.Path = param1
 	if f.ParseProjectPathCall.Stub != nil {
