@@ -126,7 +126,6 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 				executable.ExecuteCall.Stub = func(execution pexec.Execution) error {
 					fmt.Fprintln(execution.Stdout, "stdout-output")
 					fmt.Fprintln(execution.Stderr, "stderr-output")
-
 					return errors.New("execution error")
 				}
 			})
@@ -140,9 +139,9 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "", "some-output-dir", []string{})
 				Expect(err).To(HaveOccurred())
 
+				Expect(buffer.String()).To(ContainSubstring("      stdout-output"))
+				Expect(buffer.String()).To(ContainSubstring("      stderr-output"))
 				Expect(buffer.String()).To(ContainSubstring("      Failed after 1s"))
-				Expect(buffer.String()).To(ContainSubstring("        stdout-output"))
-				Expect(buffer.String()).To(ContainSubstring("        stderr-output"))
 			})
 		})
 	})

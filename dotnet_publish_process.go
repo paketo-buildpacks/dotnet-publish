@@ -1,9 +1,7 @@
 package dotnetpublish
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,7 +31,6 @@ func NewDotnetPublishProcess(executable Executable, logger scribe.Logger, clock 
 }
 
 func (p DotnetPublishProcess) Execute(workingDir, root, projectPath, outputPath string, flags []string) error {
-	buffer := bytes.NewBuffer(nil)
 	args := []string{
 		"publish", filepath.Join(workingDir, projectPath), // change to workingDir plus project path
 	}
@@ -58,21 +55,18 @@ func (p DotnetPublishProcess) Execute(workingDir, root, projectPath, outputPath 
 
 	p.logger.Subprocess("Running 'dotnet %s'", strings.Join(args, " "))
 
-	multi := io.MultiWriter(buffer, p.logger.Debug.ActionWriter)
 	duration, err := p.clock.Measure(func() error {
 		return p.executable.Execute(pexec.Execution{
 			Args:   args,
 			Dir:    workingDir,
 			Env:    append(os.Environ(), fmt.Sprintf("PATH=%s:%s", root, os.Getenv("PATH"))),
-			Stdout: multi,
-			Stderr: multi,
+			Stdout: p.logger.ActionWriter,
+			Stderr: p.logger.ActionWriter,
 		})
 	})
 
 	if err != nil {
 		p.logger.Action("Failed after %s", duration)
-		p.logger.Detail(buffer.String())
-
 		return fmt.Errorf("failed to execute 'dotnet publish': %w", err)
 	}
 
