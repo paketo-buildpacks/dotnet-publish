@@ -1,7 +1,6 @@
 package dotnetpublish_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -23,19 +22,19 @@ func testDotnetSourceRemover(t *testing.T, context spec.G, it spec.S) {
 
 	it.Before(func() {
 		var err error
-		workingDir, err = ioutil.TempDir("", "working-dir")
+		workingDir, err = os.MkdirTemp("", "working-dir")
 		Expect(err).NotTo(HaveOccurred())
 
-		publishOutputDir, err = ioutil.TempDir("", "publish-output-dir")
+		publishOutputDir, err = os.MkdirTemp("", "publish-output-dir")
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(ioutil.WriteFile(filepath.Join(workingDir, "Program.cs"), nil, 0600)).To(Succeed())
-		Expect(ioutil.WriteFile(filepath.Join(workingDir, "app.csproj"), nil, 0600)).To(Succeed())
+		Expect(os.WriteFile(filepath.Join(workingDir, "Program.cs"), nil, 0600)).To(Succeed())
+		Expect(os.WriteFile(filepath.Join(workingDir, "app.csproj"), nil, 0600)).To(Succeed())
 		Expect(os.MkdirAll(filepath.Join(workingDir, ".dotnet_root"), 0700)).To(Succeed())
 		Expect(os.MkdirAll(filepath.Join(workingDir, ".dotnet-root"), 0700)).To(Succeed())
-		Expect(ioutil.WriteFile(filepath.Join(publishOutputDir, "app.runtimeconfig.json"), nil, 0600)).To(Succeed())
+		Expect(os.WriteFile(filepath.Join(publishOutputDir, "app.runtimeconfig.json"), nil, 0600)).To(Succeed())
 
 		sourceRemover = dotnetpublish.NewDotnetSourceRemover()
 	})
@@ -99,7 +98,7 @@ func testDotnetSourceRemover(t *testing.T, context spec.G, it spec.S) {
 		context("when a file can't be moved from output directory to working directory", func() {
 			it.Before(func() {
 				Expect(os.MkdirAll(filepath.Join(publishOutputDir, "some-dir"), os.ModePerm)).To(Succeed())
-				Expect(ioutil.WriteFile(filepath.Join(publishOutputDir, "some-dir", "some.dll"), nil, 0000)).To(Succeed())
+				Expect(os.WriteFile(filepath.Join(publishOutputDir, "some-dir", "some.dll"), nil, 0000)).To(Succeed())
 			})
 
 			it("errrors", func() {

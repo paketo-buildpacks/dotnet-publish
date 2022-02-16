@@ -3,7 +3,6 @@ package dotnetpublish
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -70,7 +69,7 @@ func Build(
 			}
 		}
 
-		tempDir, err := ioutil.TempDir("", "dotnet-publish-output")
+		tempDir, err := os.MkdirTemp("", "dotnet-publish-output")
 		if err != nil {
 			return packit.BuildResult{}, fmt.Errorf("could not create temp directory: %w", err)
 		}
@@ -90,6 +89,18 @@ func Build(
 			if err != nil {
 				return packit.BuildResult{}, err
 			}
+		}
+
+		nugetCache, err := context.Layers.Get("nuget-cache")
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		nugetCache.Cache = true
+
+		err = os.Setenv("NUGET_PACKAGES", nugetCache.Path)
+		if err != nil {
+			return packit.BuildResult{}, err
 		}
 
 		logger.Process("Executing build process")
@@ -117,7 +128,9 @@ func Build(
 			}
 		}
 
-		return packit.BuildResult{}, nil
+		return packit.BuildResult{
+			Layers: []packit.Layer{nugetCache},
+		}, nil
 	}
 }
 

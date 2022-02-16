@@ -1,7 +1,6 @@
 package dotnetpublish_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -19,13 +18,13 @@ func testBuildpackYMLParser(t *testing.T, context spec.G, it spec.S) {
 	)
 
 	it.Before(func() {
-		file, err := ioutil.TempFile("", "buildpack.yml")
+		file, err := os.CreateTemp("", "buildpack.yml")
 		Expect(err).NotTo(HaveOccurred())
 		file.Close()
 
 		path = file.Name()
 
-		err = ioutil.WriteFile(path, []byte(`---
+		err = os.WriteFile(path, []byte(`---
 dotnet-build:
   project-path: "src/proj1"
 `), os.ModePerm)
@@ -76,7 +75,7 @@ dotnet-build:
 		})
 		context("when the file cannot be unmarshalled", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(path, []byte("%%%"), 0644)).To(Succeed())
+				Expect(os.WriteFile(path, []byte("%%%"), 0644)).To(Succeed())
 			})
 
 			it("returns the error", func() {
