@@ -26,7 +26,7 @@ type SourceRemover interface {
 
 //go:generate faux --interface PublishProcess --output fakes/publish_process.go
 type PublishProcess interface {
-	Execute(workingDir, rootDir, projectPath, outputPath string, flags []string) error
+	Execute(workingDir, rootDir, nugetCachePath, projectPath, outputPath string, flags []string) error
 }
 
 //go:generate faux --interface BindingResolver --output fakes/binding_resolver.go
@@ -98,13 +98,8 @@ func Build(
 
 		nugetCache.Cache = true
 
-		err = os.Setenv("NUGET_PACKAGES", nugetCache.Path)
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-
 		logger.Process("Executing build process")
-		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, tempDir, flags)
+		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), nugetCache.Path, projectPath, tempDir, flags)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}

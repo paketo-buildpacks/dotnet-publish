@@ -30,7 +30,7 @@ func NewDotnetPublishProcess(executable Executable, logger scribe.Logger, clock 
 	}
 }
 
-func (p DotnetPublishProcess) Execute(workingDir, root, projectPath, outputPath string, flags []string) error {
+func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, projectPath, outputPath string, flags []string) error {
 	buffer := bytes.NewBuffer(nil)
 	args := []string{
 		"publish", filepath.Join(workingDir, projectPath), // change to workingDir plus project path
@@ -60,7 +60,7 @@ func (p DotnetPublishProcess) Execute(workingDir, root, projectPath, outputPath 
 		return p.executable.Execute(pexec.Execution{
 			Args:   args,
 			Dir:    workingDir,
-			Env:    append(os.Environ(), fmt.Sprintf("PATH=%s:%s", root, os.Getenv("PATH"))),
+			Env:    append(os.Environ(), fmt.Sprintf("PATH=%s:%s", root, os.Getenv("PATH")), fmt.Sprintf("NUGET_PACKAGES=%s", nugetCachePath)),
 			Stdout: buffer,
 			Stderr: buffer,
 		})
