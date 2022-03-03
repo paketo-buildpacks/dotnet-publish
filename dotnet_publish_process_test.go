@@ -17,6 +17,7 @@ import (
 	"github.com/sclevine/spec"
 
 	. "github.com/onsi/gomega"
+	. "github.com/paketo-buildpacks/occam/matchers"
 )
 
 func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
@@ -52,6 +53,13 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			return t
 		})
 
+		executable.ExecuteCall.Stub = func(execution pexec.Execution) error {
+			fmt.Fprintln(execution.Stdout, "stdout-output")
+			fmt.Fprintln(execution.Stderr, "stderr-output")
+
+			return nil
+		}
+
 		process = dotnetpublish.NewDotnetPublishProcess(executable, logger, clock)
 	})
 
@@ -78,8 +86,12 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 		Expect(executable.ExecuteCall.Receives.Execution.Env).To(ContainElement("PATH=some-dotnet-root-dir:some-path"))
 		Expect(executable.ExecuteCall.Receives.Execution.Env).To(ContainElement("NUGET_PACKAGES=some/nuget/cache/path"))
 
-		Expect(buffer.String()).To(ContainSubstring(fmt.Sprintf("Running 'dotnet %s'", strings.Join(args, " "))))
-		Expect(buffer.String()).To(ContainSubstring("Completed in 1s"))
+		Expect(buffer.String()).To(ContainLines(
+			fmt.Sprintf("    Running 'dotnet %s'", strings.Join(args, " ")),
+			"      stdout-output",
+			"      stderr-output",
+			"      Completed in 1s",
+		))
 	})
 
 	context("when the user passes flags that the buildpack sets by default", func() {
@@ -141,9 +153,11 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "", "some-output-dir", []string{})
 				Expect(err).To(HaveOccurred())
 
-				Expect(buffer.String()).To(ContainSubstring("      Failed after 1s"))
-				Expect(buffer.String()).To(ContainSubstring("        stdout-output"))
-				Expect(buffer.String()).To(ContainSubstring("        stderr-output"))
+				Expect(buffer.String()).To(ContainLines(
+					"      stdout-output",
+					"      stderr-output",
+					"      Failed after 1s",
+				))
 			})
 		})
 	})

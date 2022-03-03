@@ -77,6 +77,8 @@ dotnet-build:
 				"    Please specify the project path through the $BP_DOTNET_PROJECT_PATH environment variable instead. See README.md or the documentation on paketo.io for more information.",
 				"  Executing build process",
 				MatchRegexp(`    Running 'dotnet publish \/workspace\/console --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+'`),
+			))
+			Expect(logs).To(ContainLines(
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
 				"  Removing source code",
