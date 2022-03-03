@@ -3,7 +3,6 @@ package dotnetpublish
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -27,7 +26,7 @@ type SourceRemover interface {
 
 //go:generate faux --interface PublishProcess --output fakes/publish_process.go
 type PublishProcess interface {
-	Execute(workingDir, rootDir, projectPath, outputPath string, flags []string) error
+	Execute(workingDir, rootDir, nugetCachePath, projectPath, outputPath string, flags []string) error
 }
 
 //go:generate faux --interface BindingResolver --output fakes/binding_resolver.go
@@ -70,7 +69,7 @@ func Build(
 			}
 		}
 
-		tempDir, err := ioutil.TempDir("", "dotnet-publish-output")
+		tempDir, err := os.MkdirTemp("", "dotnet-publish-output")
 		if err != nil {
 			return packit.BuildResult{}, fmt.Errorf("could not create temp directory: %w", err)
 		}
@@ -92,8 +91,15 @@ func Build(
 			}
 		}
 
+		nugetCache, err := context.Layers.Get("nuget-cache")
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		nugetCache.Cache = true
+
 		logger.Process("Executing build process")
-		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), projectPath, tempDir, flags)
+		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), nugetCache.Path, projectPath, tempDir, flags)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
@@ -117,7 +123,9 @@ func Build(
 			}
 		}
 
-		return packit.BuildResult{}, nil
+		return packit.BuildResult{
+			Layers: []packit.Layer{nugetCache},
+		}, nil
 	}
 }
 

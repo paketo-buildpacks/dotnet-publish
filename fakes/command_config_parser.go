@@ -4,7 +4,7 @@ import "sync"
 
 type CommandConfigParser struct {
 	ParseFlagsFromEnvVarCall struct {
-		mutex     sync.Mutex
+		sync.Mutex
 		CallCount int
 		Receives  struct {
 			EnvVar string
@@ -18,8 +18,8 @@ type CommandConfigParser struct {
 }
 
 func (f *CommandConfigParser) ParseFlagsFromEnvVar(param1 string) ([]string, error) {
-	f.ParseFlagsFromEnvVarCall.mutex.Lock()
-	defer f.ParseFlagsFromEnvVarCall.mutex.Unlock()
+	f.ParseFlagsFromEnvVarCall.Lock()
+	defer f.ParseFlagsFromEnvVarCall.Unlock()
 	f.ParseFlagsFromEnvVarCall.CallCount++
 	f.ParseFlagsFromEnvVarCall.Receives.EnvVar = param1
 	if f.ParseFlagsFromEnvVarCall.Stub != nil {

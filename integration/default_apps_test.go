@@ -2,7 +2,7 @@ package integration_test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -91,7 +91,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 
 				Expect(response.StatusCode).To(Equal(http.StatusOK))
 
-				content, err := ioutil.ReadAll(response.Body)
+				content, err := io.ReadAll(response.Body)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(content)).To(ContainSubstring("source_6_app"))
 			})
@@ -138,7 +138,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 
 				Expect(response.StatusCode).To(Equal(http.StatusOK))
 
-				content, err := ioutil.ReadAll(response.Body)
+				content, err := io.ReadAll(response.Body)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(content)).To(ContainSubstring("source_5_app"))
 			})
@@ -178,7 +178,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 
 				Expect(response.StatusCode).To(Equal(http.StatusOK))
 
-				content, err := ioutil.ReadAll(response.Body)
+				content, err := io.ReadAll(response.Body)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(content)).To(ContainSubstring("simple_3_0_app"))
 			})
@@ -218,7 +218,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 
 				Expect(response.StatusCode).To(Equal(http.StatusOK))
 
-				content, err := ioutil.ReadAll(response.Body)
+				content, err := io.ReadAll(response.Body)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(content)).To(ContainSubstring("value"))
 			})
@@ -263,7 +263,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 				defer response.Body.Close()
 
-				content, err := ioutil.ReadAll(response.Body)
+				content, err := io.ReadAll(response.Body)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(content)).To(ContainSubstring("<title>Swagger UI</title>"))
 			})
@@ -304,7 +304,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 
 				Expect(response.StatusCode).To(Equal(http.StatusOK))
 
-				content, err := ioutil.ReadAll(response.Body)
+				content, err := io.ReadAll(response.Body)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(content)).To(ContainSubstring("Loading..."))
 			})

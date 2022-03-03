@@ -1,7 +1,6 @@
 package dotnetpublish_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -25,7 +24,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 		var path string
 		it.Before(func() {
 			var err error
-			path, err = ioutil.TempDir("", "workingDir")
+			path, err = os.MkdirTemp("", "workingDir")
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -41,7 +40,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 		context("when there is a csproj", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(filepath.Join(path, "app.csproj"), nil, 0600)).To(Succeed())
+				Expect(os.WriteFile(filepath.Join(path, "app.csproj"), nil, 0600)).To(Succeed())
 			})
 
 			it("returns the path to it", func() {
@@ -53,7 +52,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 		context("when there is an fsproj", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(filepath.Join(path, "app.fsproj"), nil, 0600)).To(Succeed())
+				Expect(os.WriteFile(filepath.Join(path, "app.fsproj"), nil, 0600)).To(Succeed())
 			})
 
 			it("returns the path to it", func() {
@@ -65,7 +64,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 		context("when there is a vbproj", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(filepath.Join(path, "app.vbproj"), nil, 0600)).To(Succeed())
+				Expect(os.WriteFile(filepath.Join(path, "app.vbproj"), nil, 0600)).To(Succeed())
 			})
 
 			it("returns the path to it", func() {
@@ -90,7 +89,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 		var path string
 
 		it.Before(func() {
-			file, err := ioutil.TempFile("", "app.csproj")
+			file, err := os.CreateTemp("", "app.csproj")
 			Expect(err).NotTo(HaveOccurred())
 			defer file.Close()
 
@@ -103,7 +102,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 		context("when project SDK is Microsoft.NET.Sdk.Web", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(path, []byte(`<Project Sdk="Microsoft.NET.Sdk.Web"></Project>`), 0600)).To(Succeed())
+				Expect(os.WriteFile(path, []byte(`<Project Sdk="Microsoft.NET.Sdk.Web"></Project>`), 0600)).To(Succeed())
 			})
 
 			it("returns true", func() {
@@ -116,7 +115,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 		context("when project PackageReference is Microsoft.AspNetCore.App", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(path, []byte(`
+				Expect(os.WriteFile(path, []byte(`
 <Project Sdk="Microsoft.NET.Sdk">
 <ItemGroup>
 	<PackageReference Include="Microsoft.AspNetCore.App"/>
@@ -135,7 +134,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 		context("when project PackageReference is Microsoft.AspNetCore.All", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(path, []byte(`
+				Expect(os.WriteFile(path, []byte(`
 <Project Sdk="Microsoft.NET.Sdk">
 <ItemGroup>
 	<PackageReference Include="Microsoft.AspNetCore.All"/>
@@ -165,7 +164,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 			context("when the file can not be decoded", func() {
 				it.Before(func() {
-					Expect(ioutil.WriteFile(path, []byte("%%%"), 0644)).To(Succeed())
+					Expect(os.WriteFile(path, []byte("%%%"), 0644)).To(Succeed())
 				})
 
 				it("errors", func() {
@@ -180,7 +179,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 		var path string
 
 		it.Before(func() {
-			file, err := ioutil.TempFile("", "app.csproj")
+			file, err := os.CreateTemp("", "app.csproj")
 			Expect(err).NotTo(HaveOccurred())
 			defer file.Close()
 
@@ -193,7 +192,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 		context("when project includes target commands that invoke node", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(path, []byte(`
+				Expect(os.WriteFile(path, []byte(`
 					<Project>
 						<Target Name="first-target">
 							<Exec Command="echo hello" />
@@ -215,7 +214,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 		context("when project does NOT include target commands that invoke node", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(path, []byte(`
+				Expect(os.WriteFile(path, []byte(`
 					<Project>
 						<Target Name="first-target">
 							<Exec Command="echo hello" />
@@ -237,7 +236,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 		context("when project includes target commands that invoke npm", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(path, []byte(`
+				Expect(os.WriteFile(path, []byte(`
 					<Project>
 						<Target Name="first-target">
 							<Exec Command="echo hello" />
@@ -271,7 +270,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 			context("when the file can not be decoded", func() {
 				it.Before(func() {
-					Expect(ioutil.WriteFile(path, []byte("%%%"), 0644)).To(Succeed())
+					Expect(os.WriteFile(path, []byte("%%%"), 0644)).To(Succeed())
 				})
 
 				it("errors", func() {
@@ -287,7 +286,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 		var path string
 
 		it.Before(func() {
-			file, err := ioutil.TempFile("", "app.csproj")
+			file, err := os.CreateTemp("", "app.csproj")
 			Expect(err).NotTo(HaveOccurred())
 			defer file.Close()
 
@@ -300,7 +299,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 		context("when project includes target commands that invoke npm", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(path, []byte(`
+				Expect(os.WriteFile(path, []byte(`
 					<Project>
 						<Target Name="first-target">
 							<Exec Command="echo hello" />
@@ -322,7 +321,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 		context("when project does NOT include target commands that invoke node", func() {
 			it.Before(func() {
-				Expect(ioutil.WriteFile(path, []byte(`
+				Expect(os.WriteFile(path, []byte(`
 					<Project>
 						<Target Name="first-target">
 							<Exec Command="echo hello" />

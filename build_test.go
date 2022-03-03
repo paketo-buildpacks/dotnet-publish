@@ -3,7 +3,6 @@ package dotnetpublish_test
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -28,6 +27,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		buffer     *bytes.Buffer
 		workingDir string
 		homeDir    string
+		layersDir  string
 
 		symlinker           *fakes.SymlinkManager
 		sourceRemover       *fakes.SourceRemover
@@ -41,13 +41,16 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 	it.Before(func() {
 		var err error
-		workingDir, err = ioutil.TempDir("", "working-dir")
+		layersDir, err = os.MkdirTemp("", "layers-dir")
 		Expect(err).NotTo(HaveOccurred())
 
-		homeDir, err = ioutil.TempDir("", "home-dir")
+		workingDir, err = os.MkdirTemp("", "working-dir")
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(ioutil.WriteFile(filepath.Join(workingDir, "buildpack.yml"), nil, 0600)).To(Succeed())
+		homeDir, err = os.MkdirTemp("", "home-dir")
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(os.WriteFile(filepath.Join(workingDir, "buildpack.yml"), nil, 0600)).To(Succeed())
 
 		symlinker = &fakes.SymlinkManager{}
 		sourceRemover = &fakes.SourceRemover{}
@@ -77,6 +80,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		os.Unsetenv("DOTNET_ROOT")
 		Expect(os.RemoveAll(workingDir)).To(Succeed())
 		Expect(os.RemoveAll(homeDir)).To(Succeed())
+		Expect(os.RemoveAll(layersDir)).To(Succeed())
 	})
 
 	it("returns a build result", func() {
@@ -89,9 +93,16 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Platform: packit.Platform{
 				Path: "some-platform-path",
 			},
+			Layers: packit.Layers{Path: layersDir},
 		})
 		Expect(err).NotTo(HaveOccurred())
-		Expect(result).To(Equal(packit.BuildResult{}))
+
+		Expect(result.Layers).To(HaveLen(1))
+		layer := result.Layers[0]
+
+		Expect(layer.Name).To(Equal("nuget-cache"))
+		Expect(layer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
+		Expect(layer.Cache).To(BeTrue())
 
 		Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
 		Expect(sourceRemover.RemoveCall.Receives.PublishOutputDir).To(MatchRegexp(`dotnet-publish-output\d+`))
@@ -130,9 +141,16 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					Name:    "Some Buildpack",
 					Version: "some-version",
 				},
+				Layers: packit.Layers{Path: layersDir},
 			})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(result).To(Equal(packit.BuildResult{}))
+
+			Expect(result.Layers).To(HaveLen(1))
+			layer := result.Layers[0]
+
+			Expect(layer.Name).To(Equal("nuget-cache"))
+			Expect(layer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
+			Expect(layer.Cache).To(BeTrue())
 
 			Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
 			Expect(sourceRemover.RemoveCall.Receives.PublishOutputDir).To(MatchRegexp(`dotnet-publish-output\d+`))

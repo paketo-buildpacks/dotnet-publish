@@ -60,7 +60,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 	})
 
 	it("executes the dotnet publish process", func() {
-		err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/project/path", "some-publish-output-dir", []string{"--flag", "value"})
+		err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "some/project/path", "some-publish-output-dir", []string{"--flag", "value"})
 		Expect(err).NotTo(HaveOccurred())
 
 		args := []string{
@@ -76,6 +76,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 
 		Expect(executable.ExecuteCall.Receives.Execution.Dir).To(Equal("some-working-dir"))
 		Expect(executable.ExecuteCall.Receives.Execution.Env).To(ContainElement("PATH=some-dotnet-root-dir:some-path"))
+		Expect(executable.ExecuteCall.Receives.Execution.Env).To(ContainElement("NUGET_PACKAGES=some/nuget/cache/path"))
 
 		Expect(buffer.String()).To(ContainSubstring(fmt.Sprintf("Running 'dotnet %s'", strings.Join(args, " "))))
 		Expect(buffer.String()).To(ContainSubstring("Completed in 1s"))
@@ -83,7 +84,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 
 	context("when the user passes flags that the buildpack sets by default", func() {
 		it("overrides the default value with the user-provided one", func() {
-			err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/project/path", "some-publish-output-dir",
+			err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "some/project/path", "some-publish-output-dir",
 				[]string{"--runtime", "user-value",
 					"--self-contained=true",
 					"--configuration", "UserConfiguration",
@@ -105,7 +106,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 
 	context("when the user passes --no-self-contained, equivalent to --self-contained=false", func() {
 		it("overrides the buildpack's value for self-contained with the user-provided one", func() {
-			err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/project/path", "some-publish-output-dir", []string{"--no-self-contained"})
+			err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "some/project/path", "some-publish-output-dir", []string{"--no-self-contained"})
 			Expect(err).NotTo(HaveOccurred())
 
 			args := []string{
@@ -132,12 +133,12 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			})
 
 			it("returns an error", func() {
-				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "", "some-output-dir", []string{})
+				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "", "some-output-dir", []string{})
 				Expect(err).To(MatchError("failed to execute 'dotnet publish': execution error"))
 			})
 
 			it("logs the command output", func() {
-				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "", "some-output-dir", []string{})
+				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "", "some-output-dir", []string{})
 				Expect(err).To(HaveOccurred())
 
 				Expect(buffer.String()).To(ContainSubstring("      Failed after 1s"))
