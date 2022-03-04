@@ -1,15 +1,14 @@
 package dotnetpublish
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/paketo-buildpacks/packit/chronos"
-	"github.com/paketo-buildpacks/packit/pexec"
-	"github.com/paketo-buildpacks/packit/scribe"
+	"github.com/paketo-buildpacks/packit/v2/chronos"
+	"github.com/paketo-buildpacks/packit/v2/pexec"
+	"github.com/paketo-buildpacks/packit/v2/scribe"
 )
 
 type Executable interface {
@@ -31,7 +30,6 @@ func NewDotnetPublishProcess(executable Executable, logger scribe.Logger, clock 
 }
 
 func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, projectPath, outputPath string, flags []string) error {
-	buffer := bytes.NewBuffer(nil)
 	args := []string{
 		"publish", filepath.Join(workingDir, projectPath), // change to workingDir plus project path
 	}
@@ -61,15 +59,13 @@ func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, projectP
 			Args:   args,
 			Dir:    workingDir,
 			Env:    append(os.Environ(), fmt.Sprintf("PATH=%s:%s", root, os.Getenv("PATH")), fmt.Sprintf("NUGET_PACKAGES=%s", nugetCachePath)),
-			Stdout: buffer,
-			Stderr: buffer,
+			Stdout: p.logger.ActionWriter,
+			Stderr: p.logger.ActionWriter,
 		})
 	})
 
 	if err != nil {
 		p.logger.Action("Failed after %s", duration)
-		p.logger.Detail(buffer.String())
-
 		return fmt.Errorf("failed to execute 'dotnet publish': %w", err)
 	}
 

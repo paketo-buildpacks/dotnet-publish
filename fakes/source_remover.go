@@ -4,7 +4,7 @@ import "sync"
 
 type SourceRemover struct {
 	RemoveCall struct {
-		sync.Mutex
+		mutex     sync.Mutex
 		CallCount int
 		Receives  struct {
 			WorkingDir       string
@@ -19,8 +19,8 @@ type SourceRemover struct {
 }
 
 func (f *SourceRemover) Remove(param1 string, param2 string, param3 ...string) error {
-	f.RemoveCall.Lock()
-	defer f.RemoveCall.Unlock()
+	f.RemoveCall.mutex.Lock()
+	defer f.RemoveCall.mutex.Unlock()
 	f.RemoveCall.CallCount++
 	f.RemoveCall.Receives.WorkingDir = param1
 	f.RemoveCall.Receives.PublishOutputDir = param2
