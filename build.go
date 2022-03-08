@@ -9,6 +9,7 @@ import (
 	"github.com/Masterminds/semver"
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
+	"github.com/paketo-buildpacks/packit/v2/fs"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 	"github.com/paketo-buildpacks/packit/v2/servicebindings"
 )
@@ -123,8 +124,19 @@ func Build(
 			}
 		}
 
+		var layers []packit.Layer
+		exists, err := fs.Exists(nugetCache.Path)
+		if exists {
+			if !fs.IsEmptyDir(nugetCache.Path) {
+				layers = append(layers, nugetCache)
+			}
+		}
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
 		return packit.BuildResult{
-			Layers: []packit.Layer{nugetCache},
+			Layers: layers,
 		}, nil
 	}
 }
