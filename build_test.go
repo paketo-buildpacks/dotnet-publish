@@ -63,6 +63,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		commandConfigParser = &fakes.CommandConfigParser{}
 		commandConfigParser.ParseFlagsFromEnvVarCall.Returns.StringSlice = []string{"--publishflag", "value"}
 
+		Expect(os.MkdirAll(filepath.Join(layersDir, "nuget-cache"), os.ModePerm)).To(Succeed())
+		Expect(os.WriteFile(filepath.Join(layersDir, "nuget-cache", "some-cache"), []byte{}, 0600)).To(Succeed())
+
 		os.Setenv("DOTNET_ROOT", "some-existing-root-dir")
 
 		buffer = bytes.NewBuffer(nil)
@@ -123,6 +126,29 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(buffer.String()).To(ContainSubstring("Executing build process"))
 		Expect(buffer.String()).To(ContainSubstring("WARNING: Setting the project path through buildpack.yml will be deprecated soon in Dotnet Publish Buildpack v1.0.0"))
 		Expect(buffer.String()).To(ContainSubstring("Please specify the project path through the $BP_DOTNET_PROJECT_PATH environment variable instead. See README.md or the documentation on paketo.io for more information."))
+	})
+
+	context("the cache layer is empty", func() {
+		it.Before(func() {
+			Expect(os.Remove(filepath.Join(layersDir, "nuget-cache", "some-cache"))).To(Succeed())
+		})
+
+		it("does not return a layer", func() {
+			result, err := build(packit.BuildContext{
+				WorkingDir: workingDir,
+				BuildpackInfo: packit.BuildpackInfo{
+					Name:    "Some Buildpack",
+					Version: "0.0.1",
+				},
+				Platform: packit.Platform{
+					Path: "some-platform-path",
+				},
+				Layers: packit.Layers{Path: layersDir},
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(result.Layers).To(HaveLen(0))
+		})
 	})
 
 	context("when project path is set via BP_DOTNET_PROJECT_PATH", func() {
