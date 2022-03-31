@@ -62,8 +62,9 @@ github.com/BurntSushi/toml v1.0.0 h1:dtDWrepsVPfW9H/4y7dDgFc2MBUSeJhlaDtK13CxFlU
 github.com/BurntSushi/toml v1.0.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/CycloneDX/cyclonedx-go v0.4.0/go.mod h1:rmRcf//gT7PIzovatusbWi377xqCg1FS4jyST0GH20E=
-github.com/ForestEckhardt/freezer v0.0.10 h1:CQbYPeA/KxXMZhNeRd3Mk7IYV9uw7w9OkmW4alHqIFw=
 github.com/ForestEckhardt/freezer v0.0.10/go.mod h1:GHguI9kaXxL6on564JrxYs25dWuMqbqTYQVtvnkH4os=
+github.com/ForestEckhardt/freezer v0.0.11 h1:lrhHwQDsB62EWXyf2asWwGyk6DqT1jRq1Z0cDVffWvk=
+github.com/ForestEckhardt/freezer v0.0.11/go.mod h1:GHguI9kaXxL6on564JrxYs25dWuMqbqTYQVtvnkH4os=
 github.com/Masterminds/semver v1.5.0 h1:H65muMkzWKEuNDnfl9d70GUjFniHKHRbFPGBuZ3QEww=
 github.com/Masterminds/semver v1.5.0/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
 github.com/Masterminds/semver/v3 v3.1.1 h1:hLg3sBzpNErnxhQtUy/mmLR2I9foDujNK030IGemrRc=
