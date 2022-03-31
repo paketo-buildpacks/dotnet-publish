@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ForestEckhardt/freezer/fakes"
 	dotnetpublish "github.com/paketo-buildpacks/dotnet-publish"
+	"github.com/paketo-buildpacks/dotnet-publish/fakes"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 	"github.com/paketo-buildpacks/packit/v2/pexec"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
