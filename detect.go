@@ -57,31 +57,11 @@ func Detect(parser ProjectParser, buildpackYMLParser BuildpackYMLParser) packit.
 				},
 			},
 			{
-				Name: "dotnet-runtime",
-				Metadata: BuildPlanMetadata{
-					Build: true,
-				},
-			},
-			{
 				Name: "icu",
 				Metadata: BuildPlanMetadata{
 					Build: true,
 				},
 			},
-		}
-
-		aspNetReq, err := parser.ASPNetIsRequired(projectFilePath)
-		if err != nil {
-			return packit.DetectResult{}, err
-		}
-
-		if aspNetReq {
-			requirements = append(requirements, packit.BuildPlanRequirement{
-				Name: "dotnet-aspnetcore",
-				Metadata: BuildPlanMetadata{
-					Build: true,
-				},
-			})
 		}
 
 		nodeReq, err := parser.NodeIsRequired(projectFilePath)
