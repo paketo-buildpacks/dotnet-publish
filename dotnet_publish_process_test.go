@@ -68,11 +68,13 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 	})
 
 	it("executes the dotnet publish process", func() {
-		err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "some/project/path", "some-publish-output-dir", []string{"--flag", "value"})
+		err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", "some/project/path", "some-publish-output-dir", []string{"--flag", "value"})
 		Expect(err).NotTo(HaveOccurred())
 
 		args := []string{
-			"publish", "some-working-dir/some/project/path",
+			"publish",
+			"some-working-dir/some/project/path",
+			"-p:BaseIntermediateOutputPath=some/intermediate/build/cache/path/",
 			"--configuration", "Release",
 			"--runtime", "ubuntu.18.04-x64",
 			"--self-contained", "false",
@@ -96,7 +98,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 
 	context("when the user passes flags that the buildpack sets by default", func() {
 		it("overrides the default value with the user-provided one", func() {
-			err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "some/project/path", "some-publish-output-dir",
+			err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", "some/project/path", "some-publish-output-dir",
 				[]string{"--runtime", "user-value",
 					"--self-contained=true",
 					"--configuration", "UserConfiguration",
@@ -105,7 +107,9 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 
 			args := []string{
-				"publish", "some-working-dir/some/project/path",
+				"publish",
+				"some-working-dir/some/project/path",
+				"-p:BaseIntermediateOutputPath=some/intermediate/build/cache/path/",
 				"--runtime", "user-value",
 				"--self-contained=true",
 				"--configuration", "UserConfiguration",
@@ -118,11 +122,13 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 
 	context("when the user passes --no-self-contained, equivalent to --self-contained=false", func() {
 		it("overrides the buildpack's value for self-contained with the user-provided one", func() {
-			err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "some/project/path", "some-publish-output-dir", []string{"--no-self-contained"})
+			err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", "some/project/path", "some-publish-output-dir", []string{"--no-self-contained"})
 			Expect(err).NotTo(HaveOccurred())
 
 			args := []string{
-				"publish", "some-working-dir/some/project/path",
+				"publish",
+				"some-working-dir/some/project/path",
+				"-p:BaseIntermediateOutputPath=some/intermediate/build/cache/path/",
 				"--configuration", "Release",
 				"--runtime", "ubuntu.18.04-x64",
 				"--output", "some-publish-output-dir",
@@ -145,12 +151,12 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			})
 
 			it("returns an error", func() {
-				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "", "some-output-dir", []string{})
+				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", "", "some-output-dir", []string{})
 				Expect(err).To(MatchError("failed to execute 'dotnet publish': execution error"))
 			})
 
 			it("logs the command output", func() {
-				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "", "some-output-dir", []string{})
+				err := process.Execute("some-working-dir", "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", "", "some-output-dir", []string{})
 				Expect(err).To(HaveOccurred())
 
 				Expect(buffer.String()).To(ContainLines(

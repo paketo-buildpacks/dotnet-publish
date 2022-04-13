@@ -30,9 +30,11 @@ func NewDotnetPublishProcess(executable Executable, logger scribe.Logger, clock 
 	}
 }
 
-func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, projectPath, outputPath string, flags []string) error {
+func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, intermediateBuildCachePath, projectPath, outputPath string, flags []string) error {
 	args := []string{
-		"publish", filepath.Join(workingDir, projectPath), // change to workingDir plus project path
+		"publish",
+		filepath.Join(workingDir, projectPath), // change to workingDir plus project path
+		fmt.Sprintf("-p:BaseIntermediateOutputPath=%s%c", filepath.Clean(intermediateBuildCachePath), os.PathSeparator), // The path given must end with a slash
 	}
 
 	if !containsFlag(flags, "--configuration") && !containsFlag(flags, "-c") {
