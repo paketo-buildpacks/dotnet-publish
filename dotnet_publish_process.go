@@ -34,7 +34,15 @@ func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, intermed
 	args := []string{
 		"publish",
 		filepath.Join(workingDir, projectPath), // change to workingDir plus project path
-		fmt.Sprintf("-p:BaseIntermediateOutputPath=%s%c", filepath.Clean(intermediateBuildCachePath), os.PathSeparator), // The path given must end with a slash
+	}
+
+	err := os.WriteFile(filepath.Join(workingDir, projectPath, "Directory.Build.props"), []byte(fmt.Sprintf(`<Project>
+ <PropertyGroup>
+	 <BaseIntermediateOutputPath>%s%c</BaseIntermediateOutputPath>
+ </PropertyGroup>
+</Project>`, filepath.Clean(intermediateBuildCachePath), os.PathSeparator)), 0644)
+	if err != nil {
+		return err
 	}
 
 	if !containsFlag(flags, "--configuration") && !containsFlag(flags, "-c") {
