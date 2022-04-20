@@ -28,6 +28,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 		path       string
 		executable *fakes.Executable
 		process    dotnetpublish.DotnetPublishProcess
+		cacheDir   string
 
 		workingDir string
 
@@ -37,6 +38,9 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 	it.Before(func() {
 		var err error
 		workingDir, err = os.MkdirTemp("", "workingDir")
+		Expect(err).NotTo(HaveOccurred())
+
+		cacheDir, err = os.MkdirTemp("", cacheDir)
 		Expect(err).NotTo(HaveOccurred())
 
 		path = os.Getenv("PATH")
@@ -73,10 +77,11 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 	it.After(func() {
 		Expect(os.Setenv("PATH", path)).To(Succeed())
 		Expect(os.RemoveAll(workingDir)).To(Succeed())
+		Expect(os.RemoveAll(cacheDir)).To(Succeed())
 	})
 
 	it("executes the dotnet publish process", func() {
-		err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", "", "some-publish-output-dir", []string{"--flag", "value"})
+		err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "", "some-publish-output-dir", []string{"--flag", "value"})
 		Expect(err).NotTo(HaveOccurred())
 
 		args := []string{
@@ -113,7 +118,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		it("executes the dotnet publish process", func() {
-			err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", projectPath, "some-publish-output-dir", []string{"--flag", "value"})
+			err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, projectPath, "some-publish-output-dir", []string{"--flag", "value"})
 			Expect(err).NotTo(HaveOccurred())
 
 			args := []string{
@@ -143,7 +148,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 
 	context("when the user passes flags that the buildpack sets by default", func() {
 		it("overrides the default value with the user-provided one", func() {
-			err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", "", "some-publish-output-dir",
+			err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "", "some-publish-output-dir",
 				[]string{"--runtime", "user-value",
 					"--self-contained=true",
 					"--configuration", "UserConfiguration",
@@ -166,7 +171,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 
 	context("when the user passes --no-self-contained, equivalent to --self-contained=false", func() {
 		it("overrides the buildpack's value for self-contained with the user-provided one", func() {
-			err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", "", "some-publish-output-dir", []string{"--no-self-contained"})
+			err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "", "some-publish-output-dir", []string{"--no-self-contained"})
 			Expect(err).NotTo(HaveOccurred())
 
 			args := []string{
@@ -181,12 +186,86 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			Expect(executable.ExecuteCall.Receives.Execution.Args).To(Equal(args))
 		})
 	})
+	context("when the build generates an obj directory", func() {
+		it.Before(func() {
+			executable.ExecuteCall.Stub = func(e pexec.Execution) error {
+				return os.MkdirAll(filepath.Join(workingDir, "project-path", "obj"), os.ModePerm)
+			}
+		})
+		it("copies the obj directory into the cache layer", func() {
+			err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "project-path", "some-publish-output-dir", []string{"--no-self-contained"})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(filepath.Join(cacheDir, "obj")).To(BeADirectory())
+		})
+
+	})
+
+	context("when the cache has an obj directory from a previous build", func() {
+		it.Before(func() {
+			Expect(os.MkdirAll(filepath.Join(cacheDir, "obj"), os.ModePerm)).To(Succeed())
+			Expect(os.MkdirAll(filepath.Join(workingDir, "project-path"), os.ModePerm)).To(Succeed())
+		})
+		it("copies the obj directory into the working directory", func() {
+			err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "project-path", "some-publish-output-dir", []string{"--no-self-contained"})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(filepath.Join(workingDir, "project-path", "obj")).To(BeADirectory())
+		})
+	})
 
 	context("failure cases", func() {
-		context("When the Directory.Build.props file cannot be written", func() {
+		context("when check for existence of obj file in cache layer fails", func() {
+			it.Before(func() {
+				Expect(os.Chmod(cacheDir, 0000)).To(Succeed())
+			})
+			it.After(func() {
+				Expect(os.Chmod(cacheDir, os.ModePerm)).To(Succeed())
+			})
+
 			it("returns an error", func() {
-				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", "not/good", "some-output-dir", []string{})
-				Expect(err).To(MatchError(ContainSubstring("no such file or directory")))
+				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "", "some-output-dir", []string{})
+				Expect(err).To(MatchError(ContainSubstring("permission denied")))
+			})
+		})
+		context("when copying build cache into working directory fails", func() {
+			it.Before(func() {
+				Expect(os.MkdirAll(filepath.Join(cacheDir, "obj"), os.ModePerm))
+				Expect(os.WriteFile(filepath.Join(workingDir, "obj"), nil, 0500)).To(Succeed())
+				Expect(os.Chmod(workingDir, 0500)).To(Succeed())
+			})
+			it.After(func() {
+				Expect(os.Chmod(workingDir, os.ModePerm)).To(Succeed())
+			})
+
+			it("returns an error", func() {
+				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "", "some-output-dir", []string{})
+				Expect(err).To(MatchError(ContainSubstring("permission denied")))
+			})
+		})
+
+		context("when checking for obj dir generated during build fails", func() {
+			it.Before(func() {
+				Expect(os.Chmod(workingDir, 0200)).To(Succeed())
+			})
+			it.After(func() {
+				Expect(os.Chmod(workingDir, os.ModePerm)).To(Succeed())
+			})
+
+			it("returns an error", func() {
+				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "", "some-output-dir", []string{})
+				Expect(err).To(MatchError(ContainSubstring("permission denied")))
+			})
+		})
+
+		context("when copying obj dir into cache layer fails", func() {
+			it.Before(func() {
+				Expect(os.MkdirAll(filepath.Join(workingDir, "obj"), 0000))
+			})
+
+			it("returns an error", func() {
+				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "", "some-output-dir", []string{})
+				Expect(err).To(MatchError(ContainSubstring("permission denied")))
 			})
 		})
 
@@ -201,12 +280,12 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			})
 
 			it("returns an error", func() {
-				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", "", "some-output-dir", []string{})
+				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "", "some-output-dir", []string{})
 				Expect(err).To(MatchError("failed to execute 'dotnet publish': execution error"))
 			})
 
 			it("logs the command output", func() {
-				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", "some/intermediate/build/cache/path", "", "some-output-dir", []string{})
+				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "", "some-output-dir", []string{})
 				Expect(err).To(HaveOccurred())
 
 				Expect(buffer.String()).To(ContainLines(
