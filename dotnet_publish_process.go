@@ -110,11 +110,7 @@ func recreateBuildCache(workingDir, projectPath, cachePath string) error {
 	}
 
 	if obj {
-		err = os.RemoveAll(filepath.Join(cachePath, "obj"))
-		if err != nil {
-			// not tested
-			return fmt.Errorf("failed to reset build cache: %w", err)
-		}
+		// Need to create directory in case layer dir at cachePath doesn't exist yet
 		err = os.MkdirAll(filepath.Join(cachePath, "obj"), os.ModePerm)
 		if err != nil {
 			// not tested
