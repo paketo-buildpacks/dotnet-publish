@@ -89,12 +89,17 @@ func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, intermed
 }
 
 func loadBuildCache(workingDir, projectPath, cachePath string) error {
-	objExists, err := fs.Exists(filepath.Join(cachePath, "obj"))
+	obj, err := fs.Exists(filepath.Join(cachePath, "obj"))
 	if err != nil {
 		return err
 	}
 
-	if objExists {
+	if obj {
+		// RemoveAll to clear the contents of the directory, which fs.Copy won't do
+		err = os.RemoveAll(filepath.Join(workingDir, projectPath, "obj"))
+		if err != nil {
+			return err
+		}
 		err = fs.Copy(filepath.Join(cachePath, "obj"), filepath.Join(workingDir, projectPath, "obj"))
 		if err != nil {
 			return err
@@ -110,7 +115,12 @@ func recreateBuildCache(workingDir, projectPath, cachePath string) error {
 	}
 
 	if obj {
-		// Need to create directory in case layer dir at cachePath doesn't exist yet
+		// RemoveAll to clear the contents of the directory, which fs.Copy won't do
+		err = os.RemoveAll(filepath.Join(cachePath, "obj"))
+		if err != nil {
+			// not tested
+			return fmt.Errorf("failed to reset build cache: %w", err)
+		}
 		err = os.MkdirAll(filepath.Join(cachePath, "obj"), os.ModePerm)
 		if err != nil {
 			// not tested

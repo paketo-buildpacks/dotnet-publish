@@ -188,9 +188,12 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 	})
 	context("when the build generates an obj directory", func() {
 		it.Before(func() {
+			Expect(os.MkdirAll(filepath.Join(workingDir, "project-path"), os.ModePerm)).To(Succeed())
 			executable.ExecuteCall.Stub = func(e pexec.Execution) error {
 				return os.MkdirAll(filepath.Join(workingDir, "project-path", "obj"), os.ModePerm)
 			}
+			Expect(os.MkdirAll(filepath.Join(cacheDir, "obj"), os.ModePerm)).To(Succeed())
+			Expect(os.WriteFile(filepath.Join(cacheDir, "obj", "some-contents"), nil, os.ModePerm)).To(Succeed())
 		})
 		it("copies the obj directory into the cache layer", func() {
 			err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "project-path", "some-publish-output-dir", []string{"--no-self-contained"})
@@ -198,7 +201,21 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(filepath.Join(cacheDir, "obj")).To(BeADirectory())
 		})
+		context("and the cache layer directory doesn't exist yet", func() {
+			it.Before(func() {
+				Expect(os.MkdirAll(filepath.Join(workingDir, "project-path"), os.ModePerm)).To(Succeed())
+				executable.ExecuteCall.Stub = func(e pexec.Execution) error {
+					return os.MkdirAll(filepath.Join(workingDir, "project-path", "obj"), os.ModePerm)
+				}
+				Expect(os.RemoveAll(cacheDir)).To(Succeed())
+			})
+			it("creates the layer dir and moves the cache contents into it", func() {
+				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "project-path", "some-publish-output-dir", []string{"--no-self-contained"})
+				Expect(err).NotTo(HaveOccurred())
 
+				Expect(filepath.Join(cacheDir, "obj")).To(BeADirectory())
+			})
+		})
 	})
 
 	context("when the cache has an obj directory from a previous build", func() {
@@ -211,6 +228,19 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(filepath.Join(workingDir, "project-path", "obj")).To(BeADirectory())
+		})
+		context("and there's already an obj directory in the /workspace", func() {
+			it.Before(func() {
+				Expect(os.MkdirAll(filepath.Join(cacheDir, "obj"), os.ModePerm)).To(Succeed())
+				Expect(os.MkdirAll(filepath.Join(workingDir, "project-path", "obj"), os.ModePerm)).To(Succeed())
+				Expect(os.WriteFile(filepath.Join(workingDir, "project-path", "obj", "some-contents"), nil, os.ModePerm)).To(Succeed())
+			})
+			it("overwrites the /workspace obj with the layer obj dir", func() {
+				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "project-path", "some-publish-output-dir", []string{"--no-self-contained"})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(filepath.Join(workingDir, "project-path", "obj")).To(BeADirectory())
+			})
 		})
 	})
 
@@ -228,11 +258,24 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).To(MatchError(ContainSubstring("permission denied")))
 			})
 		})
-		context("when copying build cache into working directory fails", func() {
+		context("when removing obj directory in working dir fails", func() {
 			it.Before(func() {
 				Expect(os.MkdirAll(filepath.Join(cacheDir, "obj"), os.ModePerm))
-				Expect(os.WriteFile(filepath.Join(workingDir, "obj"), nil, 0500)).To(Succeed())
+				Expect(os.MkdirAll(filepath.Join(workingDir, "obj"), 0500)).To(Succeed())
 				Expect(os.Chmod(workingDir, 0500)).To(Succeed())
+			})
+			it.After(func() {
+				Expect(os.Chmod(workingDir, os.ModePerm)).To(Succeed())
+			})
+
+			it("returns an error", func() {
+				err := process.Execute(workingDir, "some-dotnet-root-dir", "some/nuget/cache/path", cacheDir, "", "some-output-dir", []string{})
+				Expect(err).To(MatchError(ContainSubstring("permission denied")))
+			})
+		})
+		context("when copying build cache into working directory fails", func() {
+			it.Before(func() {
+				Expect(os.MkdirAll(filepath.Join(cacheDir, "obj"), 0200))
 			})
 			it.After(func() {
 				Expect(os.Chmod(workingDir, os.ModePerm)).To(Succeed())
