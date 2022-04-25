@@ -2,8 +2,6 @@ package integration_test
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
@@ -30,10 +28,12 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 
 	context("when building a .NET Core app", func() {
 		var (
-			image     occam.Image
-			container occam.Container
-			name      string
-			source    string
+			image      occam.Image
+			images     map[string]string
+			container  occam.Container
+			containers map[string]string
+			name       string
+			source     string
 		)
 
 		it.Before(func() {
@@ -41,59 +41,60 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 			name, err = occam.RandomName()
 			Expect(err).NotTo(HaveOccurred())
 
+			containers = make(map[string]string)
+			images = make(map[string]string)
 		})
 
 		it.After(func() {
-			Expect(docker.Container.Remove.Execute(container.ID)).To(Succeed())
-			Expect(docker.Image.Remove.Execute(image.ID)).To(Succeed())
+			for id := range containers {
+				Expect(docker.Container.Remove.Execute(id)).To(Succeed())
+			}
+			for id := range images {
+				Expect(docker.Image.Remove.Execute(id)).To(Succeed())
+			}
 			Expect(docker.Volume.Remove.Execute(occam.CacheVolumeNames(name))).To(Succeed())
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
 
 		context("given a source application with .NET Core 6", func() {
-			it("should build a working OCI image", func() {
+			it("should build (and rebuild) a working OCI image", func() {
 				var err error
 				source, err := occam.Source(filepath.Join("testdata", "source_6_app"))
 				Expect(err).NotTo(HaveOccurred())
 
-				var logs fmt.Stringer
-				image, logs, err = pack.WithNoColor().Build.
-					WithBuildpacks(
-						icuBuildpack,
-						dotnetCoreRuntimeBuildpack,
-						dotnetCoreAspNetBuildpack,
-						dotnetCoreSDKBuildpack,
-						buildpack,
-						dotnetExecuteBuildpack,
-					).
-					WithEnv(map[string]string{
-						"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
-					}).
-					Execute(name, source)
-				Expect(err).NotTo(HaveOccurred(), logs.String())
+				for i := 0; i < 2; i++ {
+					var logs fmt.Stringer
+					image, logs, err = pack.WithNoColor().Build.
+						WithBuildpacks(
+							icuBuildpack,
+							dotnetCoreRuntimeBuildpack,
+							dotnetCoreAspNetBuildpack,
+							dotnetCoreSDKBuildpack,
+							buildpack,
+							dotnetExecuteBuildpack,
+						).
+						WithEnv(map[string]string{
+							"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
+						}).
+						Execute(name, source)
+					Expect(err).NotTo(HaveOccurred(), logs.String())
+					images[image.ID] = ""
 
-				Expect(logs).To(ContainLines(
-					MatchRegexp(`    Running 'dotnet publish .* --verbosity=normal'`),
-				))
+					Expect(logs).To(ContainLines(
+						MatchRegexp(`    Running 'dotnet publish .* --verbosity=normal'`),
+					))
 
-				container, err = docker.Container.Run.
-					WithEnv(map[string]string{"PORT": "8080"}).
-					WithPublish("8080").
-					WithPublishAll().
-					Execute(image.ID)
-				Expect(err).NotTo(HaveOccurred())
+					container, err = docker.Container.Run.
+						WithEnv(map[string]string{"PORT": "8080"}).
+						WithPublish("8080").
+						WithPublishAll().
+						Execute(image.ID)
+					Expect(err).NotTo(HaveOccurred())
+					containers[container.ID] = ""
 
-				Eventually(container).Should(BeAvailable())
-
-				response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
-				Expect(err).NotTo(HaveOccurred())
-				defer response.Body.Close()
-
-				Expect(response.StatusCode).To(Equal(http.StatusOK))
-
-				content, err := io.ReadAll(response.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(content)).To(ContainSubstring("source_6_app"))
+					Eventually(container).Should(BeAvailable())
+					Eventually(container).Should(Serve(ContainSubstring("source_6_app")).OnPort(8080))
+				}
 			})
 		})
 
@@ -118,6 +119,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					}).
 					Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())
+				images[image.ID] = ""
 
 				Expect(logs).To(ContainLines(
 					MatchRegexp(`    Running 'dotnet publish .* --verbosity=normal'`),
@@ -129,18 +131,10 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					WithPublishAll().
 					Execute(image.ID)
 				Expect(err).NotTo(HaveOccurred())
+				containers[container.ID] = ""
 
 				Eventually(container).Should(BeAvailable())
-
-				response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
-				Expect(err).NotTo(HaveOccurred())
-				defer response.Body.Close()
-
-				Expect(response.StatusCode).To(Equal(http.StatusOK))
-
-				content, err := io.ReadAll(response.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(content)).To(ContainSubstring("source_5_app"))
+				Eventually(container).Should(Serve(ContainSubstring("source_5_app")).OnPort(8080))
 			})
 		})
 
@@ -162,6 +156,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					).
 					Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())
+				images[image.ID] = ""
 
 				container, err = docker.Container.Run.
 					WithEnv(map[string]string{"PORT": "8080"}).
@@ -169,18 +164,10 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					WithPublishAll().
 					Execute(image.ID)
 				Expect(err).NotTo(HaveOccurred())
+				containers[container.ID] = ""
 
 				Eventually(container).Should(BeAvailable())
-
-				response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
-				Expect(err).NotTo(HaveOccurred())
-				defer response.Body.Close()
-
-				Expect(response.StatusCode).To(Equal(http.StatusOK))
-
-				content, err := io.ReadAll(response.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(content)).To(ContainSubstring("simple_3_0_app"))
+				Eventually(container).Should(Serve(ContainSubstring("simple_3_0_app")).OnPort(8080))
 			})
 		})
 
@@ -202,6 +189,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					).
 					Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())
+				images[image.ID] = ""
 
 				container, err = docker.Container.Run.
 					WithEnv(map[string]string{"PORT": "8080"}).
@@ -209,18 +197,10 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					WithPublishAll().
 					Execute(image.ID)
 				Expect(err).NotTo(HaveOccurred())
+				containers[container.ID] = ""
 
 				Eventually(container).Should(BeAvailable())
-
-				response, err := http.Get(fmt.Sprintf("http://localhost:%s/api/values/6", container.HostPort("8080")))
-				Expect(err).NotTo(HaveOccurred())
-				defer response.Body.Close()
-
-				Expect(response.StatusCode).To(Equal(http.StatusOK))
-
-				content, err := io.ReadAll(response.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(content)).To(ContainSubstring("value"))
+				Eventually(container).Should(Serve(ContainSubstring("value")).WithEndpoint("/api/values/6").OnPort(8080))
 			})
 		})
 
@@ -242,6 +222,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					).
 					Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())
+				images[image.ID] = ""
 
 				container, err = docker.Container.Run.
 					WithEnv(map[string]string{"PORT": "8080"}).
@@ -249,23 +230,9 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					WithPublishAll().
 					Execute(image.ID)
 				Expect(err).NotTo(HaveOccurred())
+				containers[container.ID] = ""
 
-				Eventually(func() int {
-					response, _ := http.Get(fmt.Sprintf("http://localhost:%s/swagger/index.html", container.HostPort("8080")))
-					if response != nil {
-						defer response.Body.Close()
-						return response.StatusCode
-					}
-					return -1
-				}).Should(Equal(http.StatusOK))
-
-				response, err := http.Get(fmt.Sprintf("http://localhost:%s/swagger/index.html", container.HostPort("8080")))
-				Expect(err).NotTo(HaveOccurred())
-				defer response.Body.Close()
-
-				content, err := io.ReadAll(response.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(content)).To(ContainSubstring("<title>Swagger UI</title>"))
+				Eventually(container).Should(Serve(ContainSubstring("<title>Swagger UI</title>")).WithEndpoint("/swagger/index.html").OnPort(8080))
 			})
 		})
 
@@ -288,6 +255,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					).
 					Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())
+				images[image.ID] = ""
 
 				container, err = docker.Container.Run.
 					WithEnv(map[string]string{"PORT": "8080"}).
@@ -295,18 +263,10 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					WithPublishAll().
 					Execute(image.ID)
 				Expect(err).NotTo(HaveOccurred())
+				containers[container.ID] = ""
 
 				Eventually(container).Should(BeAvailable())
-
-				response, err := http.Get(fmt.Sprintf("http://localhost:%s", container.HostPort("8080")))
-				Expect(err).NotTo(HaveOccurred())
-				defer response.Body.Close()
-
-				Expect(response.StatusCode).To(Equal(http.StatusOK))
-
-				content, err := io.ReadAll(response.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(content)).To(ContainSubstring("Loading..."))
+				Eventually(container).Should(Serve(ContainSubstring("Loading...")).OnPort(8080))
 			})
 		})
 	})
