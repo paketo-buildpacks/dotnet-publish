@@ -98,46 +98,6 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 
-		context("given a source application with .NET Core 5", func() {
-			it("should build a working OCI image", func() {
-				var err error
-				source, err := occam.Source(filepath.Join("testdata", "source_5_app"))
-				Expect(err).NotTo(HaveOccurred())
-
-				var logs fmt.Stringer
-				image, logs, err = pack.WithNoColor().Build.
-					WithBuildpacks(
-						icuBuildpack,
-						dotnetCoreRuntimeBuildpack,
-						dotnetCoreAspNetBuildpack,
-						dotnetCoreSDKBuildpack,
-						buildpack,
-						dotnetExecuteBuildpack,
-					).
-					WithEnv(map[string]string{
-						"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
-					}).
-					Execute(name, source)
-				Expect(err).NotTo(HaveOccurred(), logs.String())
-				images[image.ID] = ""
-
-				Expect(logs).To(ContainLines(
-					MatchRegexp(`    Running 'dotnet publish .* --verbosity=normal'`),
-				))
-
-				container, err = docker.Container.Run.
-					WithEnv(map[string]string{"PORT": "8080"}).
-					WithPublish("8080").
-					WithPublishAll().
-					Execute(image.ID)
-				Expect(err).NotTo(HaveOccurred())
-				containers[container.ID] = ""
-
-				Eventually(container).Should(BeAvailable())
-				Eventually(container).Should(Serve(ContainSubstring("source_5_app")).OnPort(8080))
-			})
-		})
-
 		context("given a source application with .NET Core 3.1", func() {
 			it("should build a working OCI image", func() {
 				var err error
@@ -239,7 +199,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 		context("given a .NET Core angular application", func() {
 			it("should build a working OCI image", func() {
 				var err error
-				source, err = occam.Source(filepath.Join("testdata", "angular_msbuild_dotnet_5"))
+				source, err = occam.Source(filepath.Join("testdata", "angular_msbuild"))
 				Expect(err).NotTo(HaveOccurred())
 
 				var logs fmt.Stringer
