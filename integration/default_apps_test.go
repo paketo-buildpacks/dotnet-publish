@@ -1,7 +1,9 @@
 package integration_test
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -193,6 +195,71 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 				containers[container.ID] = ""
 
 				Eventually(container).Should(Serve(ContainSubstring("<title>Swagger UI</title>")).WithEndpoint("/swagger/index.html").OnPort(8080))
+			})
+		})
+
+		context.Focus("when app source changes, NuGet packages are unchanged", func() {
+			it("does not reuse cached app layer", func() {
+				var err error
+				source, err := occam.Source(filepath.Join("testdata", "source-3.1-aspnet-with-public-nuget"))
+				Expect(err).NotTo(HaveOccurred())
+
+				build := pack.WithNoColor().Build.
+					WithBuildpacks(
+						icuBuildpack,
+						dotnetCoreRuntimeBuildpack,
+						dotnetCoreAspNetBuildpack,
+						dotnetCoreSDKBuildpack,
+						buildpack,
+						dotnetExecuteBuildpack,
+					)
+
+				var logs fmt.Stringer
+				image, logs, err = build.Execute(name, source)
+				Expect(err).NotTo(HaveOccurred(), logs.String())
+				images[image.ID] = ""
+
+				container, err = docker.Container.Run.
+					WithEnv(map[string]string{"PORT": "8080"}).
+					WithPublish("8080").
+					WithPublishAll().
+					Execute(image.ID)
+				Expect(err).NotTo(HaveOccurred())
+				containers[container.ID] = ""
+
+				Eventually(container).Should(Serve(ContainSubstring("My API V1")).WithEndpoint("/swagger/index.html").OnPort(8080))
+				file, err := os.Open(filepath.Join(source, "Startup.cs"))
+				Expect(err).NotTo(HaveOccurred())
+
+				contents, err := io.ReadAll(file)
+				Expect(err).NotTo(HaveOccurred())
+
+				contents = bytes.Replace(contents, []byte("My API V1"), []byte("My Cool V1 API"), 1)
+
+				Expect(os.WriteFile(filepath.Join(source, "Startup.cs"), contents, os.ModePerm)).To(Succeed())
+				file.Close()
+
+				modified, err := os.Open(filepath.Join(source, "Startup.cs"))
+				Expect(err).NotTo(HaveOccurred())
+
+				contents, err = io.ReadAll(modified)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(contents)).To(ContainSubstring("My Cool V1 API"))
+				modified.Close()
+
+				image, logs, err = build.Execute(name, source)
+				Expect(err).NotTo(HaveOccurred(), logs.String())
+				images[image.ID] = ""
+
+				container, err = docker.Container.Run.
+					WithEnv(map[string]string{"PORT": "8080"}).
+					WithPublish("8080").
+					WithPublishAll().
+					Execute(image.ID)
+				Expect(err).NotTo(HaveOccurred())
+				containers[container.ID] = ""
+
+				Eventually(container).Should(Serve(ContainSubstring("My Cool V1 API")).WithEndpoint("/swagger/index.html").OnPort(8080))
 			})
 		})
 
