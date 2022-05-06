@@ -83,6 +83,14 @@ func testOutputSlicing(t *testing.T, context spec.G, it spec.S) {
 
 				Expect(os.WriteFile(filepath.Join(source, "Startup.cs"), contents, os.ModePerm)).To(Succeed())
 
+				modifiedFile, err := os.Open(filepath.Join(source, "Startup.cs"))
+				Expect(err).NotTo(HaveOccurred())
+				defer modifiedFile.Close()
+
+				contents, err = io.ReadAll(file)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(contents).To(ContainSubstring("My Cool V1 API"), string(contents))
+
 				image, logs, err = build.Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())
 				images[image.ID] = ""
