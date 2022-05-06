@@ -74,7 +74,6 @@ func testOutputSlicing(t *testing.T, context spec.G, it spec.S) {
 
 				file, err := os.Open(filepath.Join(source, "Startup.cs"))
 				Expect(err).NotTo(HaveOccurred())
-				defer file.Close()
 
 				contents, err := io.ReadAll(file)
 				Expect(err).NotTo(HaveOccurred())
@@ -82,14 +81,15 @@ func testOutputSlicing(t *testing.T, context spec.G, it spec.S) {
 				contents = bytes.Replace(contents, []byte("My API V1"), []byte("My Cool V1 API"), 1)
 
 				Expect(os.WriteFile(filepath.Join(source, "Startup.cs"), contents, os.ModePerm)).To(Succeed())
+				file.Close()
 
-				modifiedFile, err := os.Open(filepath.Join(source, "Startup.cs"))
+				modified, err := os.Open(filepath.Join(source, "Startup.cs"))
 				Expect(err).NotTo(HaveOccurred())
-				defer modifiedFile.Close()
 
-				contents, err = io.ReadAll(file)
+				contents, err = io.ReadAll(modified)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(contents).To(ContainSubstring("My Cool V1 API"), string(contents))
+				Expect(string(contents)).To(ContainSubstring("My Cool V1 API"))
+				modified.Close()
 
 				image, logs, err = build.Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())
