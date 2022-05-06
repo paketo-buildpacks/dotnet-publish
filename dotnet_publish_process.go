@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/paketo-buildpacks/packit/v2/chronos"
-	"github.com/paketo-buildpacks/packit/v2/fs"
 	"github.com/paketo-buildpacks/packit/v2/pexec"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 )
@@ -31,15 +30,9 @@ func NewDotnetPublishProcess(executable Executable, logger scribe.Logger, clock 
 	}
 }
 
-func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, intermediateBuildCachePath, projectPath, outputPath string, flags []string) error {
-	err := loadBuildCache(workingDir, projectPath, intermediateBuildCachePath)
-	if err != nil {
-		return fmt.Errorf("failed to load build cache: %w", err)
-	}
-
+func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, projectPath, outputPath string, flags []string) error {
 	args := []string{
-		"publish",
-		filepath.Join(workingDir, projectPath),
+		"publish", filepath.Join(workingDir, projectPath), // change to workingDir plus project path
 	}
 
 	if !containsFlag(flags, "--configuration") && !containsFlag(flags, "-c") {
@@ -80,56 +73,5 @@ func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, intermed
 	p.logger.Action("Completed in %s", duration)
 	p.logger.Break()
 
-	err = recreateBuildCache(workingDir, projectPath, intermediateBuildCachePath)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func loadBuildCache(workingDir, projectPath, cachePath string) error {
-	obj, err := fs.Exists(filepath.Join(cachePath, "obj"))
-	if err != nil {
-		return err
-	}
-
-	if obj {
-		// RemoveAll to clear the contents of the directory, which fs.Copy won't do
-		err = os.RemoveAll(filepath.Join(workingDir, projectPath, "obj"))
-		if err != nil {
-			return err
-		}
-		err = fs.Copy(filepath.Join(cachePath, "obj"), filepath.Join(workingDir, projectPath, "obj"))
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func recreateBuildCache(workingDir, projectPath, cachePath string) error {
-	obj, err := fs.Exists(filepath.Join(workingDir, projectPath, "obj"))
-	if err != nil {
-		return fmt.Errorf("failed to locate build cache: %w", err)
-	}
-
-	if obj {
-		// RemoveAll to clear the contents of the directory, which fs.Copy won't do
-		err = os.RemoveAll(filepath.Join(cachePath, "obj"))
-		if err != nil {
-			// not tested
-			return fmt.Errorf("failed to reset build cache: %w", err)
-		}
-		err = os.MkdirAll(filepath.Join(cachePath, "obj"), os.ModePerm)
-		if err != nil {
-			// not tested
-			return fmt.Errorf("failed to reset build cache: %w", err)
-		}
-		err = fs.Copy(filepath.Join(workingDir, projectPath, "obj"), filepath.Join(cachePath, "obj"))
-		if err != nil {
-			return fmt.Errorf("failed to store build cache: %w", err)
-		}
-	}
 	return nil
 }

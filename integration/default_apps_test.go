@@ -198,7 +198,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 
-		context.Focus("when app source changes, NuGet packages are unchanged", func() {
+		context("when app source changes, NuGet packages are unchanged", func() {
 			it("does not reuse cached app layer", func() {
 				var err error
 				source, err := occam.Source(filepath.Join("testdata", "source-3.1-aspnet-with-public-nuget"))

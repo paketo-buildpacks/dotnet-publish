@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	dotnetpublish "github.com/paketo-buildpacks/dotnet-publish"
 	"github.com/paketo-buildpacks/dotnet-publish/fakes"
@@ -22,6 +23,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 	var (
 		Expect = NewWithT(t).Expect
 
+		timestamp  time.Time
 		buffer     *bytes.Buffer
 		workingDir string
 		homeDir    string
@@ -64,15 +66,17 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(os.MkdirAll(filepath.Join(layersDir, "nuget-cache"), os.ModePerm)).To(Succeed())
 		Expect(os.WriteFile(filepath.Join(layersDir, "nuget-cache", "some-cache"), []byte{}, 0600)).To(Succeed())
 
-		Expect(os.MkdirAll(filepath.Join(layersDir, "intermediate-build-cache"), os.ModePerm)).To(Succeed())
-		Expect(os.WriteFile(filepath.Join(layersDir, "intermediate-build-cache", "some-cache"), []byte{}, 0600)).To(Succeed())
-
 		os.Setenv("DOTNET_ROOT", "some-existing-root-dir")
 
 		buffer = bytes.NewBuffer(nil)
 		logger := scribe.NewLogger(buffer)
 
-		build = dotnetpublish.Build(sourceRemover, bindingResolver, homeDir, symlinker, publishProcess, buildpackYMLParser, commandConfigParser, chronos.DefaultClock, logger)
+		timestamp = time.Now()
+		clock := chronos.NewClock(func() time.Time {
+			return timestamp
+		})
+
+		build = dotnetpublish.Build(sourceRemover, bindingResolver, homeDir, symlinker, publishProcess, buildpackYMLParser, commandConfigParser, clock, logger)
 	})
 
 	it.After(func() {
@@ -96,17 +100,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(result.Layers).To(HaveLen(2))
+		Expect(result.Layers).To(HaveLen(1))
+		layer := result.Layers[0]
 
-		nugetCacheLayer := result.Layers[0]
-		Expect(nugetCacheLayer.Name).To(Equal("nuget-cache"))
-		Expect(nugetCacheLayer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
-		Expect(nugetCacheLayer.Cache).To(BeTrue())
-
-		intermediateBuildCacheLayer := result.Layers[1]
-		Expect(intermediateBuildCacheLayer.Name).To(Equal("intermediate-build-cache"))
-		Expect(intermediateBuildCacheLayer.Path).To(Equal(filepath.Join(layersDir, "intermediate-build-cache")))
-		Expect(intermediateBuildCacheLayer.Cache).To(BeTrue())
+		Expect(layer.Name).To(Equal("nuget-cache"))
+		Expect(layer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
+		Expect(layer.Cache).To(BeTrue())
 
 		Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
 		Expect(sourceRemover.RemoveCall.Receives.PublishOutputDir).To(MatchRegexp(`dotnet-publish-output\d+`))
@@ -120,9 +119,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(publishProcess.ExecuteCall.Receives.WorkingDir).To(Equal(workingDir))
 		Expect(publishProcess.ExecuteCall.Receives.RootDir).To(Equal("some-existing-root-dir"))
 		Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
-		Expect(publishProcess.ExecuteCall.Receives.NugetCachePath).To(Equal(nugetCacheLayer.Path))
-		Expect(publishProcess.ExecuteCall.Receives.IntermediateBuildCachePath).To(Equal(intermediateBuildCacheLayer.Path))
-		Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
 		Expect(publishProcess.ExecuteCall.Receives.OutputPath).To(MatchRegexp(`dotnet-publish-output\d+`))
 		Expect(publishProcess.ExecuteCall.Receives.Flags).To(Equal([]string{"--publishflag", "value"}))
 
@@ -132,10 +128,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(buffer.String()).To(ContainSubstring("Please specify the project path through the $BP_DOTNET_PROJECT_PATH environment variable instead. See README.md or the documentation on paketo.io for more information."))
 	})
 
-	context("the cache layers are empty", func() {
+	context("the cache layer is empty", func() {
 		it.Before(func() {
 			Expect(os.Remove(filepath.Join(layersDir, "nuget-cache", "some-cache"))).To(Succeed())
-			Expect(os.Remove(filepath.Join(layersDir, "intermediate-build-cache", "some-cache"))).To(Succeed())
 		})
 
 		it("does not return a layer", func() {
@@ -176,17 +171,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(result.Layers).To(HaveLen(2))
+			Expect(result.Layers).To(HaveLen(1))
+			layer := result.Layers[0]
 
-			nugetCacheLayer := result.Layers[0]
-			Expect(nugetCacheLayer.Name).To(Equal("nuget-cache"))
-			Expect(nugetCacheLayer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
-			Expect(nugetCacheLayer.Cache).To(BeTrue())
-
-			intermediateBuildCacheLayer := result.Layers[1]
-			Expect(intermediateBuildCacheLayer.Name).To(Equal("intermediate-build-cache"))
-			Expect(intermediateBuildCacheLayer.Path).To(Equal(filepath.Join(layersDir, "intermediate-build-cache")))
-			Expect(intermediateBuildCacheLayer.Cache).To(BeTrue())
+			Expect(layer.Name).To(Equal("nuget-cache"))
+			Expect(layer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
+			Expect(layer.Cache).To(BeTrue())
 
 			Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
 			Expect(sourceRemover.RemoveCall.Receives.PublishOutputDir).To(MatchRegexp(`dotnet-publish-output\d+`))
@@ -195,8 +185,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(publishProcess.ExecuteCall.Receives.WorkingDir).To(Equal(workingDir))
 			Expect(publishProcess.ExecuteCall.Receives.RootDir).To(Equal("some-existing-root-dir"))
 			Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
-			Expect(publishProcess.ExecuteCall.Receives.NugetCachePath).To(Equal(nugetCacheLayer.Path))
-			Expect(publishProcess.ExecuteCall.Receives.IntermediateBuildCachePath).To(Equal(intermediateBuildCacheLayer.Path))
 			Expect(publishProcess.ExecuteCall.Receives.OutputPath).To(MatchRegexp(`dotnet-publish-output\d+`))
 			Expect(publishProcess.ExecuteCall.Receives.Flags).To(Equal([]string{"--publishflag", "value"}))
 
