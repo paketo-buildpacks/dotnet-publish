@@ -40,12 +40,18 @@ type CommandConfigParser interface {
 	ParseFlagsFromEnvVar(envVar string) ([]string, error)
 }
 
+//go:generate faux --interface Slicer --output fakes/slicer.go
+type Slicer interface {
+	Slice(assetsFile string) (pkgs, earlyPkgs, projects packit.Slice, err error)
+}
+
 func Build(
 	sourceRemover SourceRemover,
 	bindingResolver BindingResolver,
 	homeDir string,
 	symlinker SymlinkManager,
 	publishProcess PublishProcess,
+	slicer Slicer,
 	buildpackYMLParser BuildpackYMLParser,
 	configParser CommandConfigParser,
 	clock chronos.Clock,
@@ -105,6 +111,23 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
+		slices := []packit.Slice{
+			{Paths: []string{".dotnet_root"}},
+		}
+
+		logger.Process("Dividing build output into layers to optimize cache reuse")
+		pkg, early, project, err := slicer.Slice(filepath.Join(context.WorkingDir, projectPath, "obj", "project.assets.json"))
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		for _, slice := range []packit.Slice{pkg, early, project} {
+			if len(slice.Paths) > 0 {
+				slices = append(slices, slice)
+			}
+		}
+		logger.Break()
+
 		logger.Process("Removing source code")
 		logger.Break()
 		err = sourceRemover.Remove(context.WorkingDir, tempDir, ".dotnet_root")
@@ -137,6 +160,9 @@ func Build(
 
 		return packit.BuildResult{
 			Layers: layers,
+			Launch: packit.LaunchMetadata{
+				Slices: slices,
+			},
 		}, nil
 	}
 }

@@ -1,0 +1,67 @@
+{
+  "version": 3,
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "YamlDotNet/11.2.1": {
+        "type": "package",
+        "compile": {
+          "compile-dep.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.1/YamlDotNet.dll": {}
+        }
+      },
+      "Migrations/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "Squidex.Domain.Apps.Core.Model": "1.0.0",
+          "Squidex.Domain.Apps.Entities": "1.0.0",
+          "Squidex.Domain.Apps.Entities.MongoDb": "1.0.0",
+          "Squidex.Domain.Apps.Events": "1.0.0",
+          "Squidex.Infrastructure": "1.0.0",
+          "Squidex.Infrastructure.MongoDb": "1.0.0"
+        },
+        "compile": {
+          "compile-dep.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Migrations.dll": {}
+        }
+      },
+      "Squidex.Domain.Apps.Core.Model/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.UserSecrets": "6.0.0",
+          "Squidex.Infrastructure": "1.0.0",
+          "Squidex.Shared": "1.0.0",
+          "System.Collections.Immutable": "6.0.0",
+          "System.ComponentModel.Annotations": "5.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Squidex.Domain.Apps.Core.Model.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Squidex.Domain.Apps.Core.Model.dll": {}
+        }
+      },
+      "Swashbuckle.AspNetCore.SwaggerGen/6.2.2": {
+        "type": "package",
+        "dependencies": {
+          "Swashbuckle.AspNetCore.Swagger": "6.2.2"
+        },
+        "compile": {
+          "some-compile-time.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp3.0/Swashbuckle.AspNetCore.SwaggerGen.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {},
+  "projectFileDependencyGroups": {},
+  "packageFolders": {},
+  "project": {}
+}

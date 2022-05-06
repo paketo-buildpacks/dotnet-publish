@@ -74,6 +74,8 @@ func testSourceRemoval(t *testing.T, context spec.G, it spec.S) {
 			Expect(logs).To(ContainLines(
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
+				"  Dividing build output into layers to optimize cache reuse",
+				"",
 				"  Removing source code",
 				"",
 			))

@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	dotnetpublish "github.com/paketo-buildpacks/dotnet-publish"
 	"github.com/paketo-buildpacks/dotnet-publish/fakes"
@@ -23,18 +22,18 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 	var (
 		Expect = NewWithT(t).Expect
 
-		timestamp  time.Time
 		buffer     *bytes.Buffer
 		workingDir string
 		homeDir    string
 		layersDir  string
 
-		symlinker           *fakes.SymlinkManager
-		sourceRemover       *fakes.SourceRemover
-		publishProcess      *fakes.PublishProcess
 		bindingResolver     *fakes.BindingResolver
 		buildpackYMLParser  *fakes.BuildpackYMLParser
 		commandConfigParser *fakes.CommandConfigParser
+		publishProcess      *fakes.PublishProcess
+		slicer              *fakes.Slicer
+		sourceRemover       *fakes.SourceRemover
+		symlinker           *fakes.SymlinkManager
 
 		build packit.BuildFunc
 	)
@@ -56,12 +55,17 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		sourceRemover = &fakes.SourceRemover{}
 		publishProcess = &fakes.PublishProcess{}
 		bindingResolver = &fakes.BindingResolver{}
+		slicer = &fakes.Slicer{}
 
 		buildpackYMLParser = &fakes.BuildpackYMLParser{}
 		buildpackYMLParser.ParseProjectPathCall.Returns.ProjectFilePath = "some/project/path"
 
 		commandConfigParser = &fakes.CommandConfigParser{}
 		commandConfigParser.ParseFlagsFromEnvVarCall.Returns.StringSlice = []string{"--publishflag", "value"}
+
+		slicer.SliceCall.Returns.Pkgs = packit.Slice{Paths: []string{"some-package.dll"}}
+		slicer.SliceCall.Returns.EarlyPkgs = packit.Slice{Paths: []string{"some-release-candidate-package.dll"}}
+		slicer.SliceCall.Returns.Projects = packit.Slice{Paths: []string{"some-project.dll"}}
 
 		Expect(os.MkdirAll(filepath.Join(layersDir, "nuget-cache"), os.ModePerm)).To(Succeed())
 		Expect(os.WriteFile(filepath.Join(layersDir, "nuget-cache", "some-cache"), []byte{}, 0600)).To(Succeed())
@@ -71,12 +75,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		buffer = bytes.NewBuffer(nil)
 		logger := scribe.NewLogger(buffer)
 
-		timestamp = time.Now()
-		clock := chronos.NewClock(func() time.Time {
-			return timestamp
-		})
-
-		build = dotnetpublish.Build(sourceRemover, bindingResolver, homeDir, symlinker, publishProcess, buildpackYMLParser, commandConfigParser, clock, logger)
+		build = dotnetpublish.Build(sourceRemover, bindingResolver, homeDir, symlinker, publishProcess, slicer, buildpackYMLParser, commandConfigParser, chronos.DefaultClock, logger)
 	})
 
 	it.After(func() {
@@ -107,6 +106,13 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(layer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
 		Expect(layer.Cache).To(BeTrue())
 
+		Expect(result.Launch.Slices).To(Equal([]packit.Slice{
+			{Paths: []string{".dotnet_root"}},
+			{Paths: []string{"some-package.dll"}},
+			{Paths: []string{"some-release-candidate-package.dll"}},
+			{Paths: []string{"some-project.dll"}},
+		}))
+
 		Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
 		Expect(sourceRemover.RemoveCall.Receives.PublishOutputDir).To(MatchRegexp(`dotnet-publish-output\d+`))
 		Expect(sourceRemover.RemoveCall.Receives.ExcludedFiles).To(ConsistOf([]string{".dotnet_root"}))
@@ -121,6 +127,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
 		Expect(publishProcess.ExecuteCall.Receives.OutputPath).To(MatchRegexp(`dotnet-publish-output\d+`))
 		Expect(publishProcess.ExecuteCall.Receives.Flags).To(Equal([]string{"--publishflag", "value"}))
+
+		Expect(slicer.SliceCall.Receives.AssetsFile).To(Equal(filepath.Join(workingDir, "some/project/path", "obj", "project.assets.json")))
 
 		Expect(buffer.String()).To(ContainSubstring("Some Buildpack 0.0.1"))
 		Expect(buffer.String()).To(ContainSubstring("Executing build process"))
@@ -190,6 +198,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(buffer.String()).To(ContainSubstring("Some Buildpack some-version"))
 			Expect(buffer.String()).To(ContainSubstring("Executing build process"))
+			Expect(buffer.String()).To(ContainSubstring("Dividing build output into layers to optimize cache reuse"))
+			Expect(buffer.String()).To(ContainSubstring("Removing source code"))
 		})
 	})
 
@@ -226,6 +236,31 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(symlinker.LinkCall.Receives.Newname).To(Equal(filepath.Join(homeDir, ".nuget", "NuGet", "NuGet.Config")))
 			Expect(symlinker.UnlinkCall.CallCount).To(Equal(1))
 			Expect(symlinker.UnlinkCall.Receives.Path).To(Equal(filepath.Join(homeDir, ".nuget", "NuGet", "NuGet.Config")))
+		})
+	})
+	context("when output slicer produces an empty slice", func() {
+		it.Before(func() {
+			slicer.SliceCall.Returns.Pkgs = packit.Slice{Paths: []string{}}
+		})
+		it("does not attach empty slices to the build result", func() {
+			result, err := build(packit.BuildContext{
+				WorkingDir: workingDir,
+				BuildpackInfo: packit.BuildpackInfo{
+					Name:    "Some Buildpack",
+					Version: "0.0.1",
+				},
+				Platform: packit.Platform{
+					Path: "some-platform-path",
+				},
+				Layers: packit.Layers{Path: layersDir},
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(result.Launch.Slices).To(Equal([]packit.Slice{
+				{Paths: []string{".dotnet_root"}},
+				{Paths: []string{"some-release-candidate-package.dll"}},
+				{Paths: []string{"some-project.dll"}},
+			}))
 		})
 	})
 
@@ -280,6 +315,22 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		context("when the publish process fails", func() {
 			it.Before(func() {
 				publishProcess.ExecuteCall.Returns.Error = errors.New("some-error")
+			})
+
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					WorkingDir: workingDir,
+					BuildpackInfo: packit.BuildpackInfo{
+						Version: "0.0.1",
+					},
+				})
+				Expect(err).To(MatchError("some-error"))
+			})
+		})
+
+		context("when output slicing fails", func() {
+			it.Before(func() {
+				slicer.SliceCall.Returns.Err = errors.New("some-error")
 			})
 
 			it("returns an error", func() {
