@@ -27,7 +27,7 @@ type SourceRemover interface {
 
 //go:generate faux --interface PublishProcess --output fakes/publish_process.go
 type PublishProcess interface {
-	Execute(workingDir, rootDir, nugetCachePath, intermediateBuildCachePath, projectPath, outputPath string, flags []string) error
+	Execute(workingDir, rootDir, nugetCachePath, projectPath, outputPath string, flags []string) error
 }
 
 //go:generate faux --interface BindingResolver --output fakes/binding_resolver.go
@@ -99,15 +99,8 @@ func Build(
 
 		nugetCache.Cache = true
 
-		intermediateBuildCache, err := context.Layers.Get("intermediate-build-cache")
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-
-		intermediateBuildCache.Cache = true
-
 		logger.Process("Executing build process")
-		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), nugetCache.Path, intermediateBuildCache.Path, projectPath, tempDir, flags)
+		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), nugetCache.Path, projectPath, tempDir, flags)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
@@ -136,16 +129,6 @@ func Build(
 		if exists {
 			if !fs.IsEmptyDir(nugetCache.Path) {
 				layers = append(layers, nugetCache)
-			}
-		}
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-
-		exists, err = fs.Exists(intermediateBuildCache.Path)
-		if exists {
-			if !fs.IsEmptyDir(intermediateBuildCache.Path) {
-				layers = append(layers, intermediateBuildCache)
 			}
 		}
 		if err != nil {
