@@ -38,6 +38,7 @@ func main() {
 				logger,
 				chronos.DefaultClock,
 			),
+			dotnetpublish.NewOutputSlicer(),
 			bpYMLParser,
 			configParser,
 			chronos.DefaultClock,

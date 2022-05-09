@@ -13,6 +13,7 @@ import (
 	"github.com/sclevine/spec/report"
 
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/format"
 )
 
 var (
@@ -132,6 +133,7 @@ func TestIntegration(t *testing.T) {
 	Expect(err).NotTo(HaveOccurred())
 
 	SetDefaultEventuallyTimeout(30 * time.Second)
+	format.MaxLength = 0
 
 	suite := spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
 	suite("BuildpackYML", testBuildpackYML)
@@ -144,5 +146,6 @@ func TestIntegration(t *testing.T) {
 	suite("SourceRemoval", testSourceRemoval)
 	suite("VisualBasic", testVisualBasic)
 	suite("Nuget", testNugetConfig)
+	suite("OutputSlicing", testOutputSlicing)
 	suite.Run(t)
 }

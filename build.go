@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/Masterminds/semver"
 	"github.com/paketo-buildpacks/packit/v2"
@@ -40,12 +41,18 @@ type CommandConfigParser interface {
 	ParseFlagsFromEnvVar(envVar string) ([]string, error)
 }
 
+//go:generate faux --interface Slicer --output fakes/slicer.go
+type Slicer interface {
+	Slice(assetsFile string) (pkgs, earlyPkgs, projects packit.Slice, err error)
+}
+
 func Build(
 	sourceRemover SourceRemover,
 	bindingResolver BindingResolver,
 	homeDir string,
 	symlinker SymlinkManager,
 	publishProcess PublishProcess,
+	slicer Slicer,
 	buildpackYMLParser BuildpackYMLParser,
 	configParser CommandConfigParser,
 	clock chronos.Clock,
@@ -105,6 +112,31 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
+		slices := []packit.Slice{
+			{Paths: []string{".dotnet_root"}},
+		}
+
+		sliceOutput, err := shouldSliceOutput()
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		if sliceOutput {
+			logger.Process("Dividing build output into layers to optimize cache reuse")
+
+			pkg, early, project, err := slicer.Slice(filepath.Join(context.WorkingDir, projectPath, "obj", "project.assets.json"))
+			if err != nil {
+				return packit.BuildResult{}, err
+			}
+
+			for _, slice := range []packit.Slice{pkg, early, project} {
+				if len(slice.Paths) > 0 {
+					slices = append(slices, slice)
+				}
+			}
+			logger.Break()
+		}
+
 		logger.Process("Removing source code")
 		logger.Break()
 		err = sourceRemover.Remove(context.WorkingDir, tempDir, ".dotnet_root")
@@ -137,6 +169,9 @@ func Build(
 
 		return packit.BuildResult{
 			Layers: layers,
+			Launch: packit.LaunchMetadata{
+				Slices: slices,
+			},
 		}, nil
 	}
 }
@@ -160,4 +195,19 @@ func getBinding(typ, provider, bindingsRoot, entry string, bindingResolver Bindi
 		return filepath.Join(bindings[0].Path, entry), nil
 	}
 	return "", nil
+}
+
+func shouldSliceOutput() (bool, error) {
+	var (
+		rawDisableSlice string
+		ok              bool
+	)
+	if rawDisableSlice, ok = os.LookupEnv("BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING"); !ok {
+		return true, nil
+	}
+	disableSlice, err := strconv.ParseBool(rawDisableSlice)
+	if err != nil {
+		return false, fmt.Errorf("failed to parse BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING: %w", err)
+	}
+	return !disableSlice, nil
 }
