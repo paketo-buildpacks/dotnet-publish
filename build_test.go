@@ -263,6 +263,34 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			}))
 		})
 	})
+	context("when output slicing is turned off via BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING", func() {
+		it.Before(func() {
+			Expect(os.Setenv("BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING", "true"))
+		})
+
+		it.After(func() {
+			os.Unsetenv("BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING")
+		})
+
+		it("returns a build result", func() {
+			result, err := build(packit.BuildContext{
+				WorkingDir: workingDir,
+				BuildpackInfo: packit.BuildpackInfo{
+					Name:    "Some Buildpack",
+					Version: "0.0.1",
+				},
+				Layers: packit.Layers{Path: layersDir},
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(slicer.SliceCall.CallCount).To(BeZero())
+			Expect(result.Launch.Slices).To(Equal([]packit.Slice{
+				{Paths: []string{".dotnet_root"}},
+			}))
+
+			Expect(buffer.String()).NotTo(ContainSubstring("Dividing build output into layers to optimize cache reuse"))
+		})
+	})
 
 	context("failure cases", func() {
 		context("when the source code cannot be removed", func() {
@@ -325,6 +353,26 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					},
 				})
 				Expect(err).To(MatchError("some-error"))
+			})
+		})
+
+		context("when $BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING cannot be parsed", func() {
+			it.Before(func() {
+				Expect(os.Setenv("BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING", "invalid-value"))
+			})
+
+			it.After(func() {
+				os.Unsetenv("BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING")
+			})
+
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					WorkingDir: workingDir,
+					BuildpackInfo: packit.BuildpackInfo{
+						Version: "0.0.1",
+					},
+				})
+				Expect(err).To(MatchError(ContainSubstring("failed to parse BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING:")))
 			})
 		})
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/Masterminds/semver"
 	"github.com/paketo-buildpacks/packit/v2"
@@ -115,18 +116,26 @@ func Build(
 			{Paths: []string{".dotnet_root"}},
 		}
 
-		logger.Process("Dividing build output into layers to optimize cache reuse")
-		pkg, early, project, err := slicer.Slice(filepath.Join(context.WorkingDir, projectPath, "obj", "project.assets.json"))
+		sliceOutput, err := shouldSliceOutput()
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
 
-		for _, slice := range []packit.Slice{pkg, early, project} {
-			if len(slice.Paths) > 0 {
-				slices = append(slices, slice)
+		if sliceOutput {
+			logger.Process("Dividing build output into layers to optimize cache reuse")
+
+			pkg, early, project, err := slicer.Slice(filepath.Join(context.WorkingDir, projectPath, "obj", "project.assets.json"))
+			if err != nil {
+				return packit.BuildResult{}, err
 			}
+
+			for _, slice := range []packit.Slice{pkg, early, project} {
+				if len(slice.Paths) > 0 {
+					slices = append(slices, slice)
+				}
+			}
+			logger.Break()
 		}
-		logger.Break()
 
 		logger.Process("Removing source code")
 		logger.Break()
@@ -186,4 +195,19 @@ func getBinding(typ, provider, bindingsRoot, entry string, bindingResolver Bindi
 		return filepath.Join(bindings[0].Path, entry), nil
 	}
 	return "", nil
+}
+
+func shouldSliceOutput() (bool, error) {
+	var (
+		rawDisableSlice string
+		ok              bool
+	)
+	if rawDisableSlice, ok = os.LookupEnv("BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING"); !ok {
+		return true, nil
+	}
+	disableSlice, err := strconv.ParseBool(rawDisableSlice)
+	if err != nil {
+		return false, fmt.Errorf("failed to parse BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING: %w", err)
+	}
+	return !disableSlice, nil
 }
