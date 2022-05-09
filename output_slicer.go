@@ -63,7 +63,6 @@ func (s OutputSlicer) Slice(assetsFile string) (pkgs, earlyPkgs, projects packit
 				slices = addPath(slices, dep.Type, filepath.Base(rt.FileName))
 			}
 		}
-		// TODO: What if same dependency gets filed under two different types?
 	}
 
 	for name, paths := range slices {
