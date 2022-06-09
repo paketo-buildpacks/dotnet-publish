@@ -2,7 +2,6 @@ package internal
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type ProjectAssetsJSON struct {
@@ -19,13 +18,13 @@ type Target struct {
 type Dependencies []ProjectDependency
 
 type ProjectDependency struct {
-	Name           string
-	Type           string         `json:"type"`
-	Runtime        Runtime        `json:"runtime"`
-	RuntimeTargets RuntimeTargets `json:"runtimeTargets"`
+	Name                string
+	Type                string              `json:"type"`
+	RuntimeDependencies RuntimeDependencies `json:"runtime"`
+	RuntimeTargets      RuntimeTargets      `json:"runtimeTargets"`
 }
 
-type Runtime string
+type RuntimeDependencies []string
 
 type RuntimeTargets []RuntimeTarget
 
@@ -65,18 +64,19 @@ func (ds *Dependencies) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (r *Runtime) UnmarshalJSON(data []byte) error {
-
-	var v map[string]interface{}
+func (rs *RuntimeDependencies) UnmarshalJSON(data []byte) error {
+	var (
+		result []string
+		v      map[string]interface{}
+	)
 	if err := json.Unmarshal(data, &v); err != nil {
 		return err
 	}
-	if len(v) != 1 {
-		return fmt.Errorf("dependency runtime file malformed")
-	}
+
 	for key := range v {
-		*r = Runtime(key)
+		result = append(result, key)
 	}
+	*rs = RuntimeDependencies(result)
 	return nil
 }
 

@@ -54,9 +54,11 @@ func (s OutputSlicer) Slice(assetsFile string) (pkgs, earlyPkgs, projects packit
 					dep.Type = "early-package"
 				}
 			}
-			file := filepath.Base(string(dep.Runtime))
-			if file != "" && file != "_._" {
-				slices = addPath(slices, dep.Type, file)
+			for _, runtime := range dep.RuntimeDependencies {
+				file := filepath.Base(string(runtime))
+				if file != "" && file != "_._" {
+					slices = addPath(slices, dep.Type, file)
+				}
 			}
 
 			for _, rt := range dep.RuntimeTargets {
