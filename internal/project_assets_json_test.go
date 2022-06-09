@@ -89,26 +89,29 @@ func testTargets(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(len(targets)).To(Equal(2))
-			// Must use ContainElement since maps are non-ordered; array ends up different after each unmarshalling
-			Expect(targets).To(ContainElement(internal.Target{
-				Name: ".NETCoreApp,Version=v3.1",
-				Dependencies: internal.Dependencies([]internal.ProjectDependency{
-					{
-						Name:                "Microsoft.AspNetCore.Diagnostics.HealthChecks/2.2.0-rc1",
-						Type:                "package",
-						RuntimeDependencies: []string{"lib/netstandard2.0/Microsoft.AspNetCore.Diagnostics.HealthChecks.dll"},
-					},
-				}),
-			}))
-			Expect(targets).To(ContainElement(internal.Target{
-				Name: ".NETCoreApp,Version=v6.0",
-				Dependencies: internal.Dependencies([]internal.ProjectDependency{
-					{
-						Name:                "Consul/0.7.2.6",
-						Type:                "package",
-						RuntimeDependencies: []string{"lib/netstandard1.3/Consul.dll"},
-					},
-				}),
+			// Must use ContainElements since maps are non-ordered; array ends up
+			// different after each unmarshalling
+			Expect(targets).To(ContainElements([]internal.Target{
+				{
+					Name: ".NETCoreApp,Version=v3.1",
+					Dependencies: internal.Dependencies([]internal.ProjectDependency{
+						{
+							Name:                "Microsoft.AspNetCore.Diagnostics.HealthChecks/2.2.0-rc1",
+							Type:                "package",
+							RuntimeDependencies: []string{"lib/netstandard2.0/Microsoft.AspNetCore.Diagnostics.HealthChecks.dll"},
+						},
+					}),
+				},
+				{
+					Name: ".NETCoreApp,Version=v6.0",
+					Dependencies: internal.Dependencies([]internal.ProjectDependency{
+						{
+							Name:                "Consul/0.7.2.6",
+							Type:                "package",
+							RuntimeDependencies: []string{"lib/netstandard1.3/Consul.dll"},
+						},
+					}),
+				},
 			}))
 		})
 		context("failure cases", func() {
@@ -185,22 +188,26 @@ func testDependencies(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(len(deps)).To(Equal(2))
-			Expect(deps).To(ContainElement(internal.ProjectDependency{
-				Name:                "Consul/0.7.2.6",
-				Type:                "package",
-				RuntimeDependencies: []string{"lib/netstandard1.3/Consul.dll"},
-			}))
-			Expect(deps).To(ContainElement(internal.ProjectDependency{
-				Name:                "Microsoft.Win32.Registry/4.6.0",
-				Type:                "package",
-				RuntimeDependencies: []string{"lib/netstandard2.0/Microsoft.Win32.Registry.dll"},
-				RuntimeTargets: internal.RuntimeTargets([]internal.RuntimeTarget{
-					{
-						FileName:          "runtimes/unix/lib/netstandard2.0/Microsoft.Win32.Registry.dll",
-						AssetType:         "runtime",
-						RuntimeIdentifier: "unix",
-					},
-				}),
+			// Must use ContainElements, not Equal(), because unpacking JSON map into array
+			// produces non-deterministic ordering
+			Expect(deps).To(ContainElements([]internal.ProjectDependency{
+				{
+					Name:                "Consul/0.7.2.6",
+					Type:                "package",
+					RuntimeDependencies: []string{"lib/netstandard1.3/Consul.dll"},
+				},
+				{
+					Name:                "Microsoft.Win32.Registry/4.6.0",
+					Type:                "package",
+					RuntimeDependencies: []string{"lib/netstandard2.0/Microsoft.Win32.Registry.dll"},
+					RuntimeTargets: internal.RuntimeTargets([]internal.RuntimeTarget{
+						{
+							FileName:          "runtimes/unix/lib/netstandard2.0/Microsoft.Win32.Registry.dll",
+							AssetType:         "runtime",
+							RuntimeIdentifier: "unix",
+						},
+					}),
+				},
 			}))
 		})
 
@@ -246,15 +253,19 @@ func testRuntimeTargets(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(len(rts)).To(Equal(2))
-			Expect(rts).To(ContainElement(internal.RuntimeTarget{
-				FileName:          "runtimes/unix/lib/netstandard2.0/Microsoft.Win32.Registry.dll",
-				AssetType:         "runtime",
-				RuntimeIdentifier: "unix",
-			}))
-			Expect(rts).To(ContainElement(internal.RuntimeTarget{
-				FileName:          "runtimes/win/lib/netstandard2.0/Microsoft.Win32.Registry.dll",
-				AssetType:         "runtime",
-				RuntimeIdentifier: "win",
+			// Must use ContainElements, not Equal(), because unpacking JSON map into array
+			// produces non-deterministic ordering
+			Expect(rts).To(ContainElements([]internal.RuntimeTarget{
+				{
+					FileName:          "runtimes/unix/lib/netstandard2.0/Microsoft.Win32.Registry.dll",
+					AssetType:         "runtime",
+					RuntimeIdentifier: "unix",
+				},
+				{
+					FileName:          "runtimes/win/lib/netstandard2.0/Microsoft.Win32.Registry.dll",
+					AssetType:         "runtime",
+					RuntimeIdentifier: "win",
+				},
 			}))
 		})
 
@@ -287,7 +298,10 @@ func testRuntimeDependencies(t *testing.T, context spec.G, it spec.S) {
 			err := json.Unmarshal(input, &runtime)
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(runtime).To(Equal(internal.RuntimeDependencies([]string{
+			Expect(runtime).To(HaveLen(2))
+			// Must use ContainElements, not Equal(), because unpacking JSON map into array
+			// produces non-deterministic ordering
+			Expect(runtime).To(ContainElements(internal.RuntimeDependencies([]string{
 				"lib/netstandard1.3/Consul.dll",
 				"lib/netstandard2.0/Microsoft.Diagnostics.FastSerialization.dll",
 			})))
