@@ -35,7 +35,7 @@ func testOutputSlicer(t *testing.T, context spec.G, it spec.S) {
 	it("extracts the base file name of packages' runtime and runtimeTargets", func() {
 		pkgs, _, _, err := slicer.Slice(filepath.Join(assetsDir, "packages.project.assets.json"))
 		Expect(err).NotTo(HaveOccurred())
-		Expect(pkgs.Paths).To(HaveLen(5))
+		Expect(pkgs.Paths).To(HaveLen(10))
 		// Must use ContainElements, not Equal(), because unpacking JSON map into array
 		// produces non-deterministic ordering
 		Expect(pkgs.Paths).To(ContainElements([]string{
@@ -44,6 +44,11 @@ func testOutputSlicer(t *testing.T, context spec.G, it spec.S) {
 			"Grpc.Core.dll",
 			"libgrpc_csharp_ext.arm64.so",
 			"grpc_csharp_ext.x86.dll",
+			"Dia2Lib.dll",
+			"Microsoft.Diagnostics.FastSerialization.dll",
+			"Microsoft.Diagnostics.Tracing.TraceEvent.dll",
+			"OSExtensions.dll",
+			"TraceReloggerLib.dll",
 		}))
 		// Ignore the blanked out file name for the CSharp dependency
 		Expect(pkgs.Paths).NotTo(ContainElement("_._"))
@@ -64,7 +69,7 @@ func testOutputSlicer(t *testing.T, context spec.G, it spec.S) {
 	it("distinguishes between packages and early packages", func() {
 		pkgs, earlyPkgs, projects, err := slicer.Slice(filepath.Join(assetsDir, "packages.project.assets.json"))
 		Expect(err).NotTo(HaveOccurred())
-		Expect(pkgs.Paths).To(HaveLen(5))
+		Expect(pkgs.Paths).To(HaveLen(10))
 		Expect(earlyPkgs.Paths).To(HaveLen(1))
 		Expect(projects.Paths).To(HaveLen(0))
 	})

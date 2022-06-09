@@ -61,6 +61,29 @@
           }
         }
       },
+      "Microsoft.Diagnostics.Tracing.TraceEvent/2.0.64": {
+        "type": "package",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "4.5.2"
+        },
+        "compile": {
+          "lib/netstandard2.0/Dia2Lib.dll": {},
+          "lib/netstandard2.0/Microsoft.Diagnostics.FastSerialization.dll": {},
+          "lib/netstandard2.0/Microsoft.Diagnostics.Tracing.TraceEvent.dll": {},
+          "lib/netstandard2.0/OSExtensions.dll": {},
+          "lib/netstandard2.0/TraceReloggerLib.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Dia2Lib.dll": {},
+          "lib/netstandard2.0/Microsoft.Diagnostics.FastSerialization.dll": {},
+          "lib/netstandard2.0/Microsoft.Diagnostics.Tracing.TraceEvent.dll": {},
+          "lib/netstandard2.0/OSExtensions.dll": {},
+          "lib/netstandard2.0/TraceReloggerLib.dll": {}
+        },
+        "build": {
+          "buildTransitive/Microsoft.Diagnostics.Tracing.TraceEvent.props": {}
+        }
+      },
       "Microsoft.CSharp/4.7.0": {
         "type": "package",
         "compile": {

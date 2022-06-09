@@ -94,9 +94,9 @@ func testTargets(t *testing.T, context spec.G, it spec.S) {
 				Name: ".NETCoreApp,Version=v3.1",
 				Dependencies: internal.Dependencies([]internal.ProjectDependency{
 					{
-						Name:    "Microsoft.AspNetCore.Diagnostics.HealthChecks/2.2.0-rc1",
-						Type:    "package",
-						Runtime: "lib/netstandard2.0/Microsoft.AspNetCore.Diagnostics.HealthChecks.dll",
+						Name:                "Microsoft.AspNetCore.Diagnostics.HealthChecks/2.2.0-rc1",
+						Type:                "package",
+						RuntimeDependencies: []string{"lib/netstandard2.0/Microsoft.AspNetCore.Diagnostics.HealthChecks.dll"},
 					},
 				}),
 			}))
@@ -104,9 +104,9 @@ func testTargets(t *testing.T, context spec.G, it spec.S) {
 				Name: ".NETCoreApp,Version=v6.0",
 				Dependencies: internal.Dependencies([]internal.ProjectDependency{
 					{
-						Name:    "Consul/0.7.2.6",
-						Type:    "package",
-						Runtime: "lib/netstandard1.3/Consul.dll",
+						Name:                "Consul/0.7.2.6",
+						Type:                "package",
+						RuntimeDependencies: []string{"lib/netstandard1.3/Consul.dll"},
 					},
 				}),
 			}))
@@ -186,14 +186,14 @@ func testDependencies(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(len(deps)).To(Equal(2))
 			Expect(deps).To(ContainElement(internal.ProjectDependency{
-				Name:    "Consul/0.7.2.6",
-				Type:    "package",
-				Runtime: "lib/netstandard1.3/Consul.dll",
+				Name:                "Consul/0.7.2.6",
+				Type:                "package",
+				RuntimeDependencies: []string{"lib/netstandard1.3/Consul.dll"},
 			}))
 			Expect(deps).To(ContainElement(internal.ProjectDependency{
-				Name:    "Microsoft.Win32.Registry/4.6.0",
-				Type:    "package",
-				Runtime: "lib/netstandard2.0/Microsoft.Win32.Registry.dll",
+				Name:                "Microsoft.Win32.Registry/4.6.0",
+				Type:                "package",
+				RuntimeDependencies: []string{"lib/netstandard2.0/Microsoft.Win32.Registry.dll"},
 				RuntimeTargets: internal.RuntimeTargets([]internal.RuntimeTarget{
 					{
 						FileName:          "runtimes/unix/lib/netstandard2.0/Microsoft.Win32.Registry.dll",
@@ -270,13 +270,14 @@ func testRuntimeTargets(t *testing.T, context spec.G, it spec.S) {
 	})
 }
 
-func testRuntime(t *testing.T, context spec.G, it spec.S) {
+func testRuntimeDependencies(t *testing.T, context spec.G, it spec.S) {
 	var (
 		Expect  = NewWithT(t).Expect
-		runtime internal.Runtime
+		runtime internal.RuntimeDependencies
 	)
 	var input []byte = []byte(`{
-          "lib/netstandard1.3/Consul.dll": {}
+          "lib/netstandard1.3/Consul.dll": {},
+          "lib/netstandard2.0/Microsoft.Diagnostics.FastSerialization.dll": {}
         }`)
 	var badInput []byte = []byte(`[ "not-a-map" ]`)
 
@@ -286,7 +287,10 @@ func testRuntime(t *testing.T, context spec.G, it spec.S) {
 			err := json.Unmarshal(input, &runtime)
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(runtime).To(Equal(internal.Runtime("lib/netstandard1.3/Consul.dll")))
+			Expect(runtime).To(Equal(internal.RuntimeDependencies([]string{
+				"lib/netstandard1.3/Consul.dll",
+				"lib/netstandard2.0/Microsoft.Diagnostics.FastSerialization.dll",
+			})))
 		})
 
 		context("failure cases", func() {
