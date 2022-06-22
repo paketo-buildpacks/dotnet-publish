@@ -94,7 +94,6 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					Expect(err).NotTo(HaveOccurred())
 					containers[container.ID] = ""
 
-					Eventually(container).Should(BeAvailable())
 					Eventually(container).Should(Serve(ContainSubstring("source_6_app")).OnPort(8080))
 				}
 			})
@@ -128,7 +127,6 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 				containers[container.ID] = ""
 
-				Eventually(container).Should(BeAvailable())
 				Eventually(container).Should(Serve(ContainSubstring("simple_3_0_app")).OnPort(8080))
 			})
 		})
@@ -161,7 +159,6 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 				containers[container.ID] = ""
 
-				Eventually(container).Should(BeAvailable())
 				Eventually(container).Should(Serve(ContainSubstring("value")).WithEndpoint("/api/values/6").OnPort(8080))
 			})
 		})
@@ -292,7 +289,6 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 				containers[container.ID] = ""
 
-				Eventually(container).Should(BeAvailable())
 				Eventually(container).Should(Serve(ContainSubstring("Loading...")).OnPort(8080))
 			})
 		})
