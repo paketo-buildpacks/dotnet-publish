@@ -5,7 +5,7 @@ api = "0.6"
   homepage = "https://github.com/paketo-buildpacks/dotnet-publish"
   id = "paketo-buildpacks/dotnet-publish"
   keywords = ["dotnet"]
-  name = "Paketo .NET Publish Buildpack"
+  name = "MODDED Paketo .NET Publish Buildpack"
   version = "{{ .Version }}"
 
   [[buildpack.licenses]]

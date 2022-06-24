@@ -5,18 +5,21 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Masterminds/semver"
 	"github.com/paketo-buildpacks/packit/v2"
 )
 
 type BuildPlanMetadata struct {
-	Version string `toml:"version,omitempty"`
-	Build   bool   `toml:"build"`
-	Launch  bool   `toml:"launch"`
+	Version       string `toml:"version,omitempty"`
+	VersionSource string `toml:"version-source,omitempty"`
+	Build         bool   `toml:"build"`
+	Launch        bool   `toml:"launch"`
 }
 
 //go:generate faux --interface ProjectParser --output fakes/project_parser.go
 type ProjectParser interface {
 	FindProjectFile(root string) (string, error)
+	ParseVersion(path string) (string, error)
 	ASPNetIsRequired(path string) (bool, error)
 	NodeIsRequired(path string) (bool, error)
 	NPMIsRequired(path string) (bool, error)
@@ -49,11 +52,23 @@ func Detect(parser ProjectParser, buildpackYMLParser BuildpackYMLParser) packit.
 			return packit.DetectResult{}, packit.Fail.WithMessage("no project file found")
 		}
 
+		version, err := parser.ParseVersion(projectFilePath)
+		if err != nil {
+			return packit.DetectResult{}, err
+		}
+
+		semver, err := semver.NewVersion(version)
+		if err != nil {
+			return packit.DetectResult{}, err
+		}
+
 		requirements := []packit.BuildPlanRequirement{
 			{
 				Name: "dotnet-sdk",
 				Metadata: BuildPlanMetadata{
-					Build: true,
+					Build:         true,
+					Version:       fmt.Sprintf("%d.*", semver.Major()),
+					VersionSource: filepath.Base(projectFilePath),
 				},
 			},
 			{
