@@ -92,8 +92,8 @@ func testSourceRemoval(t *testing.T, context spec.G, it spec.S) {
 				return cLogs.String()
 			}).Should(
 				And(
-					MatchRegexp(`-rw-r--r-- +\d+ +cnb +cnb.*\.runtimeconfig.json`),
-					Not(MatchRegexp(`-rw-r--r-- +\d+ +cnb +cnb.*Program.cs`)),
+					MatchRegexp(`-rw-r--r-- +\d+ +\w+ +cnb.*\.runtimeconfig.json`),
+					Not(MatchRegexp(`-rw-r--r-- +\d+ +\w+ +cnb.*Program.cs`)),
 				),
 			)
 		})
