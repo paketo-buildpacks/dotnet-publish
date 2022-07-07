@@ -85,7 +85,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 		})
 	})
 
-	context("ASPNetIsRequired", func() {
+	context("ParseVersion", func() {
 		var path string
 
 		it.Before(func() {
@@ -100,53 +100,79 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.RemoveAll(path)).To(Succeed())
 		})
 
-		context("when project SDK is Microsoft.NET.Sdk.Web", func() {
+		context("when RuntimeFrameworkVersion is set", func() {
 			it.Before(func() {
-				Expect(os.WriteFile(path, []byte(`<Project Sdk="Microsoft.NET.Sdk.Web"></Project>`), 0600)).To(Succeed())
+				Expect(os.WriteFile(path, []byte(`
+					<Project>
+					  <PropertyGroup>
+              <RuntimeFrameworkVersion>1.2.3</RuntimeFrameworkVersion>
+            </PropertyGroup>
+					</Project>
+				`), 0600)).To(Succeed())
 			})
 
-			it("returns true", func() {
-				needsAspnt, err := parser.ASPNetIsRequired(path)
+			it("returns the version", func() {
+				version, err := parser.ParseVersion(path)
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(needsAspnt).To(BeTrue())
+				Expect(version).To(Equal("1.2.3"))
 			})
 		})
 
-		context("when project PackageReference is Microsoft.AspNetCore.App", func() {
+		context("when TargetFramework is set to net<x>.<y>", func() {
 			it.Before(func() {
 				Expect(os.WriteFile(path, []byte(`
-<Project Sdk="Microsoft.NET.Sdk">
-<ItemGroup>
-	<PackageReference Include="Microsoft.AspNetCore.App"/>
-</ItemGroup>
-</Project>
-`), 0600)).To(Succeed())
+					<Project>
+					  <PropertyGroup>
+              <TargetFramework>net1.2</TargetFramework>
+            </PropertyGroup>
+					</Project>
+				`), 0600)).To(Succeed())
 			})
 
-			it("returns true", func() {
-				needsAspnt, err := parser.ASPNetIsRequired(path)
+			it("returns the version", func() {
+				version, err := parser.ParseVersion(path)
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(needsAspnt).To(BeTrue())
+				Expect(version).To(Equal("1.2.0"))
 			})
 		})
 
-		context("when project PackageReference is Microsoft.AspNetCore.All", func() {
+		context("when TargetFramework is set to net<x>.<y>-platform", func() {
 			it.Before(func() {
 				Expect(os.WriteFile(path, []byte(`
-<Project Sdk="Microsoft.NET.Sdk">
-<ItemGroup>
-	<PackageReference Include="Microsoft.AspNetCore.All"/>
-</ItemGroup>
-</Project>
-`), 0600)).To(Succeed())
+					<Project>
+					  <PropertyGroup>
+              <TargetFramework>net1.2-windows</TargetFramework>
+            </PropertyGroup>
+					</Project>
+				`), 0600)).To(Succeed())
 			})
 
-			it("returns true", func() {
-				needsAspnt, err := parser.ASPNetIsRequired(path)
+			it("returns the version", func() {
+				version, err := parser.ParseVersion(path)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(needsAspnt).To(BeTrue())
+
+				Expect(version).To(Equal("1.2.0"))
+			})
+		})
+
+		context("when TargetFramework is set to netcoreapp<x>.<y>", func() {
+			it.Before(func() {
+				Expect(os.WriteFile(path, []byte(`
+					<Project>
+					  <PropertyGroup>
+              <TargetFramework>netcoreapp1.2</TargetFramework>
+            </PropertyGroup>
+					</Project>
+				`), 0600)).To(Succeed())
+			})
+
+			it("returns the version", func() {
+				version, err := parser.ParseVersion(path)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(version).To(Equal("1.2.0"))
 			})
 		})
 
@@ -157,8 +183,8 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 				})
 
 				it("errors", func() {
-					_, err := parser.ASPNetIsRequired(path)
-					Expect(err.Error()).To(ContainSubstring("failed to open"))
+					_, err := parser.ParseVersion(path)
+					Expect(err.Error()).To(ContainSubstring("failed to read project file"))
 				})
 			})
 
@@ -168,8 +194,25 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 				})
 
 				it("errors", func() {
-					_, err := parser.ASPNetIsRequired(path)
-					Expect(err.Error()).To(ContainSubstring("failed to decode"))
+					_, err := parser.ParseVersion(path)
+					Expect(err.Error()).To(ContainSubstring("failed to parse project file"))
+				})
+			})
+
+			context("when the file can not be decoded", func() {
+				it.Before(func() {
+					Expect(os.WriteFile(path, []byte(`
+					<Project>
+					  <PropertyGroup>
+              <TargetFramework>bad content</TargetFramework>
+            </PropertyGroup>
+					</Project>
+				`), 0600)).To(Succeed())
+				})
+
+				it("errors", func() {
+					_, err := parser.ParseVersion(path)
+					Expect(err.Error()).To(ContainSubstring("failed to find version in project file: missing or invalid TargetFramework property"))
 				})
 			})
 		})
