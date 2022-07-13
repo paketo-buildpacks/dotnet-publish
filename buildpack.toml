@@ -17,7 +17,5 @@ api = "0.6"
   pre-package = "./scripts/build.sh"
 
 [[stacks]]
-  id = "org.cloudfoundry.stacks.cflinuxfs3"
+  id = "*"
 
-[[stacks]]
-  id = "io.buildpacks.stacks.bionic"
