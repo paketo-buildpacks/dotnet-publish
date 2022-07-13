@@ -59,44 +59,50 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		context("given a source application with .NET Core 6", func() {
-			it("should build (and rebuild) a working OCI image", func() {
-				var err error
-				source, err := occam.Source(filepath.Join("testdata", "source_6_app"))
-				Expect(err).NotTo(HaveOccurred())
+			for _, b := range config.Builders {
+				var builder string = b
+				context(fmt.Sprintf("with %s builder", builder), func() {
+					it("should build (and rebuild) a working OCI image", func() {
+						var err error
+						source, err := occam.Source(filepath.Join("testdata", "source_6_app"))
+						Expect(err).NotTo(HaveOccurred())
 
-				for i := 0; i < 2; i++ {
-					var logs fmt.Stringer
-					image, logs, err = pack.WithNoColor().Build.
-						WithBuildpacks(
-							icuBuildpack,
-							dotnetCoreRuntimeBuildpack,
-							dotnetCoreAspNetBuildpack,
-							dotnetCoreSDKBuildpack,
-							buildpack,
-							dotnetExecuteBuildpack,
-						).
-						WithEnv(map[string]string{
-							"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
-						}).
-						Execute(name, source)
-					Expect(err).NotTo(HaveOccurred(), logs.String())
-					images[image.ID] = ""
+						for i := 0; i < 2; i++ {
+							var logs fmt.Stringer
+							image, logs, err = pack.WithNoColor().Build.
+								WithBuildpacks(
+									icuBuildpack,
+									dotnetCoreRuntimeBuildpack,
+									dotnetCoreAspNetBuildpack,
+									dotnetCoreSDKBuildpack,
+									buildpack,
+									dotnetExecuteBuildpack,
+								).
+								WithBuilder(builder).
+								WithEnv(map[string]string{
+									"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
+								}).
+								Execute(name, source)
+							Expect(err).NotTo(HaveOccurred(), logs.String())
+							images[image.ID] = ""
 
-					Expect(logs).To(ContainLines(
-						MatchRegexp(`    Running 'dotnet publish .* --verbosity=normal'`),
-					))
+							Expect(logs).To(ContainLines(
+								MatchRegexp(`    Running 'dotnet publish .* --verbosity=normal'`),
+							))
 
-					container, err = docker.Container.Run.
-						WithEnv(map[string]string{"PORT": "8080"}).
-						WithPublish("8080").
-						WithPublishAll().
-						Execute(image.ID)
-					Expect(err).NotTo(HaveOccurred())
-					containers[container.ID] = ""
+							container, err = docker.Container.Run.
+								WithEnv(map[string]string{"PORT": "8080"}).
+								WithPublish("8080").
+								WithPublishAll().
+								Execute(image.ID)
+							Expect(err).NotTo(HaveOccurred())
+							containers[container.ID] = ""
 
-					Eventually(container).Should(Serve(ContainSubstring("source_6_app")).OnPort(8080))
-				}
-			})
+							Eventually(container).Should(Serve(ContainSubstring("source_6_app")).OnPort(8080))
+						}
+					})
+				})
+			}
 		})
 
 		context("given a source application with .NET Core 3.1", func() {

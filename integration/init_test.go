@@ -37,12 +37,13 @@ var (
 		}
 	}
 	config struct {
-		NodeEngine        string `json:"node-engine"`
-		ICU               string `json:"icu"`
-		DotnetCoreRuntime string `json:"dotnet-core-runtime"`
-		DotnetCoreAspNet  string `json:"dotnet-core-aspnet"`
-		DotnetCoreSDK     string `json:"dotnet-core-sdk"`
-		DotnetExecute     string `json:"dotnet-execute"`
+		NodeEngine        string   `json:"node-engine"`
+		ICU               string   `json:"icu"`
+		DotnetCoreRuntime string   `json:"dotnet-core-runtime"`
+		DotnetCoreAspNet  string   `json:"dotnet-core-aspnet"`
+		DotnetCoreSDK     string   `json:"dotnet-core-sdk"`
+		DotnetExecute     string   `json:"dotnet-execute"`
+		Builders          []string `json:"builders"`
 	}
 )
 
