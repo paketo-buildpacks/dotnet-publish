@@ -32,6 +32,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 		projectParser = &fakes.ProjectParser{}
 		projectParser.FindProjectFileCall.Returns.String = filepath.Join(workingDir, "app.csproj")
+		projectParser.ParseVersionCall.Returns.String = "3.1.0"
 
 		buildpackYMLParser = &fakes.BuildpackYMLParser{}
 
@@ -56,13 +57,9 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					{
 						Name: "dotnet-sdk",
 						Metadata: dotnetpublish.BuildPlanMetadata{
-							Build: true,
-						},
-					},
-					{
-						Name: "dotnet-runtime",
-						Metadata: dotnetpublish.BuildPlanMetadata{
-							Build: true,
+							Version:       "3.1.*",
+							VersionSource: "app.csproj",
+							Build:         true,
 						},
 					},
 					{
@@ -77,61 +74,9 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 		Expect(buildpackYMLParser.ParseProjectPathCall.Receives.Path).To(Equal(filepath.Join(workingDir, "buildpack.yml")))
 		Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(workingDir))
-		Expect(projectParser.ASPNetIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
+		Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 		Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 		Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
-	})
-
-	context("when aspnet is required", func() {
-		it.Before(func() {
-			projectParser.ASPNetIsRequiredCall.Returns.Bool = true
-		})
-
-		it("requires aspnet in the build plan", func() {
-			result, err := detect(packit.DetectContext{
-				WorkingDir: workingDir,
-			})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result).To(Equal(packit.DetectResult{
-				Plan: packit.BuildPlan{
-					Provides: []packit.BuildPlanProvision{
-						{Name: "dotnet-application"},
-					},
-					Requires: []packit.BuildPlanRequirement{
-						{
-							Name: "dotnet-sdk",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
-							},
-						},
-						{
-							Name: "dotnet-runtime",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
-							},
-						},
-						{
-							Name: "icu",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
-							},
-						},
-						{
-							Name: "dotnet-aspnetcore",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
-							},
-						},
-					},
-				},
-			}))
-
-			Expect(buildpackYMLParser.ParseProjectPathCall.Receives.Path).To(Equal(filepath.Join(workingDir, "buildpack.yml")))
-			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(workingDir))
-			Expect(projectParser.ASPNetIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
-			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
-			Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
-		})
 	})
 
 	context("when node is required", func() {
@@ -153,13 +98,9 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 						{
 							Name: "dotnet-sdk",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
-							},
-						},
-						{
-							Name: "dotnet-runtime",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
+								Version:       "3.1.*",
+								VersionSource: "app.csproj",
+								Build:         true,
 							},
 						},
 						{
@@ -180,7 +121,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(buildpackYMLParser.ParseProjectPathCall.Receives.Path).To(Equal(filepath.Join(workingDir, "buildpack.yml")))
 			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(workingDir))
-			Expect(projectParser.ASPNetIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
+			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 			Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 		})
@@ -206,13 +147,9 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 						{
 							Name: "dotnet-sdk",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
-							},
-						},
-						{
-							Name: "dotnet-runtime",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
+								Version:       "3.1.*",
+								VersionSource: "app.csproj",
+								Build:         true,
 							},
 						},
 						{
@@ -239,7 +176,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(buildpackYMLParser.ParseProjectPathCall.Receives.Path).To(Equal(filepath.Join(workingDir, "buildpack.yml")))
 			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(workingDir))
-			Expect(projectParser.ASPNetIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
+			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 			Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 		})
@@ -270,13 +207,9 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 						{
 							Name: "dotnet-sdk",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
-							},
-						},
-						{
-							Name: "dotnet-runtime",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
+								Version:       "3.1.*",
+								VersionSource: "app.csproj",
+								Build:         true,
 							},
 						},
 						{
@@ -291,7 +224,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(buildpackYMLParser.ParseProjectPathCall.CallCount).To(Equal(0))
 			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(filepath.Join(workingDir, "src/proj1")))
-			Expect(projectParser.ASPNetIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
+			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
 			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
 			Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
 		})
@@ -320,13 +253,9 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 						{
 							Name: "dotnet-sdk",
 							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
-							},
-						},
-						{
-							Name: "dotnet-runtime",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
+								Version:       "3.1.*",
+								VersionSource: "app.csproj",
+								Build:         true,
 							},
 						},
 						{
@@ -341,7 +270,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(buildpackYMLParser.ParseProjectPathCall.Receives.Path).To(Equal(filepath.Join(workingDir, "buildpack.yml")))
 			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(filepath.Join(workingDir, "src/proj1")))
-			Expect(projectParser.ASPNetIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
+			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
 			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
 			Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
 		})
@@ -387,14 +316,14 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 
-		context("when parsing for ASPNet errors", func() {
+		context("when parsing for SDK version errors", func() {
 			it.Before(func() {
-				projectParser.ASPNetIsRequiredCall.Returns.Error = errors.New("parsing-error")
+				projectParser.ParseVersionCall.Returns.Error = errors.New("parsing-version-error")
 			})
 
 			it("errors", func() {
 				_, err := detect(packit.DetectContext{WorkingDir: workingDir})
-				Expect(err).To(MatchError("parsing-error"))
+				Expect(err).To(MatchError("parsing-version-error"))
 			})
 		})
 
