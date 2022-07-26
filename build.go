@@ -68,7 +68,8 @@ func Build(
 		logger.Debug.Process("Build configuration:")
 		es, err := env.Marshal(&config)
 		if err != nil {
-			panic(err)
+			// not tested
+			return packit.BuildResult{}, fmt.Errorf("parsing build configuration: %w", err)
 		}
 		for envVar := range es {
 			logger.Debug.Subprocess("%s: %s", envVar, es[envVar])
