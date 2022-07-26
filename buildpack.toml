@@ -1,4 +1,4 @@
-api = "0.6"
+api = "0.8"
 
 [buildpack]
   description = "A buildpack for running the `dotnet publish` command for an app"

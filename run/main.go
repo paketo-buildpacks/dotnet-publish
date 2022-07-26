@@ -15,19 +15,19 @@ import (
 )
 
 func main() {
+	var config dotnetpublish.Configuration
+	_, err := env.UnmarshalFromEnviron(&config)
+	if err != nil {
+		log.Fatal(fmt.Errorf("failed to parse build configuration: %w", err))
+	}
+
 	bpYMLParser := dotnetpublish.NewDotnetBuildpackYMLParser()
-	logger := scribe.NewEmitter(os.Stdout)
+	logger := scribe.NewEmitter(os.Stdout).WithLevel(config.LogLevel)
 	bindingResolver := servicebindings.NewResolver()
 	symlinker := dotnetpublish.NewSymlinker()
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	var config dotnetpublish.Configuration
-	_, err = env.UnmarshalFromEnviron(&config)
-	if err != nil {
-		log.Fatal(fmt.Errorf("failed to parse build configuration: %w", err))
 	}
 
 	packit.Run(

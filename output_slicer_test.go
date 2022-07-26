@@ -88,7 +88,6 @@ func testOutputSlicer(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 		context("assets file JSON cannot be decoded", func() {
-			// TODO Discuss: Should the slicer actually fail here? Or is slicing optional behaviour?
 			it("returns an error", func() {
 				_, _, _, err := slicer.Slice(filepath.Join(assetsDir, "malformed.project.assets.json"))
 				Expect(err).To(MatchError(ContainSubstring("invalid character 's' looking for beginning of value")))

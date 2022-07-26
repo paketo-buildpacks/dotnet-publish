@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/Masterminds/semver"
+	"github.com/Netflix/go-env"
 	"github.com/mattn/go-shellwords"
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
@@ -42,6 +43,7 @@ type Slicer interface {
 }
 
 type Configuration struct {
+	LogLevel             string `env:"BP_LOG_LEVEL"`
 	DebugEnabled         bool   `env:"BP_DEBUG_ENABLED"`
 	DisableOutputSlicing bool   `env:"BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING"`
 	ProjectPath          string `env:"BP_DOTNET_PROJECT_PATH"`
@@ -63,6 +65,16 @@ func Build(
 ) packit.BuildFunc {
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
+		logger.Debug.Process("Build configuration:")
+		es, err := env.Marshal(&config)
+		if err != nil {
+			panic(err)
+		}
+		for envVar := range es {
+			logger.Debug.Subprocess("%s: %s", envVar, es[envVar])
+		}
+		logger.Debug.Break()
+
 		if config.ProjectPath == "" {
 			var err error
 			config.ProjectPath, err = buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
@@ -96,10 +108,12 @@ func Build(
 		}
 
 		if globalNugetPath != "" {
+			logger.Debug.Process("Setting up NuGet.Config from service binding")
 			err = symlinker.Link(globalNugetPath, filepath.Join(homeDir, ".nuget", "NuGet", "NuGet.Config"))
 			if err != nil {
 				return packit.BuildResult{}, err
 			}
+			logger.Debug.Break()
 		}
 
 		nugetCache, err := context.Layers.Get("nuget-cache")
@@ -133,6 +147,9 @@ func Build(
 				}
 			}
 			logger.Break()
+		} else {
+			logger.Debug.Process("Skipping output slicing")
+			logger.Debug.Break()
 		}
 
 		logger.Process("Removing source code")
@@ -163,6 +180,15 @@ func Build(
 		}
 		if err != nil {
 			return packit.BuildResult{}, err
+		}
+
+		// TODO: Extract into packit debug logging
+		for _, layer := range layers {
+			logger.Debug.Process("Setting up layer '%s'", layer.Name)
+			logger.Debug.Subprocess("Available at launch: %t", layer.Launch)
+			logger.Debug.Subprocess("Available to other buildpacks: %t", layer.Build)
+			logger.Debug.Subprocess("Cached for rebuilds: %t", layer.Cache)
+			logger.Debug.Break()
 		}
 
 		return packit.BuildResult{
