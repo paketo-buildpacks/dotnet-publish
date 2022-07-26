@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
+	"github.com/Netflix/go-env"
 	dotnetpublish "github.com/paketo-buildpacks/dotnet-publish"
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
@@ -14,8 +16,7 @@ import (
 
 func main() {
 	bpYMLParser := dotnetpublish.NewDotnetBuildpackYMLParser()
-	configParser := dotnetpublish.NewCommandConfigurationParser()
-	logger := scribe.NewLogger(os.Stdout)
+	logger := scribe.NewEmitter(os.Stdout)
 	bindingResolver := servicebindings.NewResolver()
 	symlinker := dotnetpublish.NewSymlinker()
 	homeDir, err := os.UserHomeDir()
@@ -23,12 +24,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var config dotnetpublish.Configuration
+	_, err = env.UnmarshalFromEnviron(&config)
+	if err != nil {
+		log.Fatal(fmt.Errorf("failed to parse build configuration: %w", err))
+	}
+
 	packit.Run(
 		dotnetpublish.Detect(
+			config,
 			dotnetpublish.NewProjectFileParser(),
 			bpYMLParser,
 		),
 		dotnetpublish.Build(
+			config,
 			dotnetpublish.NewDotnetSourceRemover(),
 			bindingResolver,
 			homeDir,
@@ -40,7 +49,6 @@ func main() {
 			),
 			dotnetpublish.NewOutputSlicer(),
 			bpYMLParser,
-			configParser,
 			chronos.DefaultClock,
 			logger,
 		),

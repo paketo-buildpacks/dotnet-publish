@@ -38,7 +38,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 		executable = &fakes.Executable{}
 
 		buffer = bytes.NewBuffer(nil)
-		logger := scribe.NewLogger(buffer)
+		logger := scribe.NewEmitter(buffer)
 
 		now := time.Now()
 		times := []time.Time{now, now.Add(1 * time.Second)}

@@ -18,11 +18,11 @@ type Executable interface {
 
 type DotnetPublishProcess struct {
 	executable Executable
-	logger     scribe.Logger
+	logger     scribe.Emitter
 	clock      chronos.Clock
 }
 
-func NewDotnetPublishProcess(executable Executable, logger scribe.Logger, clock chronos.Clock) DotnetPublishProcess {
+func NewDotnetPublishProcess(executable Executable, logger scribe.Emitter, clock chronos.Clock) DotnetPublishProcess {
 	return DotnetPublishProcess{
 		executable: executable,
 		logger:     logger,
@@ -74,4 +74,13 @@ func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, projectP
 	p.logger.Break()
 
 	return nil
+}
+
+func containsFlag(flags []string, match string) bool {
+	for _, flag := range flags {
+		if strings.HasPrefix(flag, match) {
+			return true
+		}
+	}
+	return false
 }

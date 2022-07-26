@@ -27,13 +27,13 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		homeDir    string
 		layersDir  string
 
-		bindingResolver     *fakes.BindingResolver
-		buildpackYMLParser  *fakes.BuildpackYMLParser
-		commandConfigParser *fakes.CommandConfigParser
-		publishProcess      *fakes.PublishProcess
-		slicer              *fakes.Slicer
-		sourceRemover       *fakes.SourceRemover
-		symlinker           *fakes.SymlinkManager
+		bindingResolver    *fakes.BindingResolver
+		buildpackYMLParser *fakes.BuildpackYMLParser
+		publishProcess     *fakes.PublishProcess
+		slicer             *fakes.Slicer
+		sourceRemover      *fakes.SourceRemover
+		symlinker          *fakes.SymlinkManager
+		logger             scribe.Emitter
 
 		build packit.BuildFunc
 	)
@@ -60,9 +60,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		buildpackYMLParser = &fakes.BuildpackYMLParser{}
 		buildpackYMLParser.ParseProjectPathCall.Returns.ProjectFilePath = "some/project/path"
 
-		commandConfigParser = &fakes.CommandConfigParser{}
-		commandConfigParser.ParseFlagsFromEnvVarCall.Returns.StringSlice = []string{"--publishflag", "value"}
-
 		slicer.SliceCall.Returns.Pkgs = packit.Slice{Paths: []string{"some-package.dll"}}
 		slicer.SliceCall.Returns.EarlyPkgs = packit.Slice{Paths: []string{"some-release-candidate-package.dll"}}
 		slicer.SliceCall.Returns.Projects = packit.Slice{Paths: []string{"some-project.dll"}}
@@ -73,9 +70,19 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		os.Setenv("DOTNET_ROOT", "some-existing-root-dir")
 
 		buffer = bytes.NewBuffer(nil)
-		logger := scribe.NewLogger(buffer)
+		logger = scribe.NewEmitter(buffer)
 
-		build = dotnetpublish.Build(sourceRemover, bindingResolver, homeDir, symlinker, publishProcess, slicer, buildpackYMLParser, commandConfigParser, chronos.DefaultClock, logger)
+		build = dotnetpublish.Build(
+			dotnetpublish.Configuration{RawPublishFlags: "--publishflag value"},
+			sourceRemover,
+			bindingResolver,
+			homeDir,
+			symlinker,
+			publishProcess,
+			slicer,
+			buildpackYMLParser,
+			chronos.DefaultClock,
+			logger)
 	})
 
 	it.After(func() {
@@ -161,11 +168,20 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 	context("when project path is set via BP_DOTNET_PROJECT_PATH", func() {
 		it.Before(func() {
-			Expect(os.Setenv("BP_DOTNET_PROJECT_PATH", "some/project/path"))
-		})
-
-		it.After(func() {
-			os.Unsetenv("BP_DOTNET_PROJECT_PATH")
+			build = dotnetpublish.Build(
+				dotnetpublish.Configuration{
+					RawPublishFlags: "--publishflag value",
+					ProjectPath:     "some/project/path",
+				},
+				sourceRemover,
+				bindingResolver,
+				homeDir,
+				symlinker,
+				publishProcess,
+				slicer,
+				buildpackYMLParser,
+				chronos.DefaultClock,
+				logger)
 		})
 
 		it("returns a build result", func() {
@@ -203,7 +219,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		})
 	})
 
-	context("when a NuGet.Config is provide via service binding", func() {
+	context("when a NuGet.Config is provided via service binding", func() {
 		it.Before(func() {
 			bindingResolver.ResolveCall.Returns.BindingSlice = []servicebindings.Binding{
 				servicebindings.Binding{
@@ -238,6 +254,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(symlinker.UnlinkCall.Receives.Path).To(Equal(filepath.Join(homeDir, ".nuget", "NuGet", "NuGet.Config")))
 		})
 	})
+
 	context("when output slicer produces an empty slice", func() {
 		it.Before(func() {
 			slicer.SliceCall.Returns.Pkgs = packit.Slice{Paths: []string{}}
@@ -265,11 +282,17 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 	})
 	context("when output slicing is turned off via BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING", func() {
 		it.Before(func() {
-			Expect(os.Setenv("BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING", "true"))
-		})
-
-		it.After(func() {
-			os.Unsetenv("BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING")
+			build = dotnetpublish.Build(
+				dotnetpublish.Configuration{DisableOutputSlicing: true},
+				sourceRemover,
+				bindingResolver,
+				homeDir,
+				symlinker,
+				publishProcess,
+				slicer,
+				buildpackYMLParser,
+				chronos.DefaultClock,
+				logger)
 		})
 
 		it("returns a build result", func() {
@@ -324,9 +347,19 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 
-		context("BP_DOTNET_PUBLISH_FLAGS cannot be parsed", func() {
+		context("dotnet publish flags cannot be parsed", func() {
 			it.Before(func() {
-				commandConfigParser.ParseFlagsFromEnvVarCall.Returns.Error = errors.New("some publish parsing error")
+				build = dotnetpublish.Build(
+					dotnetpublish.Configuration{RawPublishFlags: "\""},
+					sourceRemover,
+					bindingResolver,
+					homeDir,
+					symlinker,
+					publishProcess,
+					slicer,
+					buildpackYMLParser,
+					chronos.DefaultClock,
+					logger)
 			})
 
 			it("returns an error", func() {
@@ -336,7 +369,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 						Version: "0.0.1",
 					},
 				})
-				Expect(err).To(MatchError("some publish parsing error"))
+				Expect(err).To(MatchError("failed to parse flags for dotnet publish: invalid command line string"))
 			})
 		})
 
@@ -353,26 +386,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					},
 				})
 				Expect(err).To(MatchError("some-error"))
-			})
-		})
-
-		context("when $BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING cannot be parsed", func() {
-			it.Before(func() {
-				Expect(os.Setenv("BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING", "invalid-value"))
-			})
-
-			it.After(func() {
-				os.Unsetenv("BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING")
-			})
-
-			it("returns an error", func() {
-				_, err := build(packit.BuildContext{
-					WorkingDir: workingDir,
-					BuildpackInfo: packit.BuildpackInfo{
-						Version: "0.0.1",
-					},
-				})
-				Expect(err).To(MatchError(ContainSubstring("failed to parse BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING:")))
 			})
 		})
 

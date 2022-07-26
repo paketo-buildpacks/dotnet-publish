@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/Masterminds/semver"
+	"github.com/mattn/go-shellwords"
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 	"github.com/paketo-buildpacks/packit/v2/fs"
@@ -36,17 +36,20 @@ type BindingResolver interface {
 	Resolve(typ, provider, platformDir string) ([]servicebindings.Binding, error)
 }
 
-//go:generate faux --interface CommandConfigParser --output fakes/command_config_parser.go
-type CommandConfigParser interface {
-	ParseFlagsFromEnvVar(envVar string) ([]string, error)
-}
-
 //go:generate faux --interface Slicer --output fakes/slicer.go
 type Slicer interface {
 	Slice(assetsFile string) (pkgs, earlyPkgs, projects packit.Slice, err error)
 }
 
+type Configuration struct {
+	DisableOutputSlicing bool   `env:"BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING"`
+	ProjectPath          string `env:"BP_DOTNET_PROJECT_PATH"`
+	PublishFlags         []string
+	RawPublishFlags      string `env:"BP_DOTNET_PUBLISH_FLAGS"`
+}
+
 func Build(
+	config Configuration,
 	sourceRemover SourceRemover,
 	bindingResolver BindingResolver,
 	homeDir string,
@@ -54,23 +57,19 @@ func Build(
 	publishProcess PublishProcess,
 	slicer Slicer,
 	buildpackYMLParser BuildpackYMLParser,
-	configParser CommandConfigParser,
 	clock chronos.Clock,
-	logger scribe.Logger,
+	logger scribe.Emitter,
 ) packit.BuildFunc {
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
-		var projectPath string
-		var ok bool
-		var err error
-
-		if projectPath, ok = os.LookupEnv("BP_DOTNET_PROJECT_PATH"); !ok {
-			projectPath, err = buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
+		if config.ProjectPath == "" {
+			var err error
+			config.ProjectPath, err = buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
 			if err != nil {
 				return packit.BuildResult{}, err
 			}
 
-			if projectPath != "" {
+			if config.ProjectPath != "" {
 				nextMajorVersion := semver.MustParse(context.BuildpackInfo.Version).IncMajor()
 				logger.Subprocess("WARNING: Setting the project path through buildpack.yml will be deprecated soon in Dotnet Publish Buildpack v%s", nextMajorVersion.String())
 				logger.Subprocess("Please specify the project path through the $BP_DOTNET_PROJECT_PATH environment variable instead. See README.md or the documentation on paketo.io for more information.")
@@ -82,9 +81,12 @@ func Build(
 			return packit.BuildResult{}, fmt.Errorf("could not create temp directory: %w", err)
 		}
 
-		flags, err := configParser.ParseFlagsFromEnvVar("BP_DOTNET_PUBLISH_FLAGS")
+		shellwordsParser := shellwords.NewParser()
+		shellwordsParser.ParseEnv = true
+
+		config.PublishFlags, err = shellwordsParser.Parse(config.RawPublishFlags)
 		if err != nil {
-			return packit.BuildResult{}, err
+			return packit.BuildResult{}, fmt.Errorf("failed to parse flags for dotnet publish: %w", err)
 		}
 
 		globalNugetPath, err := getBinding("nugetconfig", "", context.Platform.Path, "nuget.config", bindingResolver, logger)
@@ -107,7 +109,7 @@ func Build(
 		nugetCache.Cache = true
 
 		logger.Process("Executing build process")
-		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), nugetCache.Path, projectPath, tempDir, flags)
+		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), nugetCache.Path, config.ProjectPath, tempDir, config.PublishFlags)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
@@ -116,15 +118,10 @@ func Build(
 			{Paths: []string{".dotnet_root"}},
 		}
 
-		sliceOutput, err := shouldSliceOutput()
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-
-		if sliceOutput {
+		if !config.DisableOutputSlicing {
 			logger.Process("Dividing build output into layers to optimize cache reuse")
 
-			pkg, early, project, err := slicer.Slice(filepath.Join(context.WorkingDir, projectPath, "obj", "project.assets.json"))
+			pkg, early, project, err := slicer.Slice(filepath.Join(context.WorkingDir, config.ProjectPath, "obj", "project.assets.json"))
 			if err != nil {
 				return packit.BuildResult{}, err
 			}
@@ -176,7 +173,7 @@ func Build(
 	}
 }
 
-func getBinding(typ, provider, bindingsRoot, entry string, bindingResolver BindingResolver, logger scribe.Logger) (string, error) {
+func getBinding(typ, provider, bindingsRoot, entry string, bindingResolver BindingResolver, logger scribe.Emitter) (string, error) {
 	bindings, err := bindingResolver.Resolve(typ, provider, bindingsRoot)
 	if err != nil {
 		return "", err
@@ -195,19 +192,4 @@ func getBinding(typ, provider, bindingsRoot, entry string, bindingResolver Bindi
 		return filepath.Join(bindings[0].Path, entry), nil
 	}
 	return "", nil
-}
-
-func shouldSliceOutput() (bool, error) {
-	var (
-		rawDisableSlice string
-		ok              bool
-	)
-	if rawDisableSlice, ok = os.LookupEnv("BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING"); !ok {
-		return true, nil
-	}
-	disableSlice, err := strconv.ParseBool(rawDisableSlice)
-	if err != nil {
-		return false, fmt.Errorf("failed to parse BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING: %w", err)
-	}
-	return !disableSlice, nil
 }
