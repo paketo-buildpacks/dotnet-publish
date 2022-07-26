@@ -1,14 +1,17 @@
 package integration_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/paketo-buildpacks/occam"
+	"github.com/paketo-buildpacks/packit/v2/pexec"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 
@@ -30,20 +33,26 @@ var (
 	dotnetExecuteBuildpack            string
 	buildpack                         string
 	offlineBuildpack                  string
-	buildpackInfo                     struct {
+	builder                           struct {
+		Local struct {
+			Stack struct {
+				ID string `json:"id"`
+			} `json:"stack"`
+		} `json:"local_info"`
+	}
+	buildpackInfo struct {
 		Buildpack struct {
 			ID   string
 			Name string
 		}
 	}
 	config struct {
-		NodeEngine        string   `json:"node-engine"`
-		ICU               string   `json:"icu"`
-		DotnetCoreRuntime string   `json:"dotnet-core-runtime"`
-		DotnetCoreAspNet  string   `json:"dotnet-core-aspnet"`
-		DotnetCoreSDK     string   `json:"dotnet-core-sdk"`
-		DotnetExecute     string   `json:"dotnet-execute"`
-		Builders          []string `json:"builders"`
+		NodeEngine        string `json:"node-engine"`
+		ICU               string `json:"icu"`
+		DotnetCoreRuntime string `json:"dotnet-core-runtime"`
+		DotnetCoreAspNet  string `json:"dotnet-core-aspnet"`
+		DotnetCoreSDK     string `json:"dotnet-core-sdk"`
+		DotnetExecute     string `json:"dotnet-execute"`
 	}
 )
 
@@ -136,17 +145,30 @@ func TestIntegration(t *testing.T) {
 	SetDefaultEventuallyTimeout(30 * time.Second)
 	format.MaxLength = 0
 
+	buf := bytes.NewBuffer(nil)
+	// cmd := exec.Command(".bin/pack builder inspect --output json")
+	cmd := pexec.NewExecutable("pack")
+	Expect(cmd.Execute(pexec.Execution{
+		Args:   []string{"builder", "inspect", "--output", "json"},
+		Stdout: buf,
+		Stderr: buf,
+	})).To(Succeed(), buf.String())
+
+	Expect(json.Unmarshal(buf.Bytes(), &builder)).To(Succeed(), buf.String())
+
 	suite := spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
-	suite("BuildpackYML", testBuildpackYML)
-	suite("Console", testConsole)
+	if !strings.Contains(builder.Local.Stack.ID, "jammy") {
+		suite("BuildpackYML", testBuildpackYML)
+		suite("Console", testConsole)
+		suite("FSharp", testFSharp)
+		suite("MatchDirAndAppName", testMatchDirAndAppName)
+		suite("MultipleProject", testMultipleProject)
+		suite("Offline", testOffline)
+		suite("SourceRemoval", testSourceRemoval)
+		suite("VisualBasic", testVisualBasic)
+		suite("Nuget", testNugetConfig)
+		suite("OutputSlicing", testOutputSlicing)
+	}
 	suite("DefaultApps", testDefaultApps)
-	suite("FSharp", testFSharp)
-	suite("MatchDirAndAppName", testMatchDirAndAppName)
-	suite("MultipleProject", testMultipleProject)
-	suite("Offline", testOffline)
-	suite("SourceRemoval", testSourceRemoval)
-	suite("VisualBasic", testVisualBasic)
-	suite("Nuget", testNugetConfig)
-	suite("OutputSlicing", testOutputSlicing)
 	suite.Run(t)
 }
