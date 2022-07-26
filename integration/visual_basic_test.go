@@ -47,52 +47,46 @@ func testVisualBasic(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
 
-		for _, b := range config.Builders {
-			var builder string = b
-			context(fmt.Sprintf("with %s builder", builder), func() {
-				it("should build a working OCI image", func() {
-					var err error
-					source, err = occam.Source(filepath.Join("testdata", "visual_basic_app"))
-					Expect(err).NotTo(HaveOccurred())
+		it("should build a working OCI image", func() {
+			var err error
+			source, err = occam.Source(filepath.Join("testdata", "visual_basic_app"))
+			Expect(err).NotTo(HaveOccurred())
 
-					var logs fmt.Stringer
-					image, logs, err = pack.WithNoColor().WithVerbose().Build.
-						WithBuildpacks(
-							icuBuildpack,
-							dotnetCoreRuntimeBuildpack,
-							dotnetCoreSDKBuildpack,
-							buildpack,
-							dotnetExecuteBuildpack,
-						).
-						WithBuilder(builder).
-						Execute(name, source)
-					Expect(err).NotTo(HaveOccurred(), logs.String())
+			var logs fmt.Stringer
+			image, logs, err = pack.WithNoColor().WithVerbose().Build.
+				WithBuildpacks(
+					icuBuildpack,
+					dotnetCoreRuntimeBuildpack,
+					dotnetCoreSDKBuildpack,
+					buildpack,
+					dotnetExecuteBuildpack,
+				).
+				Execute(name, source)
+			Expect(err).NotTo(HaveOccurred(), logs.String())
 
-					Expect(logs).To(ContainLines(
-						MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
-						"  Executing build process",
-						MatchRegexp(`    Running 'dotnet publish \/workspace --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+'`),
-					))
-					Expect(logs).To(ContainLines(
-						MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
-						"",
-						"  Dividing build output into layers to optimize cache reuse",
-						"",
-						"  Removing source code",
-						"",
-					))
+			Expect(logs).To(ContainLines(
+				MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, buildpackInfo.Buildpack.Name)),
+				"  Executing build process",
+				MatchRegexp(`    Running 'dotnet publish \/workspace --configuration Release --runtime ubuntu\.18\.04-x64 --self-contained false --output \/tmp\/dotnet-publish-output\d+'`),
+			))
+			Expect(logs).To(ContainLines(
+				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
+				"",
+				"  Dividing build output into layers to optimize cache reuse",
+				"",
+				"  Removing source code",
+				"",
+			))
 
-					container, err = docker.Container.Run.
-						Execute(image.ID)
-					Expect(err).NotTo(HaveOccurred())
+			container, err = docker.Container.Run.
+				Execute(image.ID)
+			Expect(err).NotTo(HaveOccurred())
 
-					Eventually(func() string {
-						cLogs, err := docker.Container.Logs.Execute(container.ID)
-						Expect(err).NotTo(HaveOccurred())
-						return cLogs.String()
-					}).Should(ContainSubstring("Hello World!"))
-				})
-			})
-		}
+			Eventually(func() string {
+				cLogs, err := docker.Container.Logs.Execute(container.ID)
+				Expect(err).NotTo(HaveOccurred())
+				return cLogs.String()
+			}).Should(ContainSubstring("Hello World!"))
+		})
 	})
 }
