@@ -73,7 +73,10 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		logger = scribe.NewEmitter(buffer)
 
 		build = dotnetpublish.Build(
-			dotnetpublish.Configuration{RawPublishFlags: "--publishflag value"},
+			dotnetpublish.Configuration{
+				RawPublishFlags: "--publishflag value",
+				DebugEnabled:    true,
+			},
 			sourceRemover,
 			bindingResolver,
 			homeDir,
@@ -133,6 +136,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(publishProcess.ExecuteCall.Receives.RootDir).To(Equal("some-existing-root-dir"))
 		Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
 		Expect(publishProcess.ExecuteCall.Receives.OutputPath).To(MatchRegexp(`dotnet-publish-output\d+`))
+		Expect(publishProcess.ExecuteCall.Receives.Debug).To(BeTrue())
 		Expect(publishProcess.ExecuteCall.Receives.Flags).To(Equal([]string{"--publishflag", "value"}))
 
 		Expect(slicer.SliceCall.Receives.AssetsFile).To(Equal(filepath.Join(workingDir, "some/project/path", "obj", "project.assets.json")))

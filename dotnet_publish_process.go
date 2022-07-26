@@ -30,13 +30,17 @@ func NewDotnetPublishProcess(executable Executable, logger scribe.Emitter, clock
 	}
 }
 
-func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, projectPath, outputPath string, flags []string) error {
+func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, projectPath, outputPath string, debug bool, flags []string) error {
 	args := []string{
 		"publish", filepath.Join(workingDir, projectPath), // change to workingDir plus project path
 	}
 
 	if !containsFlag(flags, "--configuration") && !containsFlag(flags, "-c") {
-		args = append(args, "--configuration", "Release")
+		if debug {
+			args = append(args, "--configuration", "Debug")
+		} else {
+			args = append(args, "--configuration", "Release")
+		}
 	}
 
 	if !containsFlag(flags, "--runtime") && !containsFlag(flags, "-r") {

@@ -28,7 +28,7 @@ type SourceRemover interface {
 
 //go:generate faux --interface PublishProcess --output fakes/publish_process.go
 type PublishProcess interface {
-	Execute(workingDir, rootDir, nugetCachePath, projectPath, outputPath string, flags []string) error
+	Execute(workingDir, rootDir, nugetCachePath, projectPath, outputPath string, debug bool, flags []string) error
 }
 
 //go:generate faux --interface BindingResolver --output fakes/binding_resolver.go
@@ -42,6 +42,7 @@ type Slicer interface {
 }
 
 type Configuration struct {
+	DebugEnabled         bool   `env:"BP_DEBUG_ENABLED"`
 	DisableOutputSlicing bool   `env:"BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING"`
 	ProjectPath          string `env:"BP_DOTNET_PROJECT_PATH"`
 	PublishFlags         []string
@@ -109,7 +110,7 @@ func Build(
 		nugetCache.Cache = true
 
 		logger.Process("Executing build process")
-		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), nugetCache.Path, config.ProjectPath, tempDir, config.PublishFlags)
+		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), nugetCache.Path, config.ProjectPath, tempDir, config.DebugEnabled, config.PublishFlags)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}

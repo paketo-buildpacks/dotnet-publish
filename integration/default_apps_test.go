@@ -85,7 +85,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					images[image.ID] = ""
 
 					Expect(logs).To(ContainLines(
-						MatchRegexp(`    Running 'dotnet publish .* \-\-verbosity=normal'`),
+						MatchRegexp(`    Running 'dotnet publish .* \-\-configuration Debug .* \-\-verbosity=normal'`),
 					))
 
 					container, err = docker.Container.Run.
