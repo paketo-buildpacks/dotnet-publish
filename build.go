@@ -183,7 +183,6 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
-		// TODO: Extract into packit debug logging
 		for _, layer := range layers {
 			logger.Debug.Process("Setting up layer '%s'", layer.Name)
 			logger.Debug.Subprocess("Available at launch: %t", layer.Launch)
