@@ -36,7 +36,11 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 		buildpackYMLParser = &fakes.BuildpackYMLParser{}
 
-		detect = dotnetpublish.Detect(projectParser, buildpackYMLParser)
+		detect = dotnetpublish.Detect(
+			dotnetpublish.Configuration{},
+			projectParser,
+			buildpackYMLParser,
+		)
 	})
 
 	it.After(func() {
@@ -184,12 +188,15 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 	context("when the .csproj file is not at the base of the directory and project_path is set via $BP_DOTNET_PROJECT_PATH", func() {
 		it.Before(func() {
-			Expect(os.Setenv("BP_DOTNET_PROJECT_PATH", "src/proj1")).To(Succeed())
 			projectParser.FindProjectFileCall.Returns.String = filepath.Join(workingDir, "src/proj1", "app.csproj")
+			detect = dotnetpublish.Detect(
+				dotnetpublish.Configuration{ProjectPath: "src/proj1"},
+				projectParser,
+				buildpackYMLParser,
+			)
 		})
 
 		it.After(func() {
-			Expect(os.Unsetenv("BP_DOTNET_PROJECT_PATH")).To(Succeed())
 			Expect(os.RemoveAll(workingDir)).To(Succeed())
 		})
 

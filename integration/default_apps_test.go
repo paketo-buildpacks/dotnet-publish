@@ -85,7 +85,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					images[image.ID] = ""
 
 					Expect(logs).To(ContainLines(
-						MatchRegexp(`    Running 'dotnet publish .* \-\-verbosity=normal'`),
+						MatchRegexp(`    Running 'dotnet publish .* \-\-configuration Debug .* \-\-verbosity=normal'`),
 					))
 
 					container, err = docker.Container.Run.
@@ -186,9 +186,32 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 							buildpack,
 							dotnetExecuteBuildpack,
 						).
+						WithEnv(map[string]string{
+							"BP_LOG_LEVEL": "DEBUG",
+							"BP_DOTNET_DISABLE_BUILDPACK_OUTPUT_SLICING": "true",
+						}).
 						Execute(name, source)
 					Expect(err).NotTo(HaveOccurred(), logs.String())
 					images[image.ID] = ""
+
+					Expect(logs).To(ContainLines(
+						"  Build configuration:",
+						// General matcher since env vars are extracted from map in different order each time
+						MatchRegexp("    BP_.*: .*"),
+					))
+
+					Expect(logs).To(ContainLines(
+						"  Skipping output slicing",
+						"",
+					))
+
+					Expect(logs).To(ContainLines(
+						"  Setting up layer 'nuget-cache'",
+						"    Available at launch: false",
+						"    Available to other buildpacks: false",
+						"    Cached for rebuilds: true",
+						"",
+					))
 
 					container, err = docker.Container.Run.
 						WithEnv(map[string]string{"PORT": "8080"}).

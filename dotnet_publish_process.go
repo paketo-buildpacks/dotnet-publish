@@ -18,11 +18,11 @@ type Executable interface {
 
 type DotnetPublishProcess struct {
 	executable Executable
-	logger     scribe.Logger
+	logger     scribe.Emitter
 	clock      chronos.Clock
 }
 
-func NewDotnetPublishProcess(executable Executable, logger scribe.Logger, clock chronos.Clock) DotnetPublishProcess {
+func NewDotnetPublishProcess(executable Executable, logger scribe.Emitter, clock chronos.Clock) DotnetPublishProcess {
 	return DotnetPublishProcess{
 		executable: executable,
 		logger:     logger,
@@ -30,13 +30,17 @@ func NewDotnetPublishProcess(executable Executable, logger scribe.Logger, clock 
 	}
 }
 
-func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, projectPath, outputPath string, flags []string) error {
+func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, projectPath, outputPath string, debug bool, flags []string) error {
 	args := []string{
 		"publish", filepath.Join(workingDir, projectPath), // change to workingDir plus project path
 	}
 
 	if !containsFlag(flags, "--configuration") && !containsFlag(flags, "-c") {
-		args = append(args, "--configuration", "Release")
+		if debug {
+			args = append(args, "--configuration", "Debug")
+		} else {
+			args = append(args, "--configuration", "Release")
+		}
 	}
 
 	if !containsFlag(flags, "--runtime") && !containsFlag(flags, "-r") {
@@ -74,4 +78,13 @@ func (p DotnetPublishProcess) Execute(workingDir, root, nugetCachePath, projectP
 	p.logger.Break()
 
 	return nil
+}
+
+func containsFlag(flags []string, match string) bool {
+	for _, flag := range flags {
+		if strings.HasPrefix(flag, match) {
+			return true
+		}
+	}
+	return false
 }

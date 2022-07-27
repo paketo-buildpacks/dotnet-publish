@@ -2,7 +2,6 @@ package dotnetpublish
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/Masterminds/semver"
@@ -29,20 +28,17 @@ type BuildpackYMLParser interface {
 	ParseProjectPath(path string) (projectFilePath string, err error)
 }
 
-func Detect(parser ProjectParser, buildpackYMLParser BuildpackYMLParser) packit.DetectFunc {
+func Detect(config Configuration, parser ProjectParser, buildpackYMLParser BuildpackYMLParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
-		var projectPath string
-		var ok bool
-		var err error
-
-		if projectPath, ok = os.LookupEnv("BP_DOTNET_PROJECT_PATH"); !ok {
-			projectPath, err = buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
+		if config.ProjectPath == "" {
+			var err error
+			config.ProjectPath, err = buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
 			if err != nil {
 				return packit.DetectResult{}, fmt.Errorf("failed to parse buildpack.yml: %w", err)
 			}
 		}
 
-		projectFilePath, err := parser.FindProjectFile(filepath.Join(context.WorkingDir, projectPath))
+		projectFilePath, err := parser.FindProjectFile(filepath.Join(context.WorkingDir, config.ProjectPath))
 		if err != nil {
 			return packit.DetectResult{}, err
 		}
