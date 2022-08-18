@@ -5,5 +5,6 @@
   "dotnet-core-runtime": "github.com/paketo-buildpacks/dotnet-core-runtime",
   "dotnet-core-sdk": "github.com/paketo-buildpacks/dotnet-core-sdk",
   "icu": "github.com/paketo-buildpacks/icu",
+  "vsdbg": "github.com/paketo-buildpacks/vsdbg",
   "node-engine": "github.com/paketo-buildpacks/node-engine"
 }
