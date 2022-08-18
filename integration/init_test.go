@@ -31,6 +31,7 @@ var (
 	dotnetCoreSDKBuildpack            string
 	dotnetCoreSDKOfflineBuildpack     string
 	dotnetExecuteBuildpack            string
+	vsdbgBuildpack                    string
 	buildpack                         string
 	offlineBuildpack                  string
 	builder                           struct {
@@ -53,6 +54,7 @@ var (
 		DotnetCoreAspNet  string `json:"dotnet-core-aspnet"`
 		DotnetCoreSDK     string `json:"dotnet-core-sdk"`
 		DotnetExecute     string `json:"dotnet-execute"`
+		Vsdbg             string `json:"vsdbg"`
 	}
 )
 
@@ -140,6 +142,10 @@ func TestIntegration(t *testing.T) {
 
 	dotnetExecuteBuildpack, err = buildpackStore.Get.
 		Execute(config.DotnetExecute)
+	Expect(err).NotTo(HaveOccurred())
+
+	vsdbgBuildpack, err = buildpackStore.Get.
+		Execute(config.Vsdbg)
 	Expect(err).NotTo(HaveOccurred())
 
 	SetDefaultEventuallyTimeout(30 * time.Second)
