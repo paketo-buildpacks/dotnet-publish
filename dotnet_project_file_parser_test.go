@@ -1,6 +1,7 @@
 package dotnetpublish_test
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -326,13 +327,23 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 	})
 
 	context("NPMIsRequired", func() {
-		var path string
+		var path, importPath, targetPath string
 
 		it.Before(func() {
 			file, err := os.CreateTemp("", "app.csproj")
 			Expect(err).NotTo(HaveOccurred())
 			defer file.Close()
 
+			importFile, err := os.CreateTemp("", "import.csproj")
+			Expect(err).NotTo(HaveOccurred())
+			defer importFile.Close()
+
+			targetFile, err := os.CreateTemp("", "target.csproj")
+			Expect(err).NotTo(HaveOccurred())
+			defer targetFile.Close()
+
+			importPath = importFile.Name()
+			targetPath = targetFile.Name()
 			path = file.Name()
 		})
 
@@ -381,6 +392,42 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(needNode).To(BeFalse())
+			})
+		})
+
+		context("when project includes target commands that invoke npm in a different file", func() {
+			it.Before(func() {
+				Expect(os.WriteFile(targetPath, []byte(`
+					<Project>
+						<Target Name="first-target">
+							<Exec Command="echo hello" />
+						</Target>
+						<Target Name="second-target">
+							<Exec Command="npm install" />
+						</Target>
+					</Project>
+				`), 0600)).To(Succeed())
+
+				Expect(os.WriteFile(importPath, []byte(fmt.Sprintf(`
+					<Project>
+            <Import Project="%s" />
+					</Project>
+				`, targetPath)), 0600)).To(Succeed())
+
+				Expect(os.WriteFile(path, []byte(fmt.Sprintf(`
+					<Project>
+            <ItemGroup>
+              <ProjectReference Include="%s" />
+            </ItemGroup>
+					</Project>
+				`, importPath)), 0600)).To(Succeed())
+			})
+
+			it("returns true", func() {
+				needNode, err := parser.NPMIsRequired(path)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(needNode).To(BeTrue())
 			})
 		})
 	})
