@@ -105,14 +105,14 @@ func findInFile(str, path string) (bool, error) {
 	defer file.Close()
 
 	var project struct {
-    ItemGroups []struct {
-      ProjectReference struct {
-        Include string `xml:",attr"`
-      } `xml:"ProjectReference"`
-    } `xml:"ItemGroup"`
-    Imports []struct {
-      Project string `xml:",attr"`
-    } `xml:"Import"`
+		ItemGroups []struct {
+			ProjectReference struct {
+				Include string `xml:",attr"`
+			} `xml:"ProjectReference"`
+		} `xml:"ItemGroup"`
+		Imports []struct {
+			Project string `xml:",attr"`
+		} `xml:"Import"`
 		Targets []struct {
 			Execs []struct {
 				Command string `xml:",attr"`
@@ -125,13 +125,13 @@ func findInFile(str, path string) (bool, error) {
 		return false, fmt.Errorf("failed to decode %s: %w", path, err)
 	}
 
-  for _, projectReference := range project.ItemGroups {
-    return findInFile(str, projectReference.ProjectReference.Include)
-  }
+	for _, projectReference := range project.ItemGroups {
+		return findInFile(str, projectReference.ProjectReference.Include)
+	}
 
-  for _, importElem := range project.Imports {
-    return findInFile(str, importElem.Project)
-  }
+	for _, importElem := range project.Imports {
+		return findInFile(str, importElem.Project)
+	}
 
 	for _, target := range project.Targets {
 		for _, exec := range target.Execs {
