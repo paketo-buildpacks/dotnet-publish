@@ -410,7 +410,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 
 				Expect(os.WriteFile(importPath, []byte(fmt.Sprintf(`
 					<Project>
-          				<Import Project="%s" />
+						<Import Project="%s" />
 					</Project>
 				`, targetPath)), 0600)).To(Succeed())
 
