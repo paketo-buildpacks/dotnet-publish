@@ -126,17 +126,23 @@ func findInFile(str, path string) (bool, error) {
 	}
 
 	for _, projectReference := range project.ItemGroups {
-		return findInFile(str, projectReference.ProjectReference.Include)
+    found, _ := findInFile(str, projectReference.ProjectReference.Include)
+    if found {
+      return true, nil
+    }
 	}
 
 	for _, importElem := range project.Imports {
-		return findInFile(str, importElem.Project)
+    found, _ := findInFile(str, importElem.Project)
+    if found {
+      return true, nil
+    }
 	}
 
 	for _, target := range project.Targets {
 		for _, exec := range target.Execs {
 			if strings.HasPrefix(exec.Command, str) {
-				return true, nil
+        return true, nil
 			}
 		}
 	}

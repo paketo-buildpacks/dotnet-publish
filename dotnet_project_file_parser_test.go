@@ -430,5 +430,41 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 				Expect(needNode).To(BeTrue())
 			})
 		})
+
+		context("when project includes target commands that don't invoke npm in a different file", func() {
+			it.Before(func() {
+				Expect(os.WriteFile(targetPath, []byte(`
+					<Project>
+						<Target Name="first-target">
+							<Exec Command="test" />
+						</Target>
+						<Target Name="second-target">
+							<Exec Command="test" />
+						</Target>
+					</Project>
+				`), 0600)).To(Succeed())
+
+				Expect(os.WriteFile(importPath, []byte(fmt.Sprintf(`
+					<Project>
+						<Import Project="%s" />
+					</Project>
+				`, targetPath)), 0600)).To(Succeed())
+
+				Expect(os.WriteFile(path, []byte(fmt.Sprintf(`
+					<Project>
+						<ItemGroup>
+						<ProjectReference Include="%s" />
+						</ItemGroup>
+					</Project>
+				`, importPath)), 0600)).To(Succeed())
+			})
+
+			it("returns true", func() {
+				needNode, err := parser.NPMIsRequired(path)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(needNode).To(BeFalse())
+			})
+		})
 	})
 }
