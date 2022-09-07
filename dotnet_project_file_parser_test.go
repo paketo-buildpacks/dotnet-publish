@@ -459,7 +459,7 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 				`, importPath)), 0600)).To(Succeed())
 			})
 
-			it("returns true", func() {
+			it("returns false", func() {
 				needNode, err := parser.NPMIsRequired(path)
 				Expect(err).NotTo(HaveOccurred())
 
