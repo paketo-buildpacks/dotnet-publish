@@ -170,6 +170,60 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		})
 	})
 
+	context("if the stack id changes", func() {
+		it.Before(func() {
+			Expect(os.WriteFile(filepath.Join(layersDir, "nuget-cache.toml"), []byte(`
+[metadata]
+  stack = "some-stack"
+`), 0644))
+		})
+
+		it("empties the cache layer", func() {
+			_, err := build(packit.BuildContext{
+				WorkingDir: workingDir,
+				BuildpackInfo: packit.BuildpackInfo{
+					Name:    "Some Buildpack",
+					Version: "0.0.1",
+				},
+				Platform: packit.Platform{
+					Path: "some-platform-path",
+				},
+				Layers: packit.Layers{Path: layersDir},
+				Stack:  "other-stack",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(filepath.Join(layersDir, "nuget-cache", "some-cache")).NotTo(BeAnExistingFile())
+		})
+	})
+
+	context("if the stack id is the same", func() {
+		it.Before(func() {
+			Expect(os.WriteFile(filepath.Join(layersDir, "nuget-cache.toml"), []byte(`
+[metadata]
+  stack = "some-stack"
+`), 0644))
+		})
+
+		it("keeps the cache layer", func() {
+			_, err := build(packit.BuildContext{
+				WorkingDir: workingDir,
+				BuildpackInfo: packit.BuildpackInfo{
+					Name:    "Some Buildpack",
+					Version: "0.0.1",
+				},
+				Platform: packit.Platform{
+					Path: "some-platform-path",
+				},
+				Layers: packit.Layers{Path: layersDir},
+				Stack:  "some-stack",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(filepath.Join(layersDir, "nuget-cache", "some-cache")).To(BeAnExistingFile())
+		})
+	})
+
 	context("when project path is set via BP_DOTNET_PROJECT_PATH", func() {
 		it.Before(func() {
 			build = dotnetpublish.Build(
@@ -320,21 +374,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 	})
 
 	context("failure cases", func() {
-		context("when the source code cannot be removed", func() {
-			it.Before(func() {
-				sourceRemover.RemoveCall.Returns.Error = errors.New("some-error")
-			})
-
-			it("returns an error", func() {
-				_, err := build(packit.BuildContext{
-					WorkingDir: workingDir,
-					BuildpackInfo: packit.BuildpackInfo{
-						Version: "0.0.1",
-					},
-				})
-				Expect(err).To(MatchError("some-error"))
-			})
-		})
 
 		context("when the buildpack.yml can not be parsed", func() {
 			it.Before(func() {
@@ -374,6 +413,24 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					},
 				})
 				Expect(err).To(MatchError("failed to parse flags for dotnet publish: invalid command line string"))
+			})
+		})
+
+		context("when the cache layer cannot be gotten", func() {
+			it.Before(func() {
+				Expect(os.WriteFile(filepath.Join(layersDir, "nuget-cache.toml"), nil, 0000))
+			})
+
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					WorkingDir: workingDir,
+					BuildpackInfo: packit.BuildpackInfo{
+						Name:    "Some Buildpack",
+						Version: "0.0.1",
+					},
+					Layers: packit.Layers{Path: layersDir},
+				})
+				Expect(err).To(MatchError(ContainSubstring("permission denied")))
 			})
 		})
 
@@ -507,6 +564,22 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					},
 				})
 				Expect(err).To(MatchError(ContainSubstring("failed to symlink")))
+			})
+		})
+
+		context("when the source code cannot be removed", func() {
+			it.Before(func() {
+				sourceRemover.RemoveCall.Returns.Error = errors.New("some-error")
+			})
+
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					WorkingDir: workingDir,
+					BuildpackInfo: packit.BuildpackInfo{
+						Version: "0.0.1",
+					},
+				})
+				Expect(err).To(MatchError("some-error"))
 			})
 		})
 

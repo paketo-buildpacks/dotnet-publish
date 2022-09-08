@@ -122,6 +122,18 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
+		stack, ok := nugetCache.Metadata["stack"].(string)
+		if ok && stack != context.Stack {
+			nugetCache, err = nugetCache.Reset()
+			if err != nil {
+				return packit.BuildResult{}, err
+			}
+		}
+
+		nugetCache.Metadata = map[string]interface{}{
+			"stack": context.Stack,
+		}
+
 		nugetCache.Cache = true
 
 		logger.Process("Executing build process")
