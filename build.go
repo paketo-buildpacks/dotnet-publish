@@ -130,8 +130,13 @@ func Build(
 			}
 		}
 
-		nugetCache.Metadata = map[string]interface{}{
-			"stack": context.Stack,
+		if nugetCache.Metadata == nil {
+			nugetCache.Metadata = map[string]interface{}{
+				"stack": context.Stack,
+			}
+		} else {
+			nugetCache.Metadata["stack"] = context.Stack
+
 		}
 
 		nugetCache.Cache = true
