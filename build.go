@@ -131,14 +131,9 @@ func Build(
 		}
 
 		if nugetCache.Metadata == nil {
-			nugetCache.Metadata = map[string]interface{}{
-				"stack": context.Stack,
-			}
-		} else {
-			nugetCache.Metadata["stack"] = context.Stack
-
+			nugetCache.Metadata = make(map[string]interface{})
 		}
-
+		nugetCache.Metadata["stack"] = context.Stack
 		nugetCache.Cache = true
 
 		logger.Process("Executing build process")
