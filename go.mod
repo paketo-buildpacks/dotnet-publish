@@ -10,7 +10,7 @@ require (
 	github.com/docker/docker v20.10.18+incompatible // indirect
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/moby/term v0.0.0-20220808134915-39b0c02b01ae // indirect
-	github.com/onsi/gomega v1.21.1
+	github.com/onsi/gomega v1.22.0
 	github.com/opencontainers/image-spec v1.1.0-rc2 // indirect
 	github.com/opencontainers/runc v1.1.4 // indirect
 	github.com/paketo-buildpacks/occam v0.13.3
