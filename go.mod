@@ -3,7 +3,7 @@ module github.com/paketo-buildpacks/dotnet-publish
 go 1.16
 
 require (
-	github.com/BurntSushi/toml v1.2.0
+	github.com/BurntSushi/toml v1.2.1
 	github.com/Masterminds/semver v1.5.0
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/Netflix/go-env v0.0.0-20220526054621-78278af1949d
