@@ -65,16 +65,15 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 				source, err := occam.Source(filepath.Join("testdata", "source_6_app"))
 				Expect(err).NotTo(HaveOccurred())
 
-				for i := 0; i < 2; i++ {
+				for i := 0; i < 3; i++ {
 					var logs fmt.Stringer
 					image, logs, err = pack.WithNoColor().Build.
 						WithBuildpacks(
 							icuBuildpack,
-							dotnetCoreRuntimeBuildpack,
-							dotnetCoreAspNetBuildpack,
-							dotnetCoreSDKBuildpack,
 							vsdbgBuildpack,
+							dotnetCoreSDKBuildpack,
 							buildpack,
+							dotnetCoreAspNetRuntimeBuildpack,
 							dotnetExecuteBuildpack,
 						).
 						WithEnv(map[string]string{
@@ -113,10 +112,9 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					image, logs, err = pack.WithNoColor().Build.
 						WithBuildpacks(
 							icuBuildpack,
-							dotnetCoreRuntimeBuildpack,
-							dotnetCoreAspNetBuildpack,
 							dotnetCoreSDKBuildpack,
 							buildpack,
+							dotnetCoreAspNetRuntimeBuildpack,
 							dotnetExecuteBuildpack,
 						).
 						Execute(name, source)
@@ -136,6 +134,46 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 			}
 		})
 
+		context.Pend("given a source application with .NET 7", func() {
+			it("should build (and rebuild) a working OCI image", func() {
+				var err error
+				source, err := occam.Source(filepath.Join("testdata", "source_7"))
+				Expect(err).NotTo(HaveOccurred())
+
+				for i := 0; i < 3; i++ {
+					var logs fmt.Stringer
+					image, logs, err = pack.WithNoColor().Build.
+						WithBuildpacks(
+							icuBuildpack,
+							dotnetCoreSDKBuildpack,
+							buildpack,
+							dotnetCoreAspNetRuntimeBuildpack,
+							dotnetExecuteBuildpack,
+						).
+						WithEnv(map[string]string{
+							"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
+						}).
+						Execute(name, source)
+					Expect(err).NotTo(HaveOccurred(), logs.String())
+					images[image.ID] = ""
+
+					Expect(logs).To(ContainLines(
+						MatchRegexp(`    Running 'dotnet publish .* \-\-configuration Release .* \-\-verbosity=normal'`),
+					))
+
+					container, err = docker.Container.Run.
+						WithEnv(map[string]string{"PORT": "8080"}).
+						WithPublish("8080").
+						WithPublishAll().
+						Execute(image.ID)
+					Expect(err).NotTo(HaveOccurred())
+					containers[container.ID] = ""
+
+					Eventually(container).Should(Serve(ContainSubstring("source_7")).OnPort(8080))
+				}
+			})
+		})
+
 		context("given a steeltoe application", func() {
 			if !strings.Contains(builder.Local.Stack.ID, "jammy") {
 				it("should build a working OCI image", func() {
@@ -147,10 +185,9 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					image, logs, err = pack.WithNoColor().Build.
 						WithBuildpacks(
 							icuBuildpack,
-							dotnetCoreRuntimeBuildpack,
-							dotnetCoreAspNetBuildpack,
 							dotnetCoreSDKBuildpack,
 							buildpack,
+							dotnetCoreAspNetRuntimeBuildpack,
 							dotnetExecuteBuildpack,
 						).
 						Execute(name, source)
@@ -181,10 +218,9 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					image, logs, err = pack.WithNoColor().Build.
 						WithBuildpacks(
 							icuBuildpack,
-							dotnetCoreRuntimeBuildpack,
-							dotnetCoreAspNetBuildpack,
 							dotnetCoreSDKBuildpack,
 							buildpack,
+							dotnetCoreAspNetRuntimeBuildpack,
 							dotnetExecuteBuildpack,
 						).
 						WithEnv(map[string]string{
@@ -237,10 +273,9 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					build := pack.WithNoColor().Build.
 						WithBuildpacks(
 							icuBuildpack,
-							dotnetCoreRuntimeBuildpack,
-							dotnetCoreAspNetBuildpack,
 							dotnetCoreSDKBuildpack,
 							buildpack,
+							dotnetCoreAspNetRuntimeBuildpack,
 							dotnetExecuteBuildpack,
 						)
 
@@ -306,10 +341,9 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 						WithBuildpacks(
 							nodeEngineBuildpack,
 							icuBuildpack,
-							dotnetCoreRuntimeBuildpack,
-							dotnetCoreAspNetBuildpack,
 							dotnetCoreSDKBuildpack,
 							buildpack,
+							dotnetCoreAspNetRuntimeBuildpack,
 							dotnetExecuteBuildpack,
 						).
 						Execute(name, source)

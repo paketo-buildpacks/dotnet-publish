@@ -56,10 +56,9 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 			image, logs, err = pack.WithNoColor().Build.
 				WithBuildpacks(
 					icuOfflineBuildpack,
-					dotnetCoreRuntimeOfflineBuildpack,
-					dotnetCoreAspNetOfflineBuildpack,
 					dotnetCoreSDKOfflineBuildpack,
 					offlineBuildpack,
+					dotnetCoreAspNetRuntimeOfflineBuildpack,
 					dotnetExecuteBuildpack,
 				).
 				WithNetwork("none").

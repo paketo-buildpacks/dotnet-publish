@@ -20,21 +20,23 @@ import (
 )
 
 var (
-	nodeEngineBuildpack               string
-	nodeEngineOfflineBuildpack        string
-	icuBuildpack                      string
-	icuOfflineBuildpack               string
-	dotnetCoreRuntimeBuildpack        string
-	dotnetCoreRuntimeOfflineBuildpack string
-	dotnetCoreAspNetBuildpack         string
-	dotnetCoreAspNetOfflineBuildpack  string
-	dotnetCoreSDKBuildpack            string
-	dotnetCoreSDKOfflineBuildpack     string
-	dotnetExecuteBuildpack            string
-	vsdbgBuildpack                    string
-	buildpack                         string
-	offlineBuildpack                  string
-	builder                           struct {
+	nodeEngineBuildpack                     string
+	nodeEngineOfflineBuildpack              string
+	icuBuildpack                            string
+	icuOfflineBuildpack                     string
+	dotnetCoreRuntimeBuildpack              string
+	dotnetCoreRuntimeOfflineBuildpack       string
+	dotnetCoreAspNetBuildpack               string
+	dotnetCoreAspNetOfflineBuildpack        string
+	dotnetCoreAspNetRuntimeBuildpack        string
+	dotnetCoreAspNetRuntimeOfflineBuildpack string
+	dotnetCoreSDKBuildpack                  string
+	dotnetCoreSDKOfflineBuildpack           string
+	dotnetExecuteBuildpack                  string
+	vsdbgBuildpack                          string
+	buildpack                               string
+	offlineBuildpack                        string
+	builder                                 struct {
 		Local struct {
 			Stack struct {
 				ID string `json:"id"`
@@ -48,13 +50,14 @@ var (
 		}
 	}
 	config struct {
-		NodeEngine        string `json:"node-engine"`
-		ICU               string `json:"icu"`
-		DotnetCoreRuntime string `json:"dotnet-core-runtime"`
-		DotnetCoreAspNet  string `json:"dotnet-core-aspnet"`
-		DotnetCoreSDK     string `json:"dotnet-core-sdk"`
-		DotnetExecute     string `json:"dotnet-execute"`
-		Vsdbg             string `json:"vsdbg"`
+		NodeEngine              string `json:"node-engine"`
+		ICU                     string `json:"icu"`
+		DotnetCoreRuntime       string `json:"dotnet-core-runtime"`
+		DotnetCoreAspNet        string `json:"dotnet-core-aspnet"`
+		DotnetCoreAspNetRuntime string `json:"dotnet-core-aspnet-runtime"`
+		DotnetCoreSDK           string `json:"dotnet-core-sdk"`
+		DotnetExecute           string `json:"dotnet-execute"`
+		Vsdbg                   string `json:"vsdbg"`
 	}
 )
 
@@ -128,6 +131,16 @@ func TestIntegration(t *testing.T) {
 		WithOfflineDependencies().
 		WithVersion("1.2.3").
 		Execute(config.DotnetCoreAspNet)
+	Expect(err).NotTo(HaveOccurred())
+
+	dotnetCoreAspNetRuntimeBuildpack, err = buildpackStore.Get.
+		Execute(config.DotnetCoreAspNetRuntime)
+	Expect(err).NotTo(HaveOccurred())
+
+	dotnetCoreAspNetRuntimeOfflineBuildpack, err = buildpackStore.Get.
+		WithOfflineDependencies().
+		WithVersion("1.2.3").
+		Execute(config.DotnetCoreAspNetRuntime)
 	Expect(err).NotTo(HaveOccurred())
 
 	dotnetCoreSDKBuildpack, err = buildpackStore.Get.

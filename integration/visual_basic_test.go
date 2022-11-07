@@ -56,9 +56,9 @@ func testVisualBasic(t *testing.T, context spec.G, it spec.S) {
 			image, logs, err = pack.WithNoColor().WithVerbose().Build.
 				WithBuildpacks(
 					icuBuildpack,
-					dotnetCoreRuntimeBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
+					dotnetCoreAspNetRuntimeBuildpack,
 					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)
