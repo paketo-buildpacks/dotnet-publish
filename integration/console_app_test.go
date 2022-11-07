@@ -55,9 +55,9 @@ func testConsole(t *testing.T, context spec.G, it spec.S) {
 			image, logs, err = pack.WithNoColor().Build.
 				WithBuildpacks(
 					icuBuildpack,
-					dotnetCoreRuntimeBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
+					dotnetCoreAspNetRuntimeBuildpack,
 					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)

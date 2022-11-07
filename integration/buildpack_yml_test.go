@@ -63,9 +63,9 @@ dotnet-build:
 			image, logs, err = pack.WithNoColor().Build.
 				WithBuildpacks(
 					icuBuildpack,
-					dotnetCoreRuntimeBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
+					dotnetCoreAspNetRuntimeBuildpack,
 					dotnetExecuteBuildpack,
 				).
 				Execute(name, source)

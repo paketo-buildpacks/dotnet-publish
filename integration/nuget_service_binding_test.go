@@ -91,10 +91,9 @@ func testNugetConfig(t *testing.T, context spec.G, it spec.S) {
 				packBuild = pack.Build.
 					WithBuildpacks(
 						icuBuildpack,
-						dotnetCoreRuntimeBuildpack,
-						dotnetCoreAspNetBuildpack,
 						dotnetCoreSDKBuildpack,
 						buildpack,
+						dotnetCoreAspNetRuntimeBuildpack,
 						dotnetExecuteBuildpack,
 					).
 					WithEnv(map[string]string{

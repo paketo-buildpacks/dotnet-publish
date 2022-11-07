@@ -56,9 +56,9 @@ func testMatchDirAndAppName(t *testing.T, context spec.G, it spec.S) {
 			image, logs, err = pack.WithNoColor().Build.
 				WithBuildpacks(
 					icuBuildpack,
-					dotnetCoreRuntimeBuildpack,
 					dotnetCoreSDKBuildpack,
 					buildpack,
+					dotnetCoreAspNetRuntimeBuildpack,
 					dotnetExecuteBuildpack,
 				).
 				WithEnv(map[string]string{"BP_DOTNET_PROJECT_PATH": "console"}).

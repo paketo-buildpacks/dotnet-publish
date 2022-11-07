@@ -56,10 +56,9 @@ func testMultipleProject(t *testing.T, context spec.G, it spec.S) {
 			image, logs, err = pack.WithNoColor().Build.
 				WithBuildpacks(
 					icuBuildpack,
-					dotnetCoreRuntimeBuildpack,
 					dotnetCoreSDKBuildpack,
-					dotnetCoreAspNetBuildpack,
 					buildpack,
+					dotnetCoreAspNetRuntimeBuildpack,
 					dotnetExecuteBuildpack,
 				).
 				WithEnv(map[string]string{
