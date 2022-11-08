@@ -24,7 +24,6 @@ var (
 	nodeEngineOfflineBuildpack              string
 	icuBuildpack                            string
 	icuOfflineBuildpack                     string
-	dotnetCoreRuntimeOfflineBuildpack       string
 	dotnetCoreAspNetRuntimeBuildpack        string
 	dotnetCoreAspNetRuntimeOfflineBuildpack string
 	dotnetCoreSDKBuildpack                  string
