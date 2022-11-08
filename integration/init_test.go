@@ -24,10 +24,7 @@ var (
 	nodeEngineOfflineBuildpack              string
 	icuBuildpack                            string
 	icuOfflineBuildpack                     string
-	dotnetCoreRuntimeBuildpack              string
 	dotnetCoreRuntimeOfflineBuildpack       string
-	dotnetCoreAspNetBuildpack               string
-	dotnetCoreAspNetOfflineBuildpack        string
 	dotnetCoreAspNetRuntimeBuildpack        string
 	dotnetCoreAspNetRuntimeOfflineBuildpack string
 	dotnetCoreSDKBuildpack                  string
@@ -52,8 +49,6 @@ var (
 	config struct {
 		NodeEngine              string `json:"node-engine"`
 		ICU                     string `json:"icu"`
-		DotnetCoreRuntime       string `json:"dotnet-core-runtime"`
-		DotnetCoreAspNet        string `json:"dotnet-core-aspnet"`
 		DotnetCoreAspNetRuntime string `json:"dotnet-core-aspnet-runtime"`
 		DotnetCoreSDK           string `json:"dotnet-core-sdk"`
 		DotnetExecute           string `json:"dotnet-execute"`
@@ -111,26 +106,6 @@ func TestIntegration(t *testing.T) {
 		WithOfflineDependencies().
 		WithVersion("1.2.3").
 		Execute(config.ICU)
-	Expect(err).NotTo(HaveOccurred())
-
-	dotnetCoreRuntimeBuildpack, err = buildpackStore.Get.
-		Execute(config.DotnetCoreRuntime)
-	Expect(err).NotTo(HaveOccurred())
-
-	dotnetCoreRuntimeOfflineBuildpack, err = buildpackStore.Get.
-		WithOfflineDependencies().
-		WithVersion("1.2.3").
-		Execute(config.DotnetCoreRuntime)
-	Expect(err).NotTo(HaveOccurred())
-
-	dotnetCoreAspNetBuildpack, err = buildpackStore.Get.
-		Execute(config.DotnetCoreAspNet)
-	Expect(err).NotTo(HaveOccurred())
-
-	dotnetCoreAspNetOfflineBuildpack, err = buildpackStore.Get.
-		WithOfflineDependencies().
-		WithVersion("1.2.3").
-		Execute(config.DotnetCoreAspNet)
 	Expect(err).NotTo(HaveOccurred())
 
 	dotnetCoreAspNetRuntimeBuildpack, err = buildpackStore.Get.
