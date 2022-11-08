@@ -134,7 +134,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 			}
 		})
 
-		context.Pend("given a source application with .NET 7", func() {
+		context("given a source application with .NET 7", func() {
 			it("should build (and rebuild) a working OCI image", func() {
 				var err error
 				source, err := occam.Source(filepath.Join("testdata", "source_7"))
