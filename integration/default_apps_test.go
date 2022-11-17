@@ -330,6 +330,18 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		context("given a .NET Core angular application", func() {
+			var sbomDir string
+
+			it.Before(func() {
+				var err error
+				sbomDir, err = os.MkdirTemp("", "sbom")
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			it.After(func() {
+				Expect(os.RemoveAll(sbomDir)).To(Succeed())
+			})
+
 			if !strings.Contains(builder.Local.Stack.ID, "jammy") {
 				it("should build a working OCI image", func() {
 					var err error
@@ -346,6 +358,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 							dotnetCoreAspNetRuntimeBuildpack,
 							dotnetExecuteBuildpack,
 						).
+						WithSBOMOutputDir(sbomDir).
 						Execute(name, source)
 					Expect(err).NotTo(HaveOccurred(), logs.String())
 					images[image.ID] = ""
@@ -359,6 +372,17 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					containers[container.ID] = ""
 
 					Eventually(container).Should(Serve(ContainSubstring("Loading...")).OnPort(8080))
+
+					// check that all expected SBOM files are present
+					Expect(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "publish", "sbom.cdx.json")).To(BeARegularFile())
+					Expect(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "publish", "sbom.spdx.json")).To(BeARegularFile())
+					Expect(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "publish", "sbom.syft.json")).To(BeARegularFile())
+
+					// check an SBOM file to make sure it has an entry for an app node module
+					contents, err := os.ReadFile(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "publish", "sbom.cdx.json"))
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(string(contents)).To(ContainSubstring(`"name": "yaml"`))
 				})
 			}
 		})

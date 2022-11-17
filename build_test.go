@@ -11,6 +11,7 @@ import (
 	"github.com/paketo-buildpacks/dotnet-publish/fakes"
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
+	"github.com/paketo-buildpacks/packit/v2/sbom"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 	"github.com/paketo-buildpacks/packit/v2/servicebindings"
 	"github.com/sclevine/spec"
@@ -30,6 +31,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		bindingResolver    *fakes.BindingResolver
 		buildpackYMLParser *fakes.BuildpackYMLParser
 		publishProcess     *fakes.PublishProcess
+		sbomGenerator      *fakes.SBOMGenerator
 		slicer             *fakes.Slicer
 		sourceRemover      *fakes.SourceRemover
 		symlinker          *fakes.SymlinkManager
@@ -72,6 +74,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		buffer = bytes.NewBuffer(nil)
 		logger = scribe.NewEmitter(buffer)
 
+		sbomGenerator = &fakes.SBOMGenerator{}
+		sbomGenerator.GenerateCall.Returns.SBOM = sbom.SBOM{}
+
 		build = dotnetpublish.Build(
 			dotnetpublish.Configuration{
 				RawPublishFlags: "--publishflag value",
@@ -85,7 +90,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			slicer,
 			buildpackYMLParser,
 			chronos.DefaultClock,
-			logger)
+			logger,
+			sbomGenerator,
+		)
 	})
 
 	it.After(func() {
@@ -99,8 +106,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		result, err := build(packit.BuildContext{
 			WorkingDir: workingDir,
 			BuildpackInfo: packit.BuildpackInfo{
-				Name:    "Some Buildpack",
-				Version: "0.0.1",
+				Name:        "Some Buildpack",
+				Version:     "0.0.1",
+				SBOMFormats: []string{sbom.CycloneDXFormat, sbom.SPDXFormat},
 			},
 			Platform: packit.Platform{
 				Path: "some-platform-path",
@@ -109,18 +117,34 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(result.Layers).To(HaveLen(1))
-		layer := result.Layers[0]
+		Expect(result.Layers).To(HaveLen(2))
+		npmCacheLayer := result.Layers[0]
 
-		Expect(layer.Name).To(Equal("nuget-cache"))
-		Expect(layer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
-		Expect(layer.Cache).To(BeTrue())
+		Expect(npmCacheLayer.Name).To(Equal("nuget-cache"))
+		Expect(npmCacheLayer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
+		Expect(npmCacheLayer.Cache).To(BeTrue())
 
 		Expect(result.Launch.Slices).To(Equal([]packit.Slice{
 			{Paths: []string{".dotnet_root"}},
 			{Paths: []string{"some-package.dll"}},
 			{Paths: []string{"some-release-candidate-package.dll"}},
 			{Paths: []string{"some-project.dll"}},
+		}))
+
+		sbomLayer := result.Layers[1]
+
+		Expect(sbomLayer.Name).To(Equal("publish"))
+		Expect(sbomLayer.Path).To(Equal(filepath.Join(layersDir, "publish")))
+
+		Expect(sbomLayer.SBOM.Formats()).To(Equal([]packit.SBOMFormat{
+			{
+				Extension: sbom.Format(sbom.CycloneDXFormat).Extension(),
+				Content:   sbom.NewFormattedReader(sbom.SBOM{}, sbom.CycloneDXFormat),
+			},
+			{
+				Extension: sbom.Format(sbom.SPDXFormat).Extension(),
+				Content:   sbom.NewFormattedReader(sbom.SBOM{}, sbom.SPDXFormat),
+			},
 		}))
 
 		Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
@@ -140,6 +164,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(publishProcess.ExecuteCall.Receives.Flags).To(Equal([]string{"--publishflag", "value"}))
 
 		Expect(slicer.SliceCall.Receives.AssetsFile).To(Equal(filepath.Join(workingDir, "some/project/path", "obj", "project.assets.json")))
+
+		Expect(sbomGenerator.GenerateCall.Receives.Dir).To(Equal(workingDir))
 
 		Expect(buffer.String()).To(ContainSubstring("Some Buildpack 0.0.1"))
 		Expect(buffer.String()).To(ContainSubstring("Executing build process"))
@@ -166,7 +192,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(result.Layers).To(HaveLen(0))
+			Expect(result.Layers).To(HaveLen(1))
 		})
 	})
 
@@ -239,7 +265,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				slicer,
 				buildpackYMLParser,
 				chronos.DefaultClock,
-				logger)
+				logger,
+				sbomGenerator,
+			)
 		})
 
 		it("returns a build result", func() {
@@ -253,12 +281,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(result.Layers).To(HaveLen(1))
-			layer := result.Layers[0]
-
-			Expect(layer.Name).To(Equal("nuget-cache"))
-			Expect(layer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
-			Expect(layer.Cache).To(BeTrue())
+			Expect(result.Layers).To(HaveLen(2))
 
 			Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
 			Expect(sourceRemover.RemoveCall.Receives.PublishOutputDir).To(MatchRegexp(`dotnet-publish-output\d+`))
@@ -350,7 +373,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				slicer,
 				buildpackYMLParser,
 				chronos.DefaultClock,
-				logger)
+				logger,
+				sbomGenerator,
+			)
 		})
 
 		it("returns a build result", func() {
@@ -402,7 +427,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					slicer,
 					buildpackYMLParser,
 					chronos.DefaultClock,
-					logger)
+					logger,
+					sbomGenerator,
+				)
 			})
 
 			it("returns an error", func() {
@@ -564,6 +591,37 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					},
 				})
 				Expect(err).To(MatchError(ContainSubstring("failed to symlink")))
+			})
+		})
+
+		context("when the BOM cannot be generated", func() {
+			it.Before(func() {
+				sbomGenerator.GenerateCall.Returns.Error = errors.New("failed to generate SBOM")
+			})
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					BuildpackInfo: packit.BuildpackInfo{
+						SBOMFormats: []string{"application/vnd.cyclonedx+json", "application/spdx+json", "application/vnd.syft+json"},
+						Version:     "0.0.1",
+					},
+					WorkingDir: workingDir,
+					Layers:     packit.Layers{Path: layersDir},
+					Stack:      "some-stack",
+				})
+				Expect(err).To(MatchError("failed to generate SBOM"))
+			})
+		})
+
+		context("when the BOM cannot be formatted", func() {
+			it("returns an error", func() {
+				_, err := build(packit.BuildContext{
+					Layers: packit.Layers{Path: layersDir},
+					BuildpackInfo: packit.BuildpackInfo{
+						SBOMFormats: []string{"random-format"},
+						Version:     "0.0.1",
+					},
+				})
+				Expect(err).To(MatchError("unsupported SBOM format: 'random-format'"))
 			})
 		})
 

@@ -75,6 +75,9 @@ func testMatchDirAndAppName(t *testing.T, context spec.G, it spec.S) {
 				"",
 				"  Dividing build output into layers to optimize cache reuse",
 				"",
+				"  Generating SBOM for /workspace",
+				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
+				"",
 				"  Removing source code",
 				"",
 			))
