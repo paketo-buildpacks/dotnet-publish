@@ -150,26 +150,6 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
-		logger.GeneratingSBOM(context.WorkingDir)
-
-		var sbomContent sbom.SBOM
-		duration, err := clock.Measure(func() error {
-			sbomContent, err = sbomGenerator.Generate(context.WorkingDir)
-			return err
-		})
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-		logger.Action("Completed in %s", duration.Round(time.Millisecond))
-		logger.Break()
-
-		logger.FormattingSBOM(context.BuildpackInfo.SBOMFormats...)
-
-		formattedSBOM, err := sbomContent.InFormats(context.BuildpackInfo.SBOMFormats...)
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-
 		slices := []packit.Slice{
 			{Paths: []string{".dotnet_root"}},
 		}
@@ -191,6 +171,26 @@ func Build(
 		} else {
 			logger.Debug.Process("Skipping output slicing")
 			logger.Debug.Break()
+		}
+
+		logger.GeneratingSBOM(context.WorkingDir)
+
+		var sbomContent sbom.SBOM
+		duration, err := clock.Measure(func() error {
+			sbomContent, err = sbomGenerator.Generate(context.WorkingDir)
+			return err
+		})
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+		logger.Action("Completed in %s", duration.Round(time.Millisecond))
+		logger.Break()
+
+		logger.FormattingSBOM(context.BuildpackInfo.SBOMFormats...)
+
+		formattedSBOM, err := sbomContent.InFormats(context.BuildpackInfo.SBOMFormats...)
+		if err != nil {
+			return packit.BuildResult{}, err
 		}
 
 		logger.Process("Removing source code")
