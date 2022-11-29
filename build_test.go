@@ -117,26 +117,15 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		})
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(result.Layers).To(HaveLen(2))
-		npmCacheLayer := result.Layers[0]
+		Expect(result.Layers).To(HaveLen(1))
+		layer := result.Layers[0]
 
-		Expect(npmCacheLayer.Name).To(Equal("nuget-cache"))
-		Expect(npmCacheLayer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
-		Expect(npmCacheLayer.Cache).To(BeTrue())
+		Expect(layer.Name).To(Equal("nuget-cache"))
+		Expect(layer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
+		Expect(layer.Cache).To(BeTrue())
 
-		Expect(result.Launch.Slices).To(Equal([]packit.Slice{
-			{Paths: []string{".dotnet_root"}},
-			{Paths: []string{"some-package.dll"}},
-			{Paths: []string{"some-release-candidate-package.dll"}},
-			{Paths: []string{"some-project.dll"}},
-		}))
-
-		sbomLayer := result.Layers[1]
-
-		Expect(sbomLayer.Name).To(Equal("publish"))
-		Expect(sbomLayer.Path).To(Equal(filepath.Join(layersDir, "publish")))
-
-		Expect(sbomLayer.SBOM.Formats()).To(Equal([]packit.SBOMFormat{
+		Expect(result.Build.SBOM).NotTo(BeNil())
+		Expect(result.Build.SBOM.Formats()).To(Equal([]packit.SBOMFormat{
 			{
 				Extension: sbom.Format(sbom.CycloneDXFormat).Extension(),
 				Content:   sbom.NewFormattedReader(sbom.SBOM{}, sbom.CycloneDXFormat),
@@ -145,6 +134,13 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Extension: sbom.Format(sbom.SPDXFormat).Extension(),
 				Content:   sbom.NewFormattedReader(sbom.SBOM{}, sbom.SPDXFormat),
 			},
+		}))
+
+		Expect(result.Launch.Slices).To(Equal([]packit.Slice{
+			{Paths: []string{".dotnet_root"}},
+			{Paths: []string{"some-package.dll"}},
+			{Paths: []string{"some-release-candidate-package.dll"}},
+			{Paths: []string{"some-project.dll"}},
 		}))
 
 		Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
@@ -192,7 +188,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(result.Layers).To(HaveLen(1))
+			Expect(result.Layers).To(HaveLen(0))
 		})
 	})
 
@@ -281,7 +277,12 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(result.Layers).To(HaveLen(2))
+			Expect(result.Layers).To(HaveLen(1))
+			layer := result.Layers[0]
+
+			Expect(layer.Name).To(Equal("nuget-cache"))
+			Expect(layer.Path).To(Equal(filepath.Join(layersDir, "nuget-cache")))
+			Expect(layer.Cache).To(BeTrue())
 
 			Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
 			Expect(sourceRemover.RemoveCall.Receives.PublishOutputDir).To(MatchRegexp(`dotnet-publish-output\d+`))

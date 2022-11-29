@@ -374,12 +374,12 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 					Eventually(container).Should(Serve(ContainSubstring("Loading...")).OnPort(8080))
 
 					// check that all expected SBOM files are present
-					Expect(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "publish", "sbom.cdx.json")).To(BeARegularFile())
-					Expect(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "publish", "sbom.spdx.json")).To(BeARegularFile())
-					Expect(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "publish", "sbom.syft.json")).To(BeARegularFile())
+					Expect(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "sbom.cdx.json")).To(BeARegularFile())
+					Expect(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "sbom.spdx.json")).To(BeARegularFile())
+					Expect(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "sbom.syft.json")).To(BeARegularFile())
 
 					// check an SBOM file to make sure it has an entry for an app node module
-					contents, err := os.ReadFile(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "publish", "sbom.cdx.json"))
+					contents, err := os.ReadFile(filepath.Join(sbomDir, "sbom", "build", strings.ReplaceAll(buildpackInfo.Buildpack.ID, "/", "_"), "sbom.cdx.json"))
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(string(contents)).To(ContainSubstring(`"name": "yaml"`))

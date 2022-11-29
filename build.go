@@ -150,6 +150,26 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
+		logger.GeneratingSBOM(context.WorkingDir)
+
+		var sbomContent sbom.SBOM
+		duration, err := clock.Measure(func() error {
+			sbomContent, err = sbomGenerator.Generate(context.WorkingDir)
+			return err
+		})
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+		logger.Action("Completed in %s", duration.Round(time.Millisecond))
+		logger.Break()
+
+		logger.FormattingSBOM(context.BuildpackInfo.SBOMFormats...)
+
+		formattedSBOM, err := sbomContent.InFormats(context.BuildpackInfo.SBOMFormats...)
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
 		slices := []packit.Slice{
 			{Paths: []string{".dotnet_root"}},
 		}
@@ -173,45 +193,6 @@ func Build(
 			logger.Debug.Break()
 		}
 
-		var layers []packit.Layer
-		exists, err := fs.Exists(nugetCache.Path)
-		if exists {
-			if !fs.IsEmptyDir(nugetCache.Path) {
-				layers = append(layers, nugetCache)
-			}
-		}
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-
-		sbomLayer, err := context.Layers.Get("publish")
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-		sbomLayer.Build = true
-
-		logger.GeneratingSBOM(context.WorkingDir)
-
-		var sbomContent sbom.SBOM
-		duration, err := clock.Measure(func() error {
-			sbomContent, err = sbomGenerator.Generate(context.WorkingDir)
-			return err
-		})
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-		logger.Action("Completed in %s", duration.Round(time.Millisecond))
-		logger.Break()
-
-		logger.FormattingSBOM(context.BuildpackInfo.SBOMFormats...)
-
-		sbomLayer.SBOM, err = sbomContent.InFormats(context.BuildpackInfo.SBOMFormats...)
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-
-		layers = append(layers, sbomLayer)
-
 		logger.Process("Removing source code")
 		logger.Break()
 		err = sourceRemover.Remove(context.WorkingDir, tempDir, ".dotnet_root")
@@ -231,6 +212,17 @@ func Build(
 			}
 		}
 
+		var layers []packit.Layer
+		exists, err := fs.Exists(nugetCache.Path)
+		if exists {
+			if !fs.IsEmptyDir(nugetCache.Path) {
+				layers = append(layers, nugetCache)
+			}
+		}
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
 		for _, layer := range layers {
 			logger.Debug.Process("Setting up layer '%s'", layer.Name)
 			logger.Debug.Subprocess("Available at launch: %t", layer.Launch)
@@ -243,6 +235,9 @@ func Build(
 			Layers: layers,
 			Launch: packit.LaunchMetadata{
 				Slices: slices,
+			},
+			Build: packit.BuildMetadata{
+				SBOM: formattedSBOM,
 			},
 		}, nil
 	}
