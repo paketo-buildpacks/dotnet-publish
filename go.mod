@@ -8,6 +8,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/Microsoft/hcsshim v0.9.5 // indirect
 	github.com/Netflix/go-env v0.0.0-20220526054621-78278af1949d
+	github.com/anchore/syft v0.60.3
 	github.com/containerd/containerd v1.6.9 // indirect
 	github.com/docker/docker v20.10.21+incompatible // indirect
 	github.com/mattn/go-shellwords v1.0.12

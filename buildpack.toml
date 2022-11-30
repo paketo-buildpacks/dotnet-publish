@@ -6,7 +6,7 @@ api = "0.8"
   id = "paketo-buildpacks/dotnet-publish"
   keywords = ["dotnet"]
   name = "Paketo Buildpack for .NET Publish"
-  version = "{{ .Version }}"
+  sbom-formats = ["application/vnd.cyclonedx+json", "application/spdx+json", "application/vnd.syft+json"]
 
   [[buildpack.licenses]]
     type = "Apache-2.0"

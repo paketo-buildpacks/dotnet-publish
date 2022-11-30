@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/Masterminds/semver"
 	"github.com/Netflix/go-env"
@@ -12,6 +13,7 @@ import (
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 	"github.com/paketo-buildpacks/packit/v2/fs"
+	"github.com/paketo-buildpacks/packit/v2/sbom"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 	"github.com/paketo-buildpacks/packit/v2/servicebindings"
 )
@@ -51,6 +53,11 @@ type Configuration struct {
 	RawPublishFlags      string `env:"BP_DOTNET_PUBLISH_FLAGS"`
 }
 
+//go:generate faux --interface SBOMGenerator --output fakes/sbom_generator.go
+type SBOMGenerator interface {
+	Generate(dir string) (sbom.SBOM, error)
+}
+
 func Build(
 	config Configuration,
 	sourceRemover SourceRemover,
@@ -62,6 +69,7 @@ func Build(
 	buildpackYMLParser BuildpackYMLParser,
 	clock chronos.Clock,
 	logger scribe.Emitter,
+	sbomGenerator SBOMGenerator,
 ) packit.BuildFunc {
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 		logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
@@ -165,6 +173,26 @@ func Build(
 			logger.Debug.Break()
 		}
 
+		logger.GeneratingSBOM(context.WorkingDir)
+
+		var sbomContent sbom.SBOM
+		duration, err := clock.Measure(func() error {
+			sbomContent, err = sbomGenerator.Generate(context.WorkingDir)
+			return err
+		})
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+		logger.Action("Completed in %s", duration.Round(time.Millisecond))
+		logger.Break()
+
+		logger.FormattingSBOM(context.BuildpackInfo.SBOMFormats...)
+
+		formattedSBOM, err := sbomContent.InFormats(context.BuildpackInfo.SBOMFormats...)
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
 		logger.Process("Removing source code")
 		logger.Break()
 		err = sourceRemover.Remove(context.WorkingDir, tempDir, ".dotnet_root")
@@ -207,6 +235,9 @@ func Build(
 			Layers: layers,
 			Launch: packit.LaunchMetadata{
 				Slices: slices,
+			},
+			Build: packit.BuildMetadata{
+				SBOM: formattedSBOM,
 			},
 		}, nil
 	}
