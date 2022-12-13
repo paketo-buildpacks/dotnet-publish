@@ -528,11 +528,13 @@ github.com/anchore/go-version v1.2.2-0.20200701162849-18adb9c92b9b/go.mod h1:Bkc
 github.com/anchore/packageurl-go v0.1.1-0.20220428202044-a072fa3cb6d7 h1:kDrYkTSM9uIxaX/P9s0F4nKYNM+hnSgLJdLpqvsaQ/g=
 github.com/anchore/packageurl-go v0.1.1-0.20220428202044-a072fa3cb6d7/go.mod h1:Blo6OgJNiYF41ufcgHKkbCKF2MDOMlrqhXv/ij6ocR4=
 github.com/anchore/stereoscope v0.0.0-20220921141924-56552770e555/go.mod h1:QjCxOPxjv7RqJm0pMIvB7P3rKHn7/uMBU7mnmM7ijTU=
-github.com/anchore/stereoscope v0.0.0-20221006201143-d24c9d626b33 h1:Y+9aMJMTEMH+kJJFEaxqrF6X1t9CkjpWjOzaCo1q5vM=
 github.com/anchore/stereoscope v0.0.0-20221006201143-d24c9d626b33/go.mod h1:WOWtswyDxLkBnizq9LihYa9uw88r1FhBvJo7g//Ljcc=
+github.com/anchore/stereoscope v0.0.0-20221208011002-c5ff155d72f1 h1:DXUAm/H9chRTEzMfkFyduBIcCiJyFXhCmv3zH3C0HGs=
+github.com/anchore/stereoscope v0.0.0-20221208011002-c5ff155d72f1/go.mod h1:/zjVnu2Jdl7xQCUtASegzeEg+IHKrM7SyMqdao3e+Nc=
 github.com/anchore/syft v0.58.0/go.mod h1:EtZQE3/Twdd5HEKyIsm++v/Z3Kcw1uw5Yr2rulT8LTY=
-github.com/anchore/syft v0.60.3 h1:35mk6LgG8iSbSgRHOwsRr/XyPq0KE0FQPK8LO5RiyAI=
 github.com/anchore/syft v0.60.3/go.mod h1:liCRoNZiQeiZeafaptjizcr/V7+ZAEYra/RhwqKldgw=
+github.com/anchore/syft v0.63.0 h1:L00jzHH7pqX1oLsHGAQTaI3162UKfNoyGDvlwOaqb3c=
+github.com/anchore/syft v0.63.0/go.mod h1:VEm67LKIGewP1FLoameSlVQocozvmKFlpaljEPhBSQg=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/andybalholm/brotli v1.0.1/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
 github.com/andybalholm/brotli v1.0.2/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
@@ -838,8 +840,8 @@ github.com/containerd/containerd v1.5.13/go.mod h1:3AlCrzKROjIuP3JALsY14n8YtntaU
 github.com/containerd/containerd v1.6.1/go.mod h1:1nJz5xCZPusx6jJU8Frfct988y0NpumIq9ODB0kLtoE=
 github.com/containerd/containerd v1.6.6/go.mod h1:ZoP1geJldzCVY3Tonoz7b1IXk8rIX0Nltt5QE4OMNk0=
 github.com/containerd/containerd v1.6.8/go.mod h1:By6p5KqPK0/7/CgO/A6t/Gz+CUYUu2zf1hUaaymVXB0=
-github.com/containerd/containerd v1.6.9 h1:IN/r8DUes/B5lEGTNfIiUkfZBtIQJGx2ai703dV6lRA=
-github.com/containerd/containerd v1.6.9/go.mod h1:XVicUvkxOrftE2Q1YWUXgZwkkAxwQYNOFzYWvfVfEfQ=
+github.com/containerd/containerd v1.6.12 h1:kJ9b3mOFKf8yqo05Ob+tMoxvt1pbVWhnB0re9Y+k+8c=
+github.com/containerd/containerd v1.6.12/go.mod h1:K4Bw7gjgh4TnkmQY+py/PYQGp4e7xgnHAeg87VeWb3A=
 github.com/containerd/continuity v0.0.0-20190426062206-aaeac12a7ffc/go.mod h1:GL3xCUCBDV3CZiTSEKksMWbLE66hEyuu9qyDOOqM47Y=
 github.com/containerd/continuity v0.0.0-20190815185530-f2a389ac0a02/go.mod h1:GL3xCUCBDV3CZiTSEKksMWbLE66hEyuu9qyDOOqM47Y=
 github.com/containerd/continuity v0.0.0-20191127005431-f65d91d395eb/go.mod h1:GL3xCUCBDV3CZiTSEKksMWbLE66hEyuu9qyDOOqM47Y=
@@ -1647,6 +1649,7 @@ github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANyt
 github.com/inconshreveable/mousetrap v1.0.1/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
 github.com/intel/goresctrl v0.2.0/go.mod h1:+CZdzouYFn5EsxgqAQTEzMfwKwuc0fVdMrT9FCCAVRQ=
+github.com/invopop/jsonschema v0.7.0/go.mod h1:O9uiLokuu0+MGFlyiaqtWxwqJm41/+8Nj0lD7A36YH0=
 github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56/go.mod h1:ymszkNOg6tORTn+6F6j+Jc8TOr5osrynvN6ivFWZ2GA=
 github.com/j-keck/arping v1.0.2/go.mod h1:aJbELhR92bSk7tp79AWM/ftfc90EfEi2bQJrbBFOsPw=
 github.com/jackc/chunkreader v1.0.0/go.mod h1:RT6O25fNZIuasFJRyZ4R/Y2BbhasbmZXF9QQ7T3kePo=
@@ -1912,6 +1915,7 @@ github.com/mattn/go-zglob v0.0.1/go.mod h1:9fxibJccNxU2cnpIKLRRFA7zX7qhkJIQWBb44
 github.com/mattn/goveralls v0.0.2/go.mod h1:8d1ZMHsd7fW6IRPKQh46F2WRpyib5/X4FOpevwGNQEw=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369/go.mod h1:BSXmuO+STAnVfrANrmjBb36TMTDstsz7MSK+HVaYKv4=
+github.com/matttproud/golang_protobuf_extensions v1.0.4/go.mod h1:BSXmuO+STAnVfrANrmjBb36TMTDstsz7MSK+HVaYKv4=
 github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2/go.mod h1:eD9eIE7cdwcMi9rYluz88Jz2VyhSmden33/aXg4oVIY=
 github.com/maxbrunsfeld/counterfeiter/v6 v6.5.0/go.mod h1:fJ0UAZc1fx3xZhU4eSHQDJ1ApFmTVhp5VTpV9tm2ogg=
 github.com/mbilski/exhaustivestruct v1.2.0/go.mod h1:OeTBVxQWoEmB2J2JCHmXWPJ0aksxSUOUy+nvtVEfzXc=
@@ -2376,8 +2380,9 @@ github.com/sourcegraph/syntaxhighlight v0.0.0-20170531221838-bd320f5d308e/go.mod
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
 github.com/spaolacci/murmur3 v1.1.0/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
 github.com/spdx/gordf v0.0.0-20201111095634-7098f93598fb/go.mod h1:uKWaldnbMnjsSAXRurWqqrdyZen1R7kxl8TkmWk2OyM=
-github.com/spdx/tools-golang v0.2.0 h1:KBNcw7xvVycRWeCWZK/5xQJA+plymW1+rTCs8ekJDro=
 github.com/spdx/tools-golang v0.2.0/go.mod h1:RO4Y3IFROJnz+43JKm1YOrbtgQNljW4gAPpA/sY2eqo=
+github.com/spdx/tools-golang v0.3.1-0.20221108182156-8a01147e6342 h1:6uvaOTv4GeRqQV6O1/znbpziqhctMRLTy3OGeZrNMic=
+github.com/spdx/tools-golang v0.3.1-0.20221108182156-8a01147e6342/go.mod h1:VHzvNsKAfAGqs4ZvwRL+7a0dNsL20s7lGui4K9C0xQM=
 github.com/spf13/afero v1.1.2/go.mod h1:j4pytiNVoe2o6bmDsKpLACNPDBIoEAkihy7loJ1B0CQ=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/afero v1.3.3/go.mod h1:5KUK8ByomD5Ti5Artl0RtHeI5pTF7MIDuXL3yY520V4=

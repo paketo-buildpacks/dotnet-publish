@@ -6,10 +6,8 @@ require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/Masterminds/semver v1.5.0
 	github.com/Microsoft/go-winio v0.6.0 // indirect
-	github.com/Microsoft/hcsshim v0.9.5 // indirect
 	github.com/Netflix/go-env v0.0.0-20220526054621-78278af1949d
-	github.com/anchore/syft v0.60.3
-	github.com/containerd/containerd v1.6.9 // indirect
+	github.com/anchore/syft v0.63.0 // indirect
 	github.com/docker/docker v20.10.21+incompatible // indirect
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/moby/term v0.0.0-20221105221325-4eb28fa6025c // indirect
