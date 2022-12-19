@@ -83,50 +83,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 	})
 
-	context("when .NET Core 3.1 is required by the project file", func() {
-		it.Before(func() {
-			projectParser.ParseVersionCall.Returns.String = "3.1.0"
-		})
-
-		it("requires ICU 70.* in the build plan", func() {
-			result, err := detect(packit.DetectContext{
-				WorkingDir: workingDir,
-			})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result).To(Equal(packit.DetectResult{
-				Plan: packit.BuildPlan{
-					Provides: []packit.BuildPlanProvision{
-						{Name: "dotnet-application"},
-					},
-					Requires: []packit.BuildPlanRequirement{
-						{
-							Name: "dotnet-sdk",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Version:       "3.1.*",
-								VersionSource: "app.csproj",
-								Build:         true,
-							},
-						},
-						{
-							Name: "icu",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build:         true,
-								Version:       "70.*",
-								VersionSource: "dotnet-31",
-							},
-						},
-					},
-				},
-			}))
-
-			Expect(buildpackYMLParser.ParseProjectPathCall.Receives.Path).To(Equal(filepath.Join(workingDir, "buildpack.yml")))
-			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(workingDir))
-			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
-			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
-			Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
-		})
-
-	})
 	context("when node is required", func() {
 		it.Before(func() {
 			projectParser.NodeIsRequiredCall.Returns.Bool = true

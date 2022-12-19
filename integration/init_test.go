@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -150,18 +149,16 @@ func TestIntegration(t *testing.T) {
 	Expect(json.Unmarshal(buf.Bytes(), &builder)).To(Succeed(), buf.String())
 
 	suite := spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
-	if !strings.Contains(builder.Local.Stack.ID, "jammy") {
-		suite("BuildpackYML", testBuildpackYML)
-		suite("Console", testConsole)
-		suite("FSharp", testFSharp)
-		suite("MatchDirAndAppName", testMatchDirAndAppName)
-		suite("MultipleProject", testMultipleProject)
-		suite("Offline", testOffline)
-		suite("SourceRemoval", testSourceRemoval)
-		suite("VisualBasic", testVisualBasic)
-		suite("Nuget", testNugetConfig)
-		suite("OutputSlicing", testOutputSlicing)
-	}
+	suite("BuildpackYML", testBuildpackYML)
+	suite("Console", testConsole)
 	suite("DefaultApps", testDefaultApps)
+	suite("FSharp", testFSharp)
+	suite("MatchDirAndAppName", testMatchDirAndAppName)
+	suite("MultipleProject", testMultipleProject)
+	suite("Nuget", testNugetConfig)
+	suite("Offline", testOffline)
+	suite("OutputSlicing", testOutputSlicing)
+	suite("SourceRemoval", testSourceRemoval)
+	suite("VisualBasic", testVisualBasic)
 	suite.Run(t)
 }

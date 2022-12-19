@@ -53,10 +53,12 @@ func testNugetConfig(t *testing.T, context spec.G, it spec.S) {
 			it.Before(func() {
 				server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 					switch req.URL.Path {
+					case "/":
+						w.WriteHeader(http.StatusOK)
 					case "/FindPackagesById()":
 						w.WriteHeader(http.StatusOK)
 					default:
-						t.Fatal(fmt.Sprintf("unknown path: %s", req.URL.Path))
+						t.Fatalf("unknown path: %s", req.URL.Path)
 					}
 				}))
 
@@ -114,7 +116,7 @@ func testNugetConfig(t *testing.T, context spec.G, it spec.S) {
 
 			it("fails due to invalid package, but the nuget.config package source is used", func() {
 				var err error
-				source, err := occam.Source(filepath.Join("testdata", "source-3.1-aspnet-with-public-nuget"))
+				source, err := occam.Source(filepath.Join("testdata", "source_aspnet_nuget_configuration"))
 				Expect(err).NotTo(HaveOccurred())
 
 				var logs fmt.Stringer
@@ -128,7 +130,7 @@ func testNugetConfig(t *testing.T, context spec.G, it spec.S) {
 				// Logs indicate the right registry was used, but the build failed because proper package content wasn't returned.
 				Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("GET %s/FindPackagesById()?id='Swashbuckle.AspNetCore'&semVerLevel=2.0.0", serverURI))))
 				Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("OK %s/FindPackagesById()?id='Swashbuckle.AspNetCore'&semVerLevel=2.0.0", serverURI))))
-				Expect(err).To(MatchError(ContainSubstring("error : Failed to retrieve information about 'Swashbuckle.AspNetCore' from remote source")))
+				Expect(err).To(MatchError(ContainSubstring("Failed to retrieve information about 'Swashbuckle.AspNetCore' from remote source")))
 			})
 		})
 	})

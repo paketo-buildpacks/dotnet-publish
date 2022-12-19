@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "dgSpecHash": "pD3ITrO1XKEFNxLlC7434Nt/cLceBM0nftjHYLaPeUt2AgW+FfUWsd1aR8SQoafpG0MXv7xRsoetw6M3OlOt4Q==",
+  "success": true,
+  "projectFilePath": "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/source_aspnet_nuget_configuration/source_aspnet_nuget_configuration.csproj",
+  "expectedPackageFiles": [],
+  "logs": []
+}
