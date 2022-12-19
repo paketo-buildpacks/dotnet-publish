@@ -1,7 +1,6 @@
 package integration_test
 
 import (
-	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/paketo-buildpacks/occam"
-	"github.com/paketo-buildpacks/packit/v2/pexec"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 
@@ -31,14 +29,7 @@ var (
 	vsdbgBuildpack                          string
 	buildpack                               string
 	offlineBuildpack                        string
-	builder                                 struct {
-		Local struct {
-			Stack struct {
-				ID string `json:"id"`
-			} `json:"stack"`
-		} `json:"local_info"`
-	}
-	buildpackInfo struct {
+	buildpackInfo                           struct {
 		Buildpack struct {
 			ID   string
 			Name string
@@ -136,17 +127,6 @@ func TestIntegration(t *testing.T) {
 
 	SetDefaultEventuallyTimeout(30 * time.Second)
 	format.MaxLength = 0
-
-	buf := bytes.NewBuffer(nil)
-	// cmd := exec.Command(".bin/pack builder inspect --output json")
-	cmd := pexec.NewExecutable("pack")
-	Expect(cmd.Execute(pexec.Execution{
-		Args:   []string{"builder", "inspect", "--output", "json"},
-		Stdout: buf,
-		Stderr: buf,
-	})).To(Succeed(), buf.String())
-
-	Expect(json.Unmarshal(buf.Bytes(), &builder)).To(Succeed(), buf.String())
 
 	suite := spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
 	suite("BuildpackYML", testBuildpackYML)
