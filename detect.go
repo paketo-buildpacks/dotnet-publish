@@ -3,7 +3,6 @@ package dotnetpublish
 import (
 	"fmt"
 	"path/filepath"
-	"regexp"
 
 	"github.com/Masterminds/semver"
 	"github.com/paketo-buildpacks/packit/v2"
@@ -69,27 +68,11 @@ func Detect(config Configuration, parser ProjectParser, buildpackYMLParser Build
 			},
 		}
 
-		// Determine ICU metadata to include
-		// If .NET Core is 3.1 version line, require ICU 70.*
-		// See https://forum.manjaro.org/t/dotnet-3-1-builds-fail-after-icu-system-package-updated-to-71-1-1/114232/9 for details
-		icuBuildPlanMetadata := BuildPlanMetadata{
-			Build: true,
-		}
-
-		isDotnet31, err := checkDotnet31(version)
-		if err != nil {
-			// untested, version will have already failed on line 56 if
-			// malformed
-			return packit.DetectResult{}, err
-		}
-		if isDotnet31 {
-			icuBuildPlanMetadata.Version = "70.*"
-			icuBuildPlanMetadata.VersionSource = "dotnet-31"
-		}
-
 		requirements = append(requirements, packit.BuildPlanRequirement{
-			Name:     "icu",
-			Metadata: icuBuildPlanMetadata,
+			Name: "icu",
+			Metadata: BuildPlanMetadata{
+				Build: true,
+			},
 		})
 
 		nodeReq, err := parser.NodeIsRequired(projectFilePath)
@@ -129,14 +112,4 @@ func Detect(config Configuration, parser ProjectParser, buildpackYMLParser Build
 			},
 		}, nil
 	}
-}
-
-func checkDotnet31(version string) (bool, error) {
-	match, err := regexp.MatchString(`3\.1\.*`, version)
-	if err != nil {
-		// untested because regexp pattern is hardcoded
-		return false, err
-	}
-
-	return match, nil
 }

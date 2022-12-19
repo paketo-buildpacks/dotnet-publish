@@ -85,7 +85,7 @@ dotnet-build:
 				cLogs, err := docker.Container.Logs.Execute(container.ID)
 				Expect(err).NotTo(HaveOccurred())
 				return cLogs.String()
-			}).Should(ContainSubstring("Hello World!"))
+			}).Should(ContainSubstring("Hello, World!"))
 		})
 	})
 }

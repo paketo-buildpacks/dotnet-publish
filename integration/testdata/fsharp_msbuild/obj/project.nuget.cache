@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "K0KflW2IutQ0uBC/Fw3Sv4CrROegfSBoY//f22lDFUQTmJdnO0KWj6tl6XbeOFeqr5f2xWj8S+pqqizByO1cEQ==",
+  "dgSpecHash": "YMYAElEzu1fk/ua7zaCRj54Z+3vzJ5n+W8WuYA8kpjwp9CGYp3PoKtDuV5jksKwf59qKFjiJaHNl8jwIMKGXPA==",
   "success": true,
-  "projectFilePath": "/home/ubuntu/workspace/cloudfoundry/dotnet-core-buildpack/fixtures/fsharp/fsharp.fsproj",
+  "projectFilePath": "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/fsharp_msbuild/fsharp_msbuild.fsproj",
   "expectedPackageFiles": [
-    "/home/ubuntu/.nuget/packages/fsharp.core/5.0.0/fsharp.core.5.0.0.nupkg.sha512"
+    "/home/ubuntu/.nuget/packages/fsharp.core/6.0.7/fsharp.core.6.0.7.nupkg.sha512"
   ],
   "logs": []
 }

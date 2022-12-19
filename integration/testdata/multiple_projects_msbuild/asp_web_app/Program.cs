@@ -1,25 +1,8 @@
-using System.IO;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+using console_app;
 
-namespace HelloWeb
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
 
-            var config = new ConfigurationBuilder()
-                          .AddCommandLine(args)
-                          .Build();
-            var host = new WebHostBuilder()
-                        .UseKestrel()
-                        .UseConfiguration(config)
-                        .UseContentRoot(Directory.GetCurrentDirectory())
-                        .UseStartup<Startup>()
-                        .Build();
+app.MapGet("/", () => ProjectTwo.GetAString());
 
-            host.Run();
-        }
-    }
-}
+app.Run();

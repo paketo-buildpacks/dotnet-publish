@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "dgSpecHash": "QnXpccq8FzsMPQvzPdCOg7XHa5NiaGzeZlIAE7VDWb5F3yFk7ezqfS4csNHz1ehI+5fHO2B1uIsx46As7Gfvtg==",
+  "success": true,
+  "projectFilePath": "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/multiple_projects_msbuild/asp_web_app/asp_web_app.csproj",
+  "expectedPackageFiles": [],
+  "logs": []
+}

@@ -1,29 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "/Users/swigmore/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/console_app/console_app.csproj": {}
+    "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/console_app/console_app.csproj": {}
   },
   "projects": {
-    "/Users/swigmore/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/console_app/console_app.csproj": {
+    "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/console_app/console_app.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/swigmore/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/console_app/console_app.csproj",
+        "projectUniqueName": "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/console_app/console_app.csproj",
         "projectName": "console_app",
-        "projectPath": "/Users/swigmore/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/console_app/console_app.csproj",
-        "packagesPath": "/Users/swigmore/.nuget/packages/",
-        "outputPath": "/Users/swigmore/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/console_app/obj/",
+        "projectPath": "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/console_app/console_app.csproj",
+        "packagesPath": "/home/ubuntu/.nuget/packages/",
+        "outputPath": "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/console_app/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/swigmore/.nuget/NuGet/NuGet.Config"
+          "/home/ubuntu/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "netcoreapp3.1"
+          "net6.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "netcoreapp3.1": {
+          "net6.0": {
+            "targetAlias": "net6.0",
             "projectReferences": {}
           }
         },
@@ -34,14 +35,16 @@
         }
       },
       "frameworks": {
-        "netcoreapp3.1": {
+        "net6.0": {
+          "targetAlias": "net6.0",
           "imports": [
             "net461",
             "net462",
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
@@ -50,7 +53,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.413/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/6.0.404/RuntimeIdentifierGraph.json"
         }
       }
     }
