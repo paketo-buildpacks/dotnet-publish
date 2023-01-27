@@ -31,7 +31,7 @@ type SourceRemover interface {
 
 //go:generate faux --interface PublishProcess --output fakes/publish_process.go
 type PublishProcess interface {
-	Execute(workingDir, rootDir, nugetCachePath, projectPath, outputPath string, debug bool, flags []string) error
+	Execute(workingDir, nugetCachePath, projectPath, outputPath string, debug bool, flags []string) error
 }
 
 //go:generate faux --interface BindingResolver --output fakes/binding_resolver.go
@@ -145,14 +145,12 @@ func Build(
 		nugetCache.Cache = true
 
 		logger.Process("Executing build process")
-		err = publishProcess.Execute(context.WorkingDir, os.Getenv("DOTNET_ROOT"), nugetCache.Path, config.ProjectPath, tempDir, config.DebugEnabled, config.PublishFlags)
+		err = publishProcess.Execute(context.WorkingDir, nugetCache.Path, config.ProjectPath, tempDir, config.DebugEnabled, config.PublishFlags)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
 
-		slices := []packit.Slice{
-			{Paths: []string{".dotnet_root"}},
-		}
+		var slices []packit.Slice
 
 		if !config.DisableOutputSlicing {
 			logger.Process("Dividing build output into layers to optimize cache reuse")
@@ -195,7 +193,7 @@ func Build(
 
 		logger.Process("Removing source code")
 		logger.Break()
-		err = sourceRemover.Remove(context.WorkingDir, tempDir, ".dotnet_root")
+		err = sourceRemover.Remove(context.WorkingDir, tempDir)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
