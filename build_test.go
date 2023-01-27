@@ -137,7 +137,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		}))
 
 		Expect(result.Launch.Slices).To(Equal([]packit.Slice{
-			{Paths: []string{".dotnet_root"}},
 			{Paths: []string{"some-package.dll"}},
 			{Paths: []string{"some-release-candidate-package.dll"}},
 			{Paths: []string{"some-project.dll"}},
@@ -145,7 +144,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
 		Expect(sourceRemover.RemoveCall.Receives.PublishOutputDir).To(MatchRegexp(`dotnet-publish-output\d+`))
-		Expect(sourceRemover.RemoveCall.Receives.ExcludedFiles).To(ConsistOf([]string{".dotnet_root"}))
 
 		Expect(bindingResolver.ResolveCall.Receives.Typ).To(Equal("nugetconfig"))
 		Expect(bindingResolver.ResolveCall.Receives.PlatformDir).To(Equal("some-platform-path"))
@@ -153,7 +151,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(symlinker.UnlinkCall.CallCount).To(Equal(0))
 
 		Expect(publishProcess.ExecuteCall.Receives.WorkingDir).To(Equal(workingDir))
-		Expect(publishProcess.ExecuteCall.Receives.RootDir).To(Equal("some-existing-root-dir"))
 		Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
 		Expect(publishProcess.ExecuteCall.Receives.OutputPath).To(MatchRegexp(`dotnet-publish-output\d+`))
 		Expect(publishProcess.ExecuteCall.Receives.Debug).To(BeTrue())
@@ -286,10 +283,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(sourceRemover.RemoveCall.Receives.WorkingDir).To(Equal(workingDir))
 			Expect(sourceRemover.RemoveCall.Receives.PublishOutputDir).To(MatchRegexp(`dotnet-publish-output\d+`))
-			Expect(sourceRemover.RemoveCall.Receives.ExcludedFiles).To(ConsistOf([]string{".dotnet_root"}))
 
 			Expect(publishProcess.ExecuteCall.Receives.WorkingDir).To(Equal(workingDir))
-			Expect(publishProcess.ExecuteCall.Receives.RootDir).To(Equal("some-existing-root-dir"))
 			Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
 			Expect(publishProcess.ExecuteCall.Receives.OutputPath).To(MatchRegexp(`dotnet-publish-output\d+`))
 			Expect(publishProcess.ExecuteCall.Receives.Flags).To(Equal([]string{"--publishflag", "value"}))
@@ -356,7 +351,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(result.Launch.Slices).To(Equal([]packit.Slice{
-				{Paths: []string{".dotnet_root"}},
 				{Paths: []string{"some-release-candidate-package.dll"}},
 				{Paths: []string{"some-project.dll"}},
 			}))
@@ -391,9 +385,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(slicer.SliceCall.CallCount).To(BeZero())
-			Expect(result.Launch.Slices).To(Equal([]packit.Slice{
-				{Paths: []string{".dotnet_root"}},
-			}))
+			Expect(result.Launch.Slices).To(BeNil())
 
 			Expect(buffer.String()).NotTo(ContainSubstring("Dividing build output into layers to optimize cache reuse"))
 		})
