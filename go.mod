@@ -3,7 +3,7 @@ module github.com/paketo-buildpacks/dotnet-publish
 go 1.18
 
 require (
-	github.com/BurntSushi/toml v1.2.1
+	github.com/BurntSushi/toml v1.3.0
 	github.com/Masterminds/semver v1.5.0
 	github.com/Netflix/go-env v0.0.0-20220526054621-78278af1949d
 	github.com/mattn/go-shellwords v1.0.12
