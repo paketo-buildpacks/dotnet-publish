@@ -44,7 +44,7 @@ func (p DotnetPublishProcess) Execute(workingDir, nugetCachePath, projectPath, o
 	}
 
 	if !containsFlag(flags, "--runtime") && !containsFlag(flags, "-r") {
-		args = append(args, "--runtime", "ubuntu.18.04-x64")
+		args = append(args, "--runtime", "linux-x64")
 	}
 
 	if !containsFlag(flags, "--self-contained") && !containsFlag(flags, "--no-self-contained") {
