@@ -74,6 +74,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 		args := []string{
 			"publish", "some-working-dir/some/project/path",
 			"--configuration", "Release",
+			"--runtime", "ubuntu.18.04-x64",
 			"--self-contained", "false",
 			"--output", "some-publish-output-dir",
 			"--flag", "value",
@@ -99,6 +100,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			args := []string{
 				"publish", "some-working-dir/some/project/path",
 				"--configuration", "Debug",
+				"--runtime", "ubuntu.18.04-x64",
 				"--self-contained", "false",
 				"--output", "some-publish-output-dir",
 				"--flag", "value",
@@ -122,7 +124,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 		it("overrides the default value with the user-provided one", func() {
 			err := process.Execute("some-working-dir", "some/nuget/cache/path", "some/project/path", "some-publish-output-dir",
 				true,
-				[]string{
+				[]string{"--runtime", "user-value",
 					"--self-contained=true",
 					"--configuration", "UserConfiguration",
 					"--output", "some-user-output-dir",
@@ -131,6 +133,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 
 			args := []string{
 				"publish", "some-working-dir/some/project/path",
+				"--runtime", "user-value",
 				"--self-contained=true",
 				"--configuration", "UserConfiguration",
 				"--output", "some-user-output-dir",
@@ -148,6 +151,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			args := []string{
 				"publish", "some-working-dir/some/project/path",
 				"--configuration", "Release",
+				"--runtime", "ubuntu.18.04-x64",
 				"--output", "some-publish-output-dir",
 				"--no-self-contained",
 			}
