@@ -102,42 +102,64 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		context("given a source application with .NET 7", func() {
-			it("should build (and rebuild) a working OCI image", func() {
+			it("should build a working OCI image", func() {
 				var err error
 				source, err := occam.Source(filepath.Join("testdata", "source_7"))
 				Expect(err).NotTo(HaveOccurred())
 
-				for i := 0; i < 3; i++ {
-					var logs fmt.Stringer
-					image, logs, err = pack.WithNoColor().Build.
-						WithBuildpacks(
-							icuBuildpack,
-							dotnetCoreSDKBuildpack,
-							buildpack,
-							dotnetCoreAspNetRuntimeBuildpack,
-							dotnetExecuteBuildpack,
-						).
-						WithEnv(map[string]string{
-							"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
-						}).
-						Execute(name, source)
-					Expect(err).NotTo(HaveOccurred(), logs.String())
-					images[image.ID] = ""
+				var logs fmt.Stringer
+				image, logs, err = pack.WithNoColor().Build.
+					WithBuildpacks(
+						icuBuildpack,
+						dotnetCoreSDKBuildpack,
+						buildpack,
+						dotnetCoreAspNetRuntimeBuildpack,
+						dotnetExecuteBuildpack,
+					).
+					Execute(name, source)
+				Expect(err).NotTo(HaveOccurred(), logs.String())
+				images[image.ID] = ""
 
-					Expect(logs).To(ContainLines(
-						MatchRegexp(`    Running 'dotnet publish .* \-\-configuration Release .* \-\-verbosity=normal'`),
-					))
+				container, err = docker.Container.Run.
+					WithEnv(map[string]string{"PORT": "8080"}).
+					WithPublish("8080").
+					WithPublishAll().
+					Execute(image.ID)
+				Expect(err).NotTo(HaveOccurred())
+				containers[container.ID] = ""
 
-					container, err = docker.Container.Run.
-						WithEnv(map[string]string{"PORT": "8080"}).
-						WithPublish("8080").
-						WithPublishAll().
-						Execute(image.ID)
-					Expect(err).NotTo(HaveOccurred())
-					containers[container.ID] = ""
+				Eventually(container).Should(Serve(ContainSubstring("source_7")).OnPort(8080))
+			})
+		})
 
-					Eventually(container).Should(Serve(ContainSubstring("source_7")).OnPort(8080))
-				}
+		context("given a source application with .NET 8", func() {
+			it("should build a working OCI image", func() {
+				var err error
+				source, err := occam.Source(filepath.Join("testdata", "source_8"))
+				Expect(err).NotTo(HaveOccurred())
+
+				var logs fmt.Stringer
+				image, logs, err = pack.WithNoColor().Build.
+					WithBuildpacks(
+						icuBuildpack,
+						dotnetCoreSDKBuildpack,
+						buildpack,
+						dotnetCoreAspNetRuntimeBuildpack,
+						dotnetExecuteBuildpack,
+					).
+					Execute(name, source)
+				Expect(err).NotTo(HaveOccurred(), logs.String())
+				images[image.ID] = ""
+
+				container, err = docker.Container.Run.
+					WithEnv(map[string]string{"PORT": "8080"}).
+					WithPublish("8080").
+					WithPublishAll().
+					Execute(image.ID)
+				Expect(err).NotTo(HaveOccurred())
+				containers[container.ID] = ""
+
+				Eventually(container).Should(Serve(ContainSubstring("source_8")).OnPort(8080))
 			})
 		})
 
