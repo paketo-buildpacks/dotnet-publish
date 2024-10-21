@@ -95,8 +95,8 @@ func testOutputSlicing(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred(), logs.String())
 				images[image.ID] = ""
 				Expect(logs).To(ContainLines(
-					"Reusing 1/2 app layer(s)",
-					"Adding 1/2 app layer(s)",
+					"Reused 1/2 app layer(s)",
+					"Added 1/2 app layer(s)",
 				), logs.String())
 			})
 		})
