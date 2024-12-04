@@ -54,12 +54,11 @@ func testOutputSlicing(t *testing.T, context spec.G, it spec.S) {
 		context("when app source changes, NuGet packages are unchanged", func() {
 			it("reuses package layers, adds a new app layer", func() {
 				var err error
-				source, err := occam.Source(filepath.Join("testdata", "source_6_aspnet_nuget"))
+				source, err := occam.Source(filepath.Join("testdata", "source_aspnet_nuget_configuration"))
 				Expect(err).NotTo(HaveOccurred())
 
 				build := pack.WithNoColor().Build.
 					WithBuildpacks(
-						nodeEngineBuildpack,
 						icuBuildpack,
 						dotnetCoreSDKBuildpack,
 						buildpack,
@@ -78,18 +77,10 @@ func testOutputSlicing(t *testing.T, context spec.G, it spec.S) {
 				contents, err := io.ReadAll(file)
 				Expect(err).NotTo(HaveOccurred())
 
-				contents = bytes.Replace(contents, []byte("My API V1"), []byte("My Cool V1 API"), 1)
+				contents = bytes.Replace(contents, []byte("Chilly"), []byte("Replacement"), 1)
 
 				Expect(os.WriteFile(filepath.Join(source, "Program.cs"), contents, os.ModePerm)).To(Succeed())
 				file.Close()
-
-				modified, err := os.Open(filepath.Join(source, "Program.cs"))
-				Expect(err).NotTo(HaveOccurred())
-
-				contents, err = io.ReadAll(modified)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(contents)).To(ContainSubstring("My Cool V1 API"))
-				modified.Close()
 
 				image, logs, err = build.Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())

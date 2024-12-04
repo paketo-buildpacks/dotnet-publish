@@ -49,7 +49,7 @@ func testSourceRemoval(t *testing.T, context spec.G, it spec.S) {
 
 		it("removes source code from /workspace and replaces it with the built app", func() {
 			var err error
-			source, err = occam.Source(filepath.Join("testdata", "source_6_app"))
+			source, err = occam.Source(filepath.Join("testdata", "source_8"))
 			Expect(err).NotTo(HaveOccurred())
 
 			var logs fmt.Stringer

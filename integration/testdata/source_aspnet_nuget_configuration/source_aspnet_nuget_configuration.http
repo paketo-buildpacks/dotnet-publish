@@ -1,0 +1,6 @@
+@source_aspnet_nuget_configuration_HostAddress = http://localhost:5048
+
+GET {{source_aspnet_nuget_configuration_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

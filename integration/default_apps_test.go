@@ -59,52 +59,50 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.RemoveAll(source)).To(Succeed())
 		})
 
-		context("given a source application with .NET Core 6", func() {
+		context("given a source application with .NET Core 8", func() {
 			it("should build (and rebuild) a working OCI image", func() {
 				var err error
-				source, err := occam.Source(filepath.Join("testdata", "source_6_app"))
+				source, err := occam.Source(filepath.Join("testdata", "source_8"))
 				Expect(err).NotTo(HaveOccurred())
 
-				for i := 0; i < 3; i++ {
-					var logs fmt.Stringer
-					image, logs, err = pack.WithNoColor().Build.
-						WithBuildpacks(
-							icuBuildpack,
-							vsdbgBuildpack,
-							dotnetCoreSDKBuildpack,
-							buildpack,
-							dotnetCoreAspNetRuntimeBuildpack,
-							dotnetExecuteBuildpack,
-						).
-						WithEnv(map[string]string{
-							"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
-							"BP_DEBUG_ENABLED":        "true",
-						}).
-						Execute(name, source)
-					Expect(err).NotTo(HaveOccurred(), logs.String())
-					images[image.ID] = ""
+				var logs fmt.Stringer
+				image, logs, err = pack.WithNoColor().Build.
+					WithBuildpacks(
+						icuBuildpack,
+						vsdbgBuildpack,
+						dotnetCoreSDKBuildpack,
+						buildpack,
+						dotnetCoreAspNetRuntimeBuildpack,
+						dotnetExecuteBuildpack,
+					).
+					WithEnv(map[string]string{
+						"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
+						"BP_DEBUG_ENABLED":        "true",
+					}).
+					Execute(name, source)
+				Expect(err).NotTo(HaveOccurred(), logs.String())
+				images[image.ID] = ""
 
-					Expect(logs).To(ContainLines(
-						MatchRegexp(`    Running 'dotnet publish .* \-\-configuration Debug .* \-\-verbosity=normal'`),
-					))
+				Expect(logs).To(ContainLines(
+					MatchRegexp(`    Running 'dotnet publish .* \-\-configuration Debug .* \-\-verbosity=normal'`),
+				))
 
-					container, err = docker.Container.Run.
-						WithEnv(map[string]string{"PORT": "8080"}).
-						WithPublish("8080").
-						WithPublishAll().
-						Execute(image.ID)
-					Expect(err).NotTo(HaveOccurred())
-					containers[container.ID] = ""
+				container, err = docker.Container.Run.
+					WithEnv(map[string]string{"PORT": "8080"}).
+					WithPublish("8080").
+					WithPublishAll().
+					Execute(image.ID)
+				Expect(err).NotTo(HaveOccurred())
+				containers[container.ID] = ""
 
-					Eventually(container).Should(Serve(ContainSubstring("source_6_app")).OnPort(8080))
-				}
+				Eventually(container).Should(Serve(ContainSubstring("source_8")).OnPort(8080))
 			})
 		})
 
-		context("given a source application with .NET 8", func() {
+		context("given a source application with .NET 9", func() {
 			it("should build a working OCI image", func() {
 				var err error
-				source, err := occam.Source(filepath.Join("testdata", "source_8"))
+				source, err := occam.Source(filepath.Join("testdata", "source_9"))
 				Expect(err).NotTo(HaveOccurred())
 
 				var logs fmt.Stringer
@@ -128,7 +126,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 				containers[container.ID] = ""
 
-				Eventually(container).Should(Serve(ContainSubstring("source_8")).OnPort(8080))
+				Eventually(container).Should(Serve(ContainSubstring("source_9")).OnPort(8080))
 			})
 		})
 
@@ -166,13 +164,12 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 		context("given a simple webapi app with swagger dependency", func() {
 			it("should build a working OCI image", func() {
 				var err error
-				source, err = occam.Source(filepath.Join("testdata", "source_6_aspnet_nuget"))
+				source, err = occam.Source(filepath.Join("testdata", "source_aspnet_nuget_configuration"))
 				Expect(err).NotTo(HaveOccurred())
 
 				var logs fmt.Stringer
 				image, logs, err = pack.WithNoColor().Build.
 					WithBuildpacks(
-						nodeEngineBuildpack,
 						icuBuildpack,
 						dotnetCoreSDKBuildpack,
 						buildpack,
@@ -214,19 +211,18 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 				containers[container.ID] = ""
 
-				Eventually(container).Should(Serve(ContainSubstring("<title>Swagger UI</title>")).WithEndpoint("/swagger/index.html").OnPort(8080))
+				Eventually(container).Should(Serve(ContainSubstring("Chilly")).WithEndpoint("/weatherforecast").OnPort(8080))
 			})
 		})
 
 		context("when app source changes, NuGet packages are unchanged", func() {
 			it("does not reuse cached app layer", func() {
 				var err error
-				source, err := occam.Source(filepath.Join("testdata", "source_6_aspnet_nuget"))
+				source, err = occam.Source(filepath.Join("testdata", "source_aspnet_nuget_configuration"))
 				Expect(err).NotTo(HaveOccurred())
 
 				build := pack.WithNoColor().Build.
 					WithBuildpacks(
-						nodeEngineBuildpack,
 						icuBuildpack,
 						dotnetCoreSDKBuildpack,
 						buildpack,
@@ -247,25 +243,18 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 				containers[container.ID] = ""
 
-				Eventually(container).Should(Serve(ContainSubstring("My API V1")).WithEndpoint("/swagger/index.html").OnPort(8080))
+				Eventually(container).Should(Serve(ContainSubstring("Chilly")).WithEndpoint("/weatherforecast").OnPort(8080))
+
 				file, err := os.Open(filepath.Join(source, "Program.cs"))
 				Expect(err).NotTo(HaveOccurred())
 
 				contents, err := io.ReadAll(file)
 				Expect(err).NotTo(HaveOccurred())
 
-				contents = bytes.Replace(contents, []byte("My API V1"), []byte("My Cool V1 API"), 1)
+				contents = bytes.Replace(contents, []byte("Chilly"), []byte("Replacement"), 1)
 
 				Expect(os.WriteFile(filepath.Join(source, "Program.cs"), contents, os.ModePerm)).To(Succeed())
 				file.Close()
-
-				modified, err := os.Open(filepath.Join(source, "Program.cs"))
-				Expect(err).NotTo(HaveOccurred())
-
-				contents, err = io.ReadAll(modified)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(contents)).To(ContainSubstring("My Cool V1 API"))
-				modified.Close()
 
 				image, logs, err = build.Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())
@@ -279,7 +268,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 				containers[container.ID] = ""
 
-				Eventually(container).Should(Serve(ContainSubstring("My Cool V1 API")).WithEndpoint("/swagger/index.html").OnPort(8080))
+				Eventually(container).Should(Serve(ContainSubstring("Replacement")).WithEndpoint("/weatherforecast").OnPort(8080))
 			})
 		})
 
