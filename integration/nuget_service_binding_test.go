@@ -130,7 +130,7 @@ func testNugetConfig(t *testing.T, context spec.G, it spec.S) {
 				// Logs indicate the right registry was used, but the build failed because proper package content wasn't returned.
 				Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("GET %s/FindPackagesById()?id='Swashbuckle.AspNetCore'&semVerLevel=2.0.0", serverURI))))
 				Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("OK %s/FindPackagesById()?id='Swashbuckle.AspNetCore'&semVerLevel=2.0.0", serverURI))))
-				Expect(err).To(MatchError(ContainSubstring("Failed to retrieve information about 'Swashbuckle.AspNetCore' from remote source")))
+				Expect(err).To(MatchError(ContainSubstring("Failed to retrieve information about 'Microsoft.AspNetCore.OpenApi' from remote source")))
 			})
 		})
 	})
