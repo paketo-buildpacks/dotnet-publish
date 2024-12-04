@@ -49,7 +49,7 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 
 		it("should build a working OCI image for a simple app", func() {
 			var err error
-			source, err = occam.Source(filepath.Join("testdata", "source_6_app"))
+			source, err = occam.Source(filepath.Join("testdata", "source_8"))
 			Expect(err).NotTo(HaveOccurred())
 
 			var logs fmt.Stringer
@@ -82,7 +82,7 @@ func testOffline(t *testing.T, context spec.G, it spec.S) {
 				Execute(image.ID)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(container).Should(Serve(ContainSubstring("source_6_app")).OnPort(8080))
+			Eventually(container).Should(Serve(ContainSubstring("source_8")).OnPort(8080))
 		})
 	})
 }

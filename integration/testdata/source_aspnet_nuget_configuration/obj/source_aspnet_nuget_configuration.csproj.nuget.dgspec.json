@@ -1,30 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/source_aspnet_nuget_configuration/source_aspnet_nuget_configuration.csproj": {}
+    "/tmp/fixtures/source_aspnet_nuget_configuration/source_aspnet_nuget_configuration.csproj": {}
   },
   "projects": {
-    "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/source_aspnet_nuget_configuration/source_aspnet_nuget_configuration.csproj": {
+    "/tmp/fixtures/source_aspnet_nuget_configuration/source_aspnet_nuget_configuration.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/source_aspnet_nuget_configuration/source_aspnet_nuget_configuration.csproj",
+        "projectUniqueName": "/tmp/fixtures/source_aspnet_nuget_configuration/source_aspnet_nuget_configuration.csproj",
         "projectName": "source_aspnet_nuget_configuration",
-        "projectPath": "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/source_aspnet_nuget_configuration/source_aspnet_nuget_configuration.csproj",
-        "packagesPath": "/home/ubuntu/.nuget/packages/",
-        "outputPath": "/home/ubuntu/workspace/paketo-buildpacks/dotnet-publish/integration/testdata/source_aspnet_nuget_configuration/obj/",
+        "projectPath": "/tmp/fixtures/source_aspnet_nuget_configuration/source_aspnet_nuget_configuration.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/tmp/fixtures/source_aspnet_nuget_configuration/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/ubuntu/.nuget/NuGet/NuGet.Config"
+          "/root/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net8.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
-            "targetAlias": "net6.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -32,11 +32,26 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[8.0.11, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.6.2, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -56,7 +71,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/6.0.404/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
