@@ -29,14 +29,13 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		homeDir    string
 		layersDir  string
 
-		bindingResolver    *fakes.BindingResolver
-		buildpackYMLParser *fakes.BuildpackYMLParser
-		publishProcess     *fakes.PublishProcess
-		sbomGenerator      *fakes.SBOMGenerator
-		slicer             *fakes.Slicer
-		sourceRemover      *fakes.SourceRemover
-		symlinker          *fakes.SymlinkManager
-		logger             scribe.Emitter
+		bindingResolver *fakes.BindingResolver
+		publishProcess  *fakes.PublishProcess
+		sbomGenerator   *fakes.SBOMGenerator
+		slicer          *fakes.Slicer
+		sourceRemover   *fakes.SourceRemover
+		symlinker       *fakes.SymlinkManager
+		logger          scribe.Emitter
 
 		build packit.BuildFunc
 	)
@@ -52,16 +51,11 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		homeDir, err = os.MkdirTemp("", "home-dir")
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(os.WriteFile(filepath.Join(workingDir, "buildpack.yml"), nil, 0600)).To(Succeed())
-
 		symlinker = &fakes.SymlinkManager{}
 		sourceRemover = &fakes.SourceRemover{}
 		publishProcess = &fakes.PublishProcess{}
 		bindingResolver = &fakes.BindingResolver{}
 		slicer = &fakes.Slicer{}
-
-		buildpackYMLParser = &fakes.BuildpackYMLParser{}
-		buildpackYMLParser.ParseProjectPathCall.Returns.ProjectFilePath = "some/project/path"
 
 		slicer.SliceCall.Returns.Pkgs = packit.Slice{Paths: []string{"some-package.dll"}}
 		slicer.SliceCall.Returns.EarlyPkgs = packit.Slice{Paths: []string{"some-release-candidate-package.dll"}}
@@ -89,7 +83,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			symlinker,
 			publishProcess,
 			slicer,
-			buildpackYMLParser,
 			chronos.DefaultClock,
 			logger,
 			sbomGenerator,
@@ -183,19 +176,17 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(symlinker.UnlinkCall.CallCount).To(Equal(0))
 
 		Expect(publishProcess.ExecuteCall.Receives.WorkingDir).To(Equal(workingDir))
-		Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal("some/project/path"))
+		Expect(publishProcess.ExecuteCall.Receives.ProjectPath).To(Equal(""))
 		Expect(publishProcess.ExecuteCall.Receives.OutputPath).To(MatchRegexp(`dotnet-publish-output\d+`))
 		Expect(publishProcess.ExecuteCall.Receives.Debug).To(BeTrue())
 		Expect(publishProcess.ExecuteCall.Receives.Flags).To(Equal([]string{"--publishflag", "value"}))
 
-		Expect(slicer.SliceCall.Receives.AssetsFile).To(Equal(filepath.Join(workingDir, "some/project/path", "obj", "project.assets.json")))
+		Expect(slicer.SliceCall.Receives.AssetsFile).To(Equal(filepath.Join(workingDir, "obj", "project.assets.json")))
 
 		Expect(sbomGenerator.GenerateCall.Receives.Dir).To(Equal(workingDir))
 
 		Expect(buffer.String()).To(ContainSubstring("Some Buildpack 0.0.1"))
 		Expect(buffer.String()).To(ContainSubstring("Executing build process"))
-		Expect(buffer.String()).To(ContainSubstring("WARNING: Setting the project path through buildpack.yml will be deprecated soon in Dotnet Publish Buildpack v1.0.0"))
-		Expect(buffer.String()).To(ContainSubstring("Please specify the project path through the $BP_DOTNET_PROJECT_PATH environment variable instead. See README.md or the documentation on paketo.io for more information."))
 	})
 
 	context("the cache layer is empty", func() {
@@ -288,7 +279,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				symlinker,
 				publishProcess,
 				slicer,
-				buildpackYMLParser,
 				chronos.DefaultClock,
 				logger,
 				sbomGenerator,
@@ -398,7 +388,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				symlinker,
 				publishProcess,
 				slicer,
-				buildpackYMLParser,
 				chronos.DefaultClock,
 				logger,
 				sbomGenerator,
@@ -424,22 +413,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 	})
 
 	context("failure cases", func() {
-
-		context("when the buildpack.yml can not be parsed", func() {
-			it.Before(func() {
-				buildpackYMLParser.ParseProjectPathCall.Returns.Err = errors.New("some-error")
-			})
-			it("returns an error", func() {
-				_, err := build(packit.BuildContext{
-					WorkingDir: workingDir,
-					BuildpackInfo: packit.BuildpackInfo{
-						Version: "0.0.1",
-					},
-				})
-				Expect(err).To(MatchError("some-error"))
-			})
-		})
-
 		context("dotnet publish flags cannot be parsed", func() {
 			it.Before(func() {
 				build = dotnetpublish.Build(
@@ -450,7 +423,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					symlinker,
 					publishProcess,
 					slicer,
-					buildpackYMLParser,
 					chronos.DefaultClock,
 					logger,
 					sbomGenerator,

@@ -2,7 +2,6 @@ package dotnetpublish_test
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -19,10 +18,9 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 	var (
 		Expect = NewWithT(t).Expect
 
-		projectParser      *fakes.ProjectParser
-		buildpackYMLParser *fakes.BuildpackYMLParser
-		workingDir         string
-		detect             packit.DetectFunc
+		projectParser *fakes.ProjectParser
+		workingDir    string
+		detect        packit.DetectFunc
 	)
 
 	it.Before(func() {
@@ -34,12 +32,9 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		projectParser.FindProjectFileCall.Returns.String = filepath.Join(workingDir, "app.csproj")
 		projectParser.ParseVersionCall.Returns.String = "6.0.0"
 
-		buildpackYMLParser = &fakes.BuildpackYMLParser{}
-
 		detect = dotnetpublish.Detect(
 			dotnetpublish.Configuration{},
 			projectParser,
-			buildpackYMLParser,
 		)
 	})
 
@@ -76,7 +71,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			},
 		}))
 
-		Expect(buildpackYMLParser.ParseProjectPathCall.Receives.Path).To(Equal(filepath.Join(workingDir, "buildpack.yml")))
 		Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(workingDir))
 		Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 		Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
@@ -123,7 +117,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 				},
 			}))
 
-			Expect(buildpackYMLParser.ParseProjectPathCall.Receives.Path).To(Equal(filepath.Join(workingDir, "buildpack.yml")))
 			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(workingDir))
 			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
@@ -178,7 +171,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 				},
 			}))
 
-			Expect(buildpackYMLParser.ParseProjectPathCall.Receives.Path).To(Equal(filepath.Join(workingDir, "buildpack.yml")))
 			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(workingDir))
 			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
@@ -192,7 +184,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			detect = dotnetpublish.Detect(
 				dotnetpublish.Configuration{ProjectPath: "src/proj1"},
 				projectParser,
-				buildpackYMLParser,
 			)
 		})
 
@@ -229,53 +220,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 				},
 			}))
 
-			Expect(buildpackYMLParser.ParseProjectPathCall.CallCount).To(Equal(0))
-			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(filepath.Join(workingDir, "src/proj1")))
-			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
-			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
-			Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
-		})
-	})
-	context("when the .csproj file is not at the base of the directory and project_path is set in buildpack.yml", func() {
-		it.Before(func() {
-			buildpackYMLParser.ParseProjectPathCall.Returns.ProjectFilePath = "src/proj1"
-			projectParser.FindProjectFileCall.Returns.String = filepath.Join(workingDir, "src/proj1", "app.csproj")
-		})
-
-		it.After(func() {
-			Expect(os.RemoveAll(workingDir)).To(Succeed())
-		})
-
-		it("finds the projfile and passes detection", func() {
-			result, err := detect(packit.DetectContext{
-				WorkingDir: workingDir,
-			})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result).To(Equal(packit.DetectResult{
-				Plan: packit.BuildPlan{
-					Provides: []packit.BuildPlanProvision{
-						{Name: "dotnet-application"},
-					},
-					Requires: []packit.BuildPlanRequirement{
-						{
-							Name: "dotnet-sdk",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Version:       "6.0.*",
-								VersionSource: "app.csproj",
-								Build:         true,
-							},
-						},
-						{
-							Name: "icu",
-							Metadata: dotnetpublish.BuildPlanMetadata{
-								Build: true,
-							},
-						},
-					},
-				},
-			}))
-
-			Expect(buildpackYMLParser.ParseProjectPathCall.Receives.Path).To(Equal(filepath.Join(workingDir, "buildpack.yml")))
 			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(filepath.Join(workingDir, "src/proj1")))
 			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
 			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
@@ -284,19 +228,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 	})
 
 	context("failure cases", func() {
-		context("when buildpack.yml cannot be parsed", func() {
-			it.Before(func() {
-				buildpackYMLParser.ParseProjectPathCall.Returns.Err = fmt.Errorf("parsing error")
-			})
-
-			it("fails detection", func() {
-				_, err := detect(packit.DetectContext{
-					WorkingDir: workingDir,
-				})
-				Expect(err).To(MatchError("failed to parse buildpack.yml: parsing error"))
-			})
-		})
-
 		context("when finding project file returns an error", func() {
 			it.Before(func() {
 				projectParser.FindProjectFileCall.Returns.Error = errors.New("some project file error")

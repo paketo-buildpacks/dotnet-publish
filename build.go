@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Masterminds/semver"
 	"github.com/Netflix/go-env"
 	"github.com/mattn/go-shellwords"
 	"github.com/paketo-buildpacks/packit/v2"
@@ -66,7 +65,6 @@ func Build(
 	symlinker SymlinkManager,
 	publishProcess PublishProcess,
 	slicer Slicer,
-	buildpackYMLParser BuildpackYMLParser,
 	clock chronos.Clock,
 	logger scribe.Emitter,
 	sbomGenerator SBOMGenerator,
@@ -83,20 +81,6 @@ func Build(
 			logger.Debug.Subprocess("%s: %s", envVar, es[envVar])
 		}
 		logger.Debug.Break()
-
-		if config.ProjectPath == "" {
-			var err error
-			config.ProjectPath, err = buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
-			if err != nil {
-				return packit.BuildResult{}, err
-			}
-
-			if config.ProjectPath != "" {
-				nextMajorVersion := semver.MustParse(context.BuildpackInfo.Version).IncMajor()
-				logger.Subprocess("WARNING: Setting the project path through buildpack.yml will be deprecated soon in Dotnet Publish Buildpack v%s", nextMajorVersion.String())
-				logger.Subprocess("Please specify the project path through the $BP_DOTNET_PROJECT_PATH environment variable instead. See README.md or the documentation on paketo.io for more information.")
-			}
-		}
 
 		tempDir, err := os.MkdirTemp("", "dotnet-publish-output")
 		if err != nil {

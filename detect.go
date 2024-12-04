@@ -23,21 +23,8 @@ type ProjectParser interface {
 	NPMIsRequired(path string) (bool, error)
 }
 
-//go:generate faux --interface BuildpackYMLParser --output fakes/buildpack_yml_parser.go
-type BuildpackYMLParser interface {
-	ParseProjectPath(path string) (projectFilePath string, err error)
-}
-
-func Detect(config Configuration, parser ProjectParser, buildpackYMLParser BuildpackYMLParser) packit.DetectFunc {
+func Detect(config Configuration, parser ProjectParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
-		if config.ProjectPath == "" {
-			var err error
-			config.ProjectPath, err = buildpackYMLParser.ParseProjectPath(filepath.Join(context.WorkingDir, "buildpack.yml"))
-			if err != nil {
-				return packit.DetectResult{}, fmt.Errorf("failed to parse buildpack.yml: %w", err)
-			}
-		}
-
 		projectFilePath, err := parser.FindProjectFile(filepath.Join(context.WorkingDir, config.ProjectPath))
 		if err != nil {
 			return packit.DetectResult{}, err
