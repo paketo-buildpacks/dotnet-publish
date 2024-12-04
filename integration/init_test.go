@@ -129,7 +129,6 @@ func TestIntegration(t *testing.T) {
 	format.MaxLength = 0
 
 	suite := spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
-	suite("BuildpackYML", testBuildpackYML)
 	suite("Console", testConsole)
 	suite("DefaultApps", testDefaultApps)
 	suite("FSharp", testFSharp)

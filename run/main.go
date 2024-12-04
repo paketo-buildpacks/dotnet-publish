@@ -28,7 +28,6 @@ func main() {
 		log.Fatal(fmt.Errorf("failed to parse build configuration: %w", err))
 	}
 
-	bpYMLParser := dotnetpublish.NewDotnetBuildpackYMLParser()
 	logger := scribe.NewEmitter(os.Stdout).WithLevel(config.LogLevel)
 	bindingResolver := servicebindings.NewResolver()
 	symlinker := dotnetpublish.NewSymlinker()
@@ -41,7 +40,6 @@ func main() {
 		dotnetpublish.Detect(
 			config,
 			dotnetpublish.NewProjectFileParser(),
-			bpYMLParser,
 		),
 		dotnetpublish.Build(
 			config,
@@ -55,7 +53,6 @@ func main() {
 				chronos.DefaultClock,
 			),
 			dotnetpublish.NewOutputSlicer(),
-			bpYMLParser,
 			chronos.DefaultClock,
 			logger,
 			Generator{},

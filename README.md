@@ -24,16 +24,21 @@ file that looks like the following:
   # The Dotnet Publish CNB does not support non-required metadata options.
 ```
 
+## Configuration
+
+### `BP_DOTNET_PROJECT_PATH`
+To specify a project subdirectory to be used as the root of the app, please use
+the `BP_DOTNET_PROJECT_PATH` environment variable at build time either directly
+(e.g. `pack build my-app --env BP_DOTNET_PROJECT_PATH=./src/my-app`) or through a
+[`project.toml` file](https://github.com/buildpacks/spec/blob/main/extensions/project-descriptor.md).
+
+```shell
+BP_DOTNET_PROJECT_PATH=./src/my-app
+```
+
 ## Usage
 To package this buildpack for consumption:
 ```
 $ ./scripts/package.sh
 ```
 This builds the buildpack's source using GOOS=linux by default. You can supply another value as the first argument to package.sh.
-
-## Specifying a project path
-
-To specify a project subdirectory to be used as the root of the app, please use
-the BP_DOTNET_PROJECT_PATH environment variable at build time either directly
-(e.g. pack build my-app --env BP_DOTNET_PROJECT_PATH=./src/my-app) or through a
-project.toml file.
