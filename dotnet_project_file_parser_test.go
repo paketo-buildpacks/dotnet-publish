@@ -119,24 +119,26 @@ func testProjectFileParser(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 
-		context("when TargetFramework is set to net<x>.<y>", func() {
-			it.Before(func() {
-				Expect(os.WriteFile(path, []byte(`
-					<Project>
-					  <PropertyGroup>
-              <TargetFramework>net1.2</TargetFramework>
-            </PropertyGroup>
-					</Project>
-				`), 0600)).To(Succeed())
-			})
+		for _, tf := range []string{"net1.2", "net8.0", "net9.0", "net10.0"} {
+			context("when TargetFramework is set to "+tf, func() {
+				it.Before(func() {
+					Expect(os.WriteFile(path, []byte(`
+						<Project>
+						  <PropertyGroup>
+			  <TargetFramework>`+tf+`</TargetFramework>
+			</PropertyGroup>
+						</Project>
+					`), 0600)).To(Succeed())
+				})
 
-			it("returns the version", func() {
-				version, err := parser.ParseVersion(path)
-				Expect(err).NotTo(HaveOccurred())
+				it("returns the version", func() {
+					version, err := parser.ParseVersion(path)
+					Expect(err).NotTo(HaveOccurred())
 
-				Expect(version).To(Equal("1.2.0"))
+					Expect(version).To(Equal(tf[3:] + ".0"))
+				})
 			})
-		})
+		}
 
 		context("when TargetFramework is set to net<x>.<y>-platform", func() {
 			it.Before(func() {
