@@ -1,9 +1,9 @@
 {
   "builders": ["paketobuildpacks/builder-jammy-buildpackless-base"],
-  "dotnet-core-aspnet-runtime": "github.com/paketo-buildpacks/dotnet-core-aspnet-runtime",
-  "dotnet-execute": "github.com/paketo-buildpacks/dotnet-execute",
-  "dotnet-core-sdk": "github.com/paketo-buildpacks/dotnet-core-sdk",
-  "icu": "github.com/paketo-buildpacks/icu",
-  "vsdbg": "github.com/paketo-buildpacks/vsdbg",
-  "node-engine": "github.com/paketo-buildpacks/node-engine"
+  "dotnet-core-aspnet-runtime": "github.com/paketobuildpacks/dotnet-core-aspnet-runtime",
+  "dotnet-execute": "github.com/paketobuildpacks/dotnet-execute",
+  "dotnet-core-sdk": "github.com/paketobuildpacks/dotnet-core-sdk",
+  "icu": "github.com/paketobuildpacks/icu",
+  "vsdbg": "github.com/paketobuildpacks/vsdbg",
+  "node-engine": "github.com/paketobuildpacks/node-engine"
 }
