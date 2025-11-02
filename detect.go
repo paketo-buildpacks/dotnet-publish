@@ -44,12 +44,17 @@ func Detect(config Configuration, parser ProjectParser) packit.DetectFunc {
 			return packit.DetectResult{}, err
 		}
 
+		var depVersion = fmt.Sprintf("%d.%d.*", semver.Major(), semver.Minor())
+		if config.EnablePrerelease {
+			depVersion = "~" + depVersion + "-0"
+		}
+
 		requirements := []packit.BuildPlanRequirement{
 			{
 				Name: "dotnet-sdk",
 				Metadata: BuildPlanMetadata{
 					Build:         true,
-					Version:       fmt.Sprintf("%d.%d.*", semver.Major(), semver.Minor()),
+					Version:       depVersion,
 					VersionSource: filepath.Base(projectFilePath),
 				},
 			},

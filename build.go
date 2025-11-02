@@ -50,6 +50,7 @@ type Configuration struct {
 	ProjectPath          string `env:"BP_DOTNET_PROJECT_PATH"`
 	PublishFlags         []string
 	RawPublishFlags      string `env:"BP_DOTNET_PUBLISH_FLAGS"`
+	EnablePrerelease     bool   `env:"BP_DOTNET_ENABLE_PRERELEASE"`
 }
 
 //go:generate faux --interface SBOMGenerator --output fakes/sbom_generator.go
