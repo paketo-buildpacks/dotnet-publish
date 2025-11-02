@@ -1,6 +1,7 @@
 {
-  "builders": [
-    "paketobuildpacks/builder-jammy-buildpackless-base"
+  "builders" : [
+    "index.docker.io/paketobuildpacks/builder-jammy-buildpackless-base:latest",
+    "index.docker.io/paketobuildpacks/ubuntu-noble-builder-buildpackless:latest"
   ],
   "dotnet-core-aspnet-runtime": "index.docker.io/paketobuildpacks/dotnet-core-aspnet-runtime",
   "dotnet-execute": "index.docker.io/paketobuildpacks/dotnet-execute",
