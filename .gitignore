@@ -2,3 +2,7 @@
 .idea
 /.bin
 /build
+
+# .NET build artifacts
+/integration/**/obj
+/integration/**/bin
