@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/paketo-buildpacks/packit/v2/chronos"
@@ -43,8 +44,13 @@ func (p DotnetPublishProcess) Execute(workingDir, nugetCachePath, projectPath, o
 		}
 	}
 
+	arch := runtime.GOARCH
+	if arch == "amd64" {
+		arch = "x64"
+	}
+
 	if !containsFlag(flags, "--runtime") && !containsFlag(flags, "-r") {
-		args = append(args, "--runtime", "linux-x64")
+		args = append(args, "--runtime", fmt.Sprintf("linux-%s", arch))
 	}
 
 	if !containsFlag(flags, "--self-contained") && !containsFlag(flags, "--no-self-contained") {
