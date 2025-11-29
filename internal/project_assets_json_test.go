@@ -14,7 +14,7 @@ func testTargets(t *testing.T, context spec.G, it spec.S) {
 		Expect  = NewWithT(t).Expect
 		targets internal.Targets
 	)
-	var input []byte = []byte(`{
+	var input = []byte(`{
     ".NETCoreApp,Version=v3.1": {
       "Microsoft.AspNetCore.Diagnostics.HealthChecks/2.2.0-rc1": {
         "type": "package",
@@ -47,7 +47,7 @@ func testTargets(t *testing.T, context spec.G, it spec.S) {
     }
   }
 `)
-	var badInput []byte = []byte(`{
+	var badInput = []byte(`{
     ".NETCoreApp,Version=v3.1": {
       "Consul/0.7.2.6": {
         "type": "package",
@@ -130,7 +130,7 @@ func testDependencies(t *testing.T, context spec.G, it spec.S) {
 		Expect = NewWithT(t).Expect
 		deps   internal.Dependencies
 	)
-	var input []byte = []byte(`{
+	var input = []byte(`{
       "Consul/0.7.2.6": {
         "type": "package",
         "dependencies": {
@@ -164,7 +164,7 @@ func testDependencies(t *testing.T, context spec.G, it spec.S) {
         }
       }
 }`)
-	var badInput []byte = []byte(`{
+	var badInput = []byte(`{
       "Consul/0.7.2.6": {
         "type": "package",
         "dependencies": {
@@ -228,7 +228,7 @@ func testRuntimeTargets(t *testing.T, context spec.G, it spec.S) {
 		Expect = NewWithT(t).Expect
 		rts    internal.RuntimeTargets
 	)
-	var input []byte = []byte(`{
+	var input = []byte(`{
           "runtimes/unix/lib/netstandard2.0/Microsoft.Win32.Registry.dll": {
             "assetType": "runtime",
             "rid": "unix"
@@ -238,7 +238,7 @@ func testRuntimeTargets(t *testing.T, context spec.G, it spec.S) {
             "rid": "win"
           }
         }`)
-	var badInput []byte = []byte(`{
+	var badInput = []byte(`{
           "runtimes/unix/lib/netstandard2.0/Microsoft.Win32.Registry.dll": {
             "assetType": "runtime",
             "rid": "unix"
@@ -286,11 +286,11 @@ func testRuntimeDependencies(t *testing.T, context spec.G, it spec.S) {
 		Expect  = NewWithT(t).Expect
 		runtime internal.RuntimeDependencies
 	)
-	var input []byte = []byte(`{
+	var input = []byte(`{
           "lib/netstandard1.3/Consul.dll": {},
           "lib/netstandard2.0/Microsoft.Diagnostics.FastSerialization.dll": {}
         }`)
-	var badInput []byte = []byte(`[ "not-a-map" ]`)
+	var badInput = []byte(`[ "not-a-map" ]`)
 
 	context("UnmarshalJSON", func() {
 		it("correctly unmarshals JSON", func() {

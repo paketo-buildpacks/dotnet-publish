@@ -64,7 +64,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect(os.MkdirAll(filepath.Join(layersDir, "nuget-cache"), os.ModePerm)).To(Succeed())
 		Expect(os.WriteFile(filepath.Join(layersDir, "nuget-cache", "some-cache"), []byte{}, 0600)).To(Succeed())
 
-		os.Setenv("DOTNET_ROOT", "some-existing-root-dir")
+		Expect(os.Setenv("DOTNET_ROOT", "some-existing-root-dir")).To(Succeed())
 
 		buffer = bytes.NewBuffer(nil)
 		logger = scribe.NewEmitter(buffer)
@@ -90,7 +90,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 	})
 
 	it.After(func() {
-		os.Unsetenv("DOTNET_ROOT")
+		Expect(os.Unsetenv("DOTNET_ROOT")).To(Succeed())
 		Expect(os.RemoveAll(workingDir)).To(Succeed())
 		Expect(os.RemoveAll(homeDir)).To(Succeed())
 		Expect(os.RemoveAll(layersDir)).To(Succeed())

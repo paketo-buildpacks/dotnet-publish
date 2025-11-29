@@ -80,7 +80,7 @@ func testOutputSlicing(t *testing.T, context spec.G, it spec.S) {
 				contents = bytes.Replace(contents, []byte("Chilly"), []byte("Replacement"), 1)
 
 				Expect(os.WriteFile(filepath.Join(source, "Program.cs"), contents, os.ModePerm)).To(Succeed())
-				file.Close()
+				Expect(file.Close()).To(Succeed())
 
 				image, logs, err = build.Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())

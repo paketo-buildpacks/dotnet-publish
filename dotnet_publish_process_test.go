@@ -54,8 +54,10 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		executable.ExecuteCall.Stub = func(execution pexec.Execution) error {
-			fmt.Fprintln(execution.Stdout, "stdout-output")
-			fmt.Fprintln(execution.Stderr, "stderr-output")
+			_, err := fmt.Fprintln(execution.Stdout, "stdout-output")
+			Expect(err).ToNot(HaveOccurred())
+			_, err = fmt.Fprintln(execution.Stderr, "stderr-output")
+			Expect(err).ToNot(HaveOccurred())
 
 			return nil
 		}
@@ -164,8 +166,10 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 		context("when the dotnet publish executable errors", func() {
 			it.Before(func() {
 				executable.ExecuteCall.Stub = func(execution pexec.Execution) error {
-					fmt.Fprintln(execution.Stdout, "stdout-output")
-					fmt.Fprintln(execution.Stderr, "stderr-output")
+					_, err := fmt.Fprintln(execution.Stdout, "stdout-output")
+					Expect(err).ToNot(HaveOccurred())
+					_, err = fmt.Fprintln(execution.Stderr, "stderr-output")
+					Expect(err).ToNot(HaveOccurred())
 
 					return errors.New("execution error")
 				}
