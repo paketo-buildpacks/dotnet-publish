@@ -46,7 +46,9 @@ func (p ProjectFileParser) ParseVersion(path string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to read project file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	var project struct {
 		PropertyGroups []struct {
@@ -102,7 +104,9 @@ func findInFile(str, path string) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed to open %s: %w", path, err)
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	var project struct {
 		Targets []struct {

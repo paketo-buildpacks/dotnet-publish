@@ -111,7 +111,7 @@ func testNugetConfig(t *testing.T, context spec.G, it spec.S) {
 
 			it.After(func() {
 				server.Close()
-				os.RemoveAll(binding)
+				Expect(os.RemoveAll(binding)).To(Succeed())
 			})
 
 			it("fails due to invalid package, but the nuget.config package source is used", func() {

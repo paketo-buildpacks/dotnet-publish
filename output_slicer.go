@@ -32,7 +32,9 @@ func (s OutputSlicer) Slice(assetsFile string) (pkgs, earlyPkgs, projects packit
 	if err != nil {
 		return packit.Slice{}, packit.Slice{}, packit.Slice{}, fmt.Errorf("opening assets file to identify output slices: %w", err)
 	}
-	defer contents.Close()
+	defer func() {
+		_ = contents.Close()
+	}()
 
 	var assets internal.ProjectAssetsJSON
 	dec := json.NewDecoder(contents)
