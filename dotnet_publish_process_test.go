@@ -76,7 +76,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 		args := []string{
 			"publish", "some-working-dir/some/project/path",
 			"--configuration", "Release",
-			"--runtime", "linux-x64",
+			"--runtime", "linux-arm64",
 			"--self-contained", "false",
 			"--output", "some-publish-output-dir",
 			"--flag", "value",
@@ -102,7 +102,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			args := []string{
 				"publish", "some-working-dir/some/project/path",
 				"--configuration", "Debug",
-				"--runtime", "linux-x64",
+				"--runtime", "linux-arm64",
 				"--self-contained", "false",
 				"--output", "some-publish-output-dir",
 				"--flag", "value",
@@ -153,7 +153,7 @@ func testDotnetPublishProcess(t *testing.T, context spec.G, it spec.S) {
 			args := []string{
 				"publish", "some-working-dir/some/project/path",
 				"--configuration", "Release",
-				"--runtime", "linux-x64",
+				"--runtime", "linux-arm64",
 				"--output", "some-publish-output-dir",
 				"--no-self-contained",
 			}
