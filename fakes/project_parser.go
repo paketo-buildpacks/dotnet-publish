@@ -43,13 +43,14 @@ type ProjectParser struct {
 		mutex     sync.Mutex
 		CallCount int
 		Receives  struct {
-			Path string
+			Path    string
+			RootDir string
 		}
 		Returns struct {
 			String string
 			Error  error
 		}
-		Stub func(string) (string, error)
+		Stub func(string, string) (string, error)
 	}
 }
 
@@ -83,13 +84,14 @@ func (f *ProjectParser) NodeIsRequired(param1 string) (bool, error) {
 	}
 	return f.NodeIsRequiredCall.Returns.Bool, f.NodeIsRequiredCall.Returns.Error
 }
-func (f *ProjectParser) ParseVersion(param1 string) (string, error) {
+func (f *ProjectParser) ParseVersion(param1 string, param2 string) (string, error) {
 	f.ParseVersionCall.mutex.Lock()
 	defer f.ParseVersionCall.mutex.Unlock()
 	f.ParseVersionCall.CallCount++
 	f.ParseVersionCall.Receives.Path = param1
+	f.ParseVersionCall.Receives.RootDir = param2
 	if f.ParseVersionCall.Stub != nil {
-		return f.ParseVersionCall.Stub(param1)
+		return f.ParseVersionCall.Stub(param1, param2)
 	}
 	return f.ParseVersionCall.Returns.String, f.ParseVersionCall.Returns.Error
 }
