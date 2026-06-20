@@ -18,7 +18,7 @@ type BuildPlanMetadata struct {
 //go:generate faux --interface ProjectParser --output fakes/project_parser.go
 type ProjectParser interface {
 	FindProjectFile(root string) (string, error)
-	ParseVersion(path string) (string, error)
+	ParseVersion(path, rootDir string) (string, error)
 	NodeIsRequired(path string) (bool, error)
 	NPMIsRequired(path string) (bool, error)
 }
@@ -34,7 +34,7 @@ func Detect(config Configuration, parser ProjectParser) packit.DetectFunc {
 			return packit.DetectResult{}, packit.Fail.WithMessage("no project file found")
 		}
 
-		version, err := parser.ParseVersion(projectFilePath)
+		version, err := parser.ParseVersion(projectFilePath, context.WorkingDir)
 		if err != nil {
 			return packit.DetectResult{}, err
 		}

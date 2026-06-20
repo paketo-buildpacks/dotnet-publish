@@ -73,6 +73,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 		Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(workingDir))
 		Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
+		Expect(projectParser.ParseVersionCall.Receives.RootDir).To(Equal(workingDir))
 		Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 		Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 	})
@@ -119,6 +120,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(workingDir))
 			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
+			Expect(projectParser.ParseVersionCall.Receives.RootDir).To(Equal(workingDir))
 			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 			Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 		})
@@ -173,6 +175,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(workingDir))
 			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
+			Expect(projectParser.ParseVersionCall.Receives.RootDir).To(Equal(workingDir))
 			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 			Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "app.csproj")))
 		})
@@ -222,6 +225,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(projectParser.FindProjectFileCall.Receives.Root).To(Equal(filepath.Join(workingDir, "src/proj1")))
 			Expect(projectParser.ParseVersionCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
+			Expect(projectParser.ParseVersionCall.Receives.RootDir).To(Equal(workingDir))
 			Expect(projectParser.NodeIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
 			Expect(projectParser.NPMIsRequiredCall.Receives.Path).To(Equal(filepath.Join(workingDir, "src/proj1", "app.csproj")))
 		})
