@@ -72,7 +72,6 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 
 				var logs fmt.Stringer
 				image, logs, err = pack.WithNoColor().Build.
-					WithExtensions(ubiNodejsExtension).
 					WithBuildpacks(
 						icuBuildpack,
 						vsdbgBuildpack,
@@ -85,7 +84,6 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 						"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
 						"BP_DEBUG_ENABLED":        "true",
 					}).
-					WithPullPolicy(pullPolicy).
 					Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())
 				images[image.ID] = ""
@@ -299,6 +297,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 
 				var logs fmt.Stringer
 				image, logs, err = pack.WithNoColor().Build.
+					WithExtensions(ubiNodejsExtension).
 					WithBuildpacks(
 						nodeEngineBuildpack,
 						icuBuildpack,
@@ -307,6 +306,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 						dotnetCoreAspNetRuntimeBuildpack,
 						dotnetExecuteBuildpack,
 					).
+					WithPullPolicy(pullPolicy).
 					WithSBOMOutputDir(sbomDir).
 					Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())

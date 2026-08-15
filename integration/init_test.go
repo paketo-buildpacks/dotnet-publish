@@ -85,7 +85,7 @@ func TestIntegration(t *testing.T) {
 	builder, err := pack.Builder.Inspect.Execute()
 	Expect(err).NotTo(HaveOccurred())
 
-	isUbiBuilder := regexp.MustCompile(`ubi`).MatchString(builder.BuilderName)
+	isUbiBuilder := regexp.MustCompile(`ubi8`).MatchString(builder.BuilderName)
 
 	if isUbiBuilder {
 		Expect(occam.NewDocker().Pull.Execute(config.UbiNodejsExtension)).To(Succeed())
