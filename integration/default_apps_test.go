@@ -22,11 +22,16 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 		Eventually = NewWithT(t).Eventually
 		pack       occam.Pack
 		docker     occam.Docker
+		pullPolicy = "never"
 	)
 
 	it.Before(func() {
 		pack = occam.NewPack().WithVerbose()
 		docker = occam.NewDocker()
+
+		if ubiNodejsExtension != "" {
+			pullPolicy = "always"
+		}
 	})
 
 	context("when building a .NET Core app", func() {
@@ -67,6 +72,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 
 				var logs fmt.Stringer
 				image, logs, err = pack.WithNoColor().Build.
+					WithExtensions(ubiNodejsExtension).
 					WithBuildpacks(
 						icuBuildpack,
 						vsdbgBuildpack,
@@ -79,6 +85,7 @@ func testDefaultApps(t *testing.T, context spec.G, it spec.S) {
 						"BP_DOTNET_PUBLISH_FLAGS": "--verbosity=normal",
 						"BP_DEBUG_ENABLED":        "true",
 					}).
+					WithPullPolicy(pullPolicy).
 					Execute(name, source)
 				Expect(err).NotTo(HaveOccurred(), logs.String())
 				images[image.ID] = ""
