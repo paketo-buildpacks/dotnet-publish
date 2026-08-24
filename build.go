@@ -124,7 +124,7 @@ func Build(
 		}
 
 		if nugetCache.Metadata == nil {
-			nugetCache.Metadata = make(map[string]interface{})
+			nugetCache.Metadata = make(map[string]any)
 		}
 		nugetCache.Metadata["stack"] = context.Stack
 		nugetCache.Cache = true
