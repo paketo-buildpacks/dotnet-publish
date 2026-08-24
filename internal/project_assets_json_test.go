@@ -119,7 +119,7 @@ func testTargets(t *testing.T, context spec.G, it spec.S) {
 				it("returns an error", func() {
 
 					err := json.Unmarshal(badInput, &targets)
-					Expect(err).To(MatchError(ContainSubstring("cannot unmarshal bool into Go value of type internal.ProjectDependency")), err.Error())
+					Expect(err).To(MatchError(ContainSubstring("cannot unmarshal bool into Go struct field .some-garbage of type internal.ProjectDependency")), err.Error())
 				})
 			})
 		})
@@ -216,7 +216,7 @@ func testDependencies(t *testing.T, context spec.G, it spec.S) {
 				it("returns an error", func() {
 
 					err := json.Unmarshal(badInput, &deps)
-					Expect(err).To(MatchError(ContainSubstring("cannot unmarshal bool into Go value of type internal.ProjectDependency")), err.Error())
+					Expect(err).To(MatchError(ContainSubstring("cannot unmarshal bool into Go struct field .some-garbage of type internal.ProjectDependency")), err.Error())
 				})
 			})
 		})
@@ -274,7 +274,7 @@ func testRuntimeTargets(t *testing.T, context spec.G, it spec.S) {
 				it("returns an error", func() {
 
 					err := json.Unmarshal(badInput, &rts)
-					Expect(err).To(MatchError(ContainSubstring("cannot unmarshal bool into Go value of type map[string]interface {}")), err.Error())
+					Expect(err).To(MatchError(ContainSubstring("cannot unmarshal bool into Go struct field .some-garbage of type map[string]interface {}")), err.Error())
 				})
 			})
 		})
