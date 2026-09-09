@@ -2,12 +2,16 @@
   "builders" : [
     "index.docker.io/paketobuildpacks/builder-jammy-buildpackless-base",
     "index.docker.io/paketobuildpacks/ubuntu-noble-builder-buildpackless",
-    "index.docker.io/paketobuildpacks/ubuntu-resolute-builder-buildpackless"
+    "index.docker.io/paketobuildpacks/ubuntu-resolute-builder-buildpackless",
+    "index.docker.io/paketobuildpacks/builder-ubi8-buildpackless-base",
+    "index.docker.io/paketobuildpacks/ubi-9-builder-buildpackless",
+    "index.docker.io/paketobuildpacks/ubi-10-builder-buildpackless"
   ],
   "dotnet-core-aspnet-runtime": "index.docker.io/paketobuildpacks/dotnet-core-aspnet-runtime",
   "dotnet-execute": "index.docker.io/paketobuildpacks/dotnet-execute",
   "dotnet-core-sdk": "index.docker.io/paketobuildpacks/dotnet-core-sdk",
   "icu": "index.docker.io/paketobuildpacks/icu",
   "vsdbg": "index.docker.io/paketobuildpacks/vsdbg",
-  "node-engine": "index.docker.io/paketobuildpacks/node-engine"
+  "node-engine": "index.docker.io/paketobuildpacks/node-engine",
+  "ubi-nodejs-extension": "index.docker.io/paketobuildpacks/ubi-nodejs-extension"
 }
