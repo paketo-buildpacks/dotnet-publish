@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 	"time"
 
@@ -29,6 +30,7 @@ var (
 	vsdbgBuildpack                          string
 	buildpack                               string
 	offlineBuildpack                        string
+	ubiNodejsExtension                      string
 	buildpackInfo                           struct {
 		Buildpack struct {
 			ID   string
@@ -42,6 +44,7 @@ var (
 		DotnetCoreSDK           string `json:"dotnet-core-sdk"`
 		DotnetExecute           string `json:"dotnet-execute"`
 		Vsdbg                   string `json:"vsdbg"`
+		UbiNodejsExtension      string `json:"ubi-nodejs-extension"`
 	}
 )
 
@@ -76,6 +79,18 @@ func TestIntegration(t *testing.T) {
 		WithVersion("1.2.3").
 		Execute(root)
 	Expect(err).NotTo(HaveOccurred())
+
+	pack := occam.NewPack()
+
+	builder, err := pack.Builder.Inspect.Execute()
+	Expect(err).NotTo(HaveOccurred())
+
+	isUbiBuilder := regexp.MustCompile(`ubi8`).MatchString(builder.BuilderName)
+
+	if isUbiBuilder {
+		Expect(occam.NewDocker().Pull.Execute(config.UbiNodejsExtension)).To(Succeed())
+		ubiNodejsExtension = config.UbiNodejsExtension
+	}
 
 	nodeEngineBuildpack, err = buildpackStore.Get.
 		Execute(config.NodeEngine)
