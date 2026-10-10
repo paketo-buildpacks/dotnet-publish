@@ -164,13 +164,13 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			},
             "packages": [
                 {
-                  "SPDXID": "SPDXRef-DocumentRoot-Unknown-",
+                  "SPDXID": "SPDXRef-DocumentRoot-Unknown-unknown",
                   "copyrightText": "NOASSERTION",
                   "downloadLocation": "NOASSERTION",
                   "filesAnalyzed": false,
                   "licenseConcluded": "NOASSERTION",
                   "licenseDeclared": "NOASSERTION",
-                  "name": "",
+                  "name": "unknown",
                   "supplier": "NOASSERTION"
                 }
               ],
@@ -179,7 +179,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			"name": "unknown",
 			"relationships": [
 				{
-				    "relatedSpdxElement": "SPDXRef-DocumentRoot-Unknown-",
+				    "relatedSpdxElement": "SPDXRef-DocumentRoot-Unknown-unknown",
 					"relationshipType": "DESCRIBES",
 					"spdxElementId": "SPDXRef-DOCUMENT"
 				}
